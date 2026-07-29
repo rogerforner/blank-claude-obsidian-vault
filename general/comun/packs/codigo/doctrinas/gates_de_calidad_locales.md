@@ -41,13 +41,19 @@ Regla de reparto: **rápido y local por edición · barato y de integridad por c
 - **Duplicación →** informativa.
 - **Contraproducentes:** cobertura de líneas al 100% bloqueante; mutation score global al 100% (los *equivalent mutants* lo hacen inalcanzable y caro).
 
-## Antifraude: el agente NO edita sus criterios de aprobación
+## ⛔ Regla dura y primera: **verificar ≠ impedir**
 
-Regla dura, en orden de eficacia probada:
+Un gate **mide** lo que ya se escribió y corre **después** de escribirlo. Eso da consistencia y no cuesta **un gramo de libertad**. **Nada en esta doctrina autoriza impedir escribir:** la IA es **un compañero de desarrollo más** y escribe código, **tests**, migraciones y configuración con la misma libertad que una persona del equipo. Un mecanismo que impide escribir no mide nada — solo bloquea, y bloquear no aporta consistencia: **aporta parálisis**. Si un gate no puede expresarse como *"comprueba X sobre lo ya escrito"*, **no se instala**.
 
-1. **Tests y config de umbrales = PROPIEDAD PROTEGIDA.** Un `PreToolUse` (matcher `Write|Edit`) que dé **exit 2** si la ruta cae en el **directorio real de tests**, `stryker.conf.*`, `phpstan.neon`, `.gitleaks.toml` y equivalentes, salvo aprobación humana explícita. ⚠ **Verifica DÓNDE viven los tests de ese repositorio antes de escribir el guard**: no des por supuesto `test/**` — en un caso real estaban en `src/test/`, y un guard sobre `test/**` habría protegido un **directorio inexistente** (falsa sensación de seguridad). Igual con el resto de rutas: **compruébalas, no las asumas.** Dejar los **tests read-only durante la implementación** es la medida con mejor evidencia (reduce el *test tampering* casi a cero).
-2. **Los diffs de tests, de acceptance criteria y de config de gates SÍ los revisa el humano** (es justo la capa que no se delega).
-3. **Rechazar el commit que toca tests + implementación a la vez** sin marca explícita ("no bajes el listón para pasar").
+> **Se aprendió pagándolo.** Una versión anterior de esta doctrina legitimaba dejar los tests en **solo lectura durante la implementación**. Implantado de verdad, el guard impidió escribir **cualquier** test en un proyecto cuyo definition-of-done los **exige** — y, al ser `PreToolUse`, corría al margen del modo de permisos: ni el flag de permisos amplios lo esquivaba. **Paró el trabajo.** Lo único que sí se protege es el **sello** del DoD (y la configuración de detección de secretos): es la **afirmación** de que las puertas pasaron, no el trabajo.
+
+## Antifraude sin bloquear: no se rebaja el listón para pasar
+
+El fraude que importa **no es escribir tests: es ablandar la puerta** para que pase un trabajo que no cumple. Todo lo de aquí ataca eso **sin impedir ni una escritura**:
+
+1. **La IA escribe tests libremente — son parte de su trabajo.** Lo que no hace es **rebajar umbrales, desactivar gates o relajar la baseline** para que pase un cambio suyo, y eso se detecta **sobre el estado final** en el definition-of-done (comparar umbrales, y el sello con la huella del código), no cerrando la puerta de edición. ⚠ Si algún día proteges una ruta, **verifica dónde vive de verdad**: en un caso real los tests estaban en `src/test/` y un guard sobre `test/**` habría protegido un **directorio inexistente** — falsa sensación de seguridad.
+2. **El humano revisa la ESPECIFICACIÓN, no la implementación:** acceptance criteria, contratos y diseño. No los unit tests ni el código.
+3. **Un commit que toca tests + implementación a la vez es una SEÑAL INFORMATIVA, no un rechazo:** es el caso normal de cualquier desarrollo (escribes el test y el código que lo satisface), y bloquearlo genera falsos positivos garantizados — *un gate con falsos positivos acaba desactivado, que es la única forma real de perderlo*.
 4. **Mutation score como antifraude estructural:** aunque el agente escriba los tests, si no matan mutantes, el gate lo detecta.
 5. ⚠ **El `PreToolUse` NO es suficiente por sí solo: solo ve `Edit`/`Write`.** Una escritura por **Bash** (`cat > fichero`, `sed -i`, redirecciones) **lo esquiva por completo** — verificado en la implantación real. Por eso **todo invariante que importe debe comprobarse también sobre el ESTADO FINAL del código en el script de definition-of-done** (un `grep` sobre el árbol, venga el cambio por donde venga), no solo en la puerta de edición. Regla: **la puerta de edición disuade; el DoD verifica.** *(Ejemplo real: prohibir `set_config` de `app.*` sin `true` se implementó en el DoD, no en el `PreToolUse`, precisamente por esto.)*
 6. **Ratchet en baselines** (PHPStan, cobertura): la baseline **solo puede encoger**; **nunca** se auto-actualiza en el gate (requiere commit humano explícito).
