@@ -1,0 +1,59 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:code.claude.com)",
+      "Bash(git:*)",
+      "PowerShell(git:*)",
+      "Bash(ls:*)",
+      "Bash(pwd:*)",
+      "Bash(find:*)",
+      "Bash(wc:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(grep:*)",
+      "Bash(file:*)",
+      "Bash(stat:*)"
+    ],
+    "deny": [
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.config/gh/**)",
+      "Read(//**/id_rsa)",
+      "Read(//**/id_ed25519)",
+      "Bash(git push:*)",
+      "PowerShell(git push:*)",
+      "Bash(git remote add:*)",
+      "PowerShell(git remote add:*)",
+      "Bash(git config --global:*)",
+      "PowerShell(git config --global:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "PowerShell(Invoke-WebRequest:*)",
+      "PowerShell(Invoke-RestMethod:*)",
+      "Bash(sudo:*)",
+      "Bash(su:*)",
+      "Bash(rm -rf:*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/general/comun/hooks/limpieza-coordinacion.mjs\""
+          }
+        ]
+      }
+    ]
+  },
+  "attribution": {
+    "commit": ""
+  },
+  "env": {
+    "CLAUDE_CODE_DISABLE_FAST_MODE": "1"
+  }
+}

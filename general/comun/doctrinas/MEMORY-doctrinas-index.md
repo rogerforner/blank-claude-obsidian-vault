@@ -1,0 +1,42 @@
+# Índice de doctrinas transversales — `general/comun/doctrinas/`
+
+> Catálogo de doctrinas **generalizadas** (sin referencias a ningún asunto concreto), transversales a cualquier trabajo coordinado entre el director y la IA. Cada una se **instala por copia** en el contenedor del asunto que la necesite (`asuntos/<asunto>/memoria/`); **no se hereda** (ver [../README.md](../README.md)). Hooks concisos; el detalle vive en cada fichero.
+
+## Prompts, commits y comunicación
+
+- [Formato markdown limpio en prompts](formato_prompts_markdown_limpio.md) — Prompts `.md`: `#` heading 1, solo headings, sin envoltorio ``` exterior, sin separadores ASCII, sin tiempos ni metadiscurso.
+- [Entrega de prompts en .md y buffer "Otros"](feedback_prompt_delivery.md) — Prompts en archivo `.md` (no inline); respuestas a AskUserQuestion completas en buffer sobreescribible que el director pega en "Otros".
+- [Rutas absolutas fuera del working dir](prompts_rutas_absolutas_fuera_del_working_dir.md) — Referencias fuera del working dir → ruta absoluta; las relativas a otro árbol fallan en silencio.
+- [Sin Co-Authored-By en commits](sin_coautor_commits.md) — Commits sin footer de atribución a IA; `attribution.commit` vacío; grep refinado de verificación. Git local: el histórico es del director.
+- [Minimizar AskUserQuestion del agente operativo](minimizar_askuserquestion_agente_operativo.md) — El agente no pide confirmación para acciones obvias; solo escala en cuatro casos reales. Entregar fuera no es escalada: es el final de su scope.
+- [Docs de onboarding sin fases](docs_sin_fases.md) — README/CLAUDE.md/charter autocontenidos, sin identificadores históricos ni narración del proceso; el tracking interno sí puede.
+- [Verificar en la fuente primaria antes de propagar](verificacion_fuente_primaria.md) — Un dato que contradice la nota es un conflicto a resolver en el documento real, no licencia para corregir desde un proxy (tamaño/fecha/nombre de fichero); no propagues sin verificar; acota a lo probado. El coordinador propaga → listón más alto. **Fuente única también DENTRO del documento** (dos copias del mismo dato derivan en silencio; incluye índice↔ficha, que se actualizan en el mismo commit) y **una comprobación favorable no prueba que el procedimiento sea fiable** (ojo: una limitación impuesta puede ser el síntoma de un ajuste ausente).
+
+## Modelo de trabajo, sesiones y modelo por tarea
+
+- [Orquestación de sesiones por herramienta](orquestacion_sesiones_por_herramienta.md) — El coordinador divide el trabajo en sesiones independientes y subagentes read-only; coordina, no produce él los documentos. **Puede LANZAR él mismo la ejecutora en headless** (`claude -p` acotado, contexto aparte) con **puertas en 3 capas** (deny rules · `defer` · allow list, que **concede y no restringe**); los hooks **no** pueden auto-arrancar la sucesora (hace falta orquestador externo); `/clear`+handoff mejor que compactar; baja concurrencia, nunca enjambre. La **entrega fuera** nunca se automatiza.
+- [Modelo apropiado por tarea](modelo_por_tarea.md) — **Opus 5** por defecto para lo difícil y la coordinación (1M, default en Max/Team Premium), **Sonnet 5** para volumen (1M nativo), **Haiku 4.5** subagentes/mecánica (no toca el sub-límite alto), **Fable 5 habilitado con disciplina** (incluido permanente en Max/Team Premium hasta el **50%** del semanal, pesa ~2×; **no** en Pro/Team Standard). El cuello de botella es la ventana semanal → el reparto es **routing**, no racionamiento; **`/usage` es la única fuente fiable**. `/fast` vetado (credits). Fija modelo y effort por sesión (cache miss). `ANTHROPIC_API_KEY` nunca definida (factura API en silencio). Es la doctrina más volátil → refréscala con la vigilancia.
+- [Higiene de contexto y tokens](higiene_contexto_y_tokens.md) — Ahorros gratis: subagentes que resumen, CLAUDE.md <200L estable, modelo fijo, /clear+artefacto, medir con /context antes de optimizar. "caveman" no aporta y degrada el español.
+- [Commits de otros no se investigan](commits_de_otros_no_se_investigan.md) — En un vault trabajado por varias sesiones, los commits que no hiciste tú son NORMALES: no investigar su origen ni bloquean cerrar tareas; el pathspec protege. Verificar solo ante anomalía real (historia reescrita, commit propio perdido).
+- [Verificación de extremo a extremo ejecutada por el agente](verificacion_e2e_por_agente.md) — Lo comprobable por comando lo ejecuta el agente y reporta **output literal**; lo demás pasa a **comprobación en campo** con procedimiento escrito, no desaparece del criterio de cierre.
+- [Paralelismo subagente read-only + principal](paralelismo_subagent_opus_principal.md) — Subagente read-only en background paralelo al principal ahorra wall-clock; reconciliar y citar fuente antes del checkpoint.
+- [Sesión consultor paralelo](sesion_consultor_paralelo.md) — Sesión paralela read-only para dudas factuales sin gastar contexto del coordinador; cita fuente y no decide.
+- [Scripts ad-hoc para tareas repetitivas](scripts_adhoc_tareas_repetitivas.md) — Tarea mecánica + determinista + verificable → generar y ejecutar script, no procesar ítem por ítem. Nunca en el sitio sobre un original.
+- [Convención de organización de la carpeta de trabajo](convencion_organizacion_carpeta_trabajo.md) — Raíz solo con lo activo/vivo; prompts/briefs ejecutados se BORRAN (git es el histórico); handoffs y buffers son locales/gitignored; hook `SessionStart` que limpia al arrancar. Los originales no son efímeros: no se borran.
+- [Estructura uniforme del contenedor de asunto](estructura_contenedor_asunto.md) — Todo asunto en `asuntos/<asunto>/` con la misma estructura (raíz de coordinación, `.claude/` con un settings por rol, docs/estudios/memoria/coordinacion). Lo recibido o entregado es intocable; el documento real gana a la nota. Instancia canónica: la plantilla del inicializador.
+- [Guarda de ficheros sensibles y flags](sensitive_file_guard.md) — La config local del asunto es editable **sin restricción**; la deny-list solo bloquea credenciales de máquina (`~/.ssh`, `~/.aws`, …). Los datos personales **sí** viven en el vault, pero **no salen de la máquina**. Tandas que tocan masivamente `.claude/`/hooks → flag al inicio.
+
+## Criterio y método del coordinador
+
+- [Cuestionar las premisas de fondo](cuestionar_premisas_arquitectonicas_antes_deep_research.md) — Antes de una investigación o una gestión cara: cuestionar si hace falta el tercero, la herramienta o la vía formal; pilotar lo mínimo primero.
+- [Adopción de tooling externo requiere caso de uso](adopcion_tooling_externo_caso_uso_concreto.md) — Caso de uso concreto YA + 5 criterios + piloto; aplica a estructuras internas preventivas; verificar disponibilidad y condiciones de uso de los recursos externos al inicio.
+- [Revisión periódica de la forma de trabajo](revision_periodica_forma_de_trabajo.md) — Cadencia ligera (tras-sesión / quincenal / trimestral / por-evento). El ritmo importa más que el rigor.
+- [Vigilancia tecnológica bajo demanda](vigilancia_tecnologica_bajo_demanda.md) — La investigación de novedades la dispara el director cuando quiera; el coordinador la concreta en briefs focalizados de deep research (Chat Web), sintetiza y funde; investigar ≠ adoptar (gate de caso de uso / condiciones de uso / soberanía del dato / piloto).
+- [Recalibración de estimaciones de tiempo](recalibracion_tiempos.md) — Lo nuestro se recalibra 5-25× respecto al trabajo a mano; los plazos ajenos (organismos, citas, obras, decisiones del director) **no** se recalibran.
+- [Mejora continua del kit](mejora_continua_del_kit.md) — Anotar en `_meta/bitacora.md` lo aprendido en cada arranque y fundirlo en checklist/plantillas/doctrinas.
+
+## Si el vault toca software: el pack `codigo/`
+
+Las doctrinas específicas de trabajo con repositorios de código —gates de calidad, estrategia de pruebas, ramas y paso a producción, push por subagentes, herramientas de la plataforma de alojamiento, licencias permisivas, infraestructura y RGPD, higiene de disco en contenedores, cadena de suministro de paquetes— **no están en el core**: viven en el pack `codigo/`, que es opcional → [`../packs/codigo/`](../packs/codigo/README.md), con su propio índice.
+
+**El core no depende del pack.** Se instala el pack **solo** si el vault temático toca desarrollo de software; si no, se ignora entero y nada del core queda cojo.

@@ -1,0 +1,35 @@
+# .gitignore del vault coordinado
+#
+# Criterio: se versiona el TRABAJO (documentos, doctrinas, plantillas, cola, bitácora)
+# y NO se versiona lo efímero de una sesión ni lo que depende de esta máquina.
+# Doctrina: general/comun/doctrinas/convencion_organizacion_carpeta_trabajo.md
+
+# --- Efímeros del relevo entre sesiones (locales, de un solo uso) ---
+# Un handoff sirve para arrancar la sesión siguiente y muere ahí; versionarlo llena
+# el histórico de estados intermedios que ya no describen nada. El hook SessionStart
+# (general/comun/hooks/limpieza-coordinacion.mjs) los auto-borra cuando quedan superados,
+# y solo puede borrar sin tocar git porque están ignorados aquí.
+# ⚠ La PLANTILLA `inicializador/plantilla-handoff.md` SÍ se versiona: no empieza por
+# "handoff-", así que este patrón no la captura. Es deliberado.
+**/handoff-*.md
+
+# Buffer sobreescribible de respuestas al director ("Otros"): se pisa a sí mismo en cada
+# vuelta, no tiene histórico que conservar.
+**/tmp-otros-actual.md
+
+# --- Config que depende de la máquina o de la persona ---
+# Rutas de ESTA máquina (la carpeta donde el escáner deja los PDF, la unidad de copias)
+# y preferencias locales. Cada máquina tiene las suyas; versionarlas rompe la
+# portabilidad, que es una regla dura del vault.
+**/.claude/settings.local.json
+**/*.local.json
+**/*.local.md
+
+# Config de la interfaz de Obsidian: es la ventana de cada persona (paneles, tema,
+# plugins activos), no contenido del vault. El vault se lee también fuera de Obsidian.
+.obsidian/
+
+# --- Basura del sistema operativo ---
+Thumbs.db
+desktop.ini
+.DS_Store
