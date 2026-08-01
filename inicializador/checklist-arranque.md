@@ -16,6 +16,8 @@ Pasos para inicializar la coordinación de un asunto nuevo. Lo hace el director 
 - Si el asunto ya venía en marcha con material voluminoso o sensible, **no lo copies a ciegas**: pasa antes por [checklist-migracion-existentes.md](checklist-migracion-existentes.md), que trae el reconocimiento previo y el **gate de confidencialidad**.
 - Si el material está en papel o en PDF escaneado, la transcripción va con **tooling local** ([tooling-documentos](../general/comun/tooling-documentos.md)): nada de conversores web, porque estos papeles llevan datos personales.
 
+- **¿El papel sirve a más de un asunto?** Los documentos transversales —los identificativos de una persona, los de un inmueble, los de un bien— **no van al contenedor**: van al archivo documental del vault, y el asunto los **enlaza por ruta relativa**. Si el vault aún no lo tiene, este es el momento de crearlo ([archivo_documental_compartido](../general/comun/doctrinas/archivo_documental_compartido.md)); si el papel solo sirve a este asunto, su sitio es `docs/` y no hay que montar nada.
+
 ## 3. Redactar el charter
 
 - Desde `inicializador/plantilla-charter-coordinador.md`: sustituye `{{ASUNTO}}`, `{{SLUG}}`, `{{MATERIA}}` y `{{PERFIL}}` (sin rutas absolutas; las rutas de la máquina —la carpeta del escáner, la unidad de copias— van en `settings.local.json`).

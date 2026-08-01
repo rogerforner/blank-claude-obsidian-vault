@@ -29,6 +29,21 @@
 # plugins activos), no contenido del vault. El vault se lee también fuera de Obsidian.
 .obsidian/
 
+# --- Archivo documental compartido (si el vault lo tiene) ---
+# Los originales son binarios pesados y sin valor en un diff: su respaldo es el del
+# sistema de ficheros, no el histórico. Se versiona SOLO la estructura de carpetas y
+# sus índices, para que el árbol sea reproducible en otra máquina.
+# Descomenta y sustituye <archivo> por el nombre real del árbol.
+# Doctrina: general/comun/doctrinas/archivo_documental_compartido.md
+#
+# La doble negación es necesaria: sin la línea de los directorios, git no desciende a
+# lo excluido y no encuentra los índices.
+#
+# /<archivo>/**
+# !/<archivo>/**/
+# !/<archivo>/**/README.md
+# !/<archivo>/**/INDICE.md
+
 # --- Basura del sistema operativo ---
 Thumbs.db
 desktop.ini

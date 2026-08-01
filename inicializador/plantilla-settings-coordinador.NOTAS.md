@@ -63,10 +63,31 @@ Qué protege esta plantilla, y por qué cada cosa:
 - **Verifica el aislamiento, no lo supongas.** Con la sesión del coordinador arrancada: intenta escribir un fichero en `general/` y comprueba que **se deniega**. Si no se deniega, el resto de este documento no te protege de nada.
 - **La invisibilidad entre asuntos hermanos es aislamiento BLANDO.** No se puede expresar como `deny` sin denegar también el propio contenedor, que vive dentro de `asuntos/`. Se apoya en el cwd y en el comportamiento acotado del coordinador (no lee otros asuntos salvo que se le pida), **no** en una barrera dura. Si un asunto exige separación fuerte —material de un procedimiento con abogado, datos médicos de un tercero—, la vía es un vault aparte, no un `deny` más.
 
+## Si el vault tiene archivo documental
+
+El `.json` monta solo el catálogo, porque no todo vault necesita más. Si el vault tiene un **archivo documental compartido** ([archivo_documental_compartido](../general/comun/doctrinas/archivo_documental_compartido.md)), el contenedor tiene que verlo, y en **solo lectura**: añade dos líneas, sustituyendo `<archivo>` por el nombre real del árbol.
+
+```json
+"additionalDirectories": ["../../general", "../../<archivo>"],
+```
+
+```json
+"deny": [
+  "Write(//**/general/**)",   "Edit(//**/general/**)",
+  "Write(//**/<archivo>/**)", "Edit(//**/<archivo>/**)",
+  ...
+]
+```
+
+Dos avisos que valen igual aquí que para el catálogo, y que están detallados arriba: el `deny` va como **glob absoluto** y no como ruta relativa, y **`Write(ruta)` es inerte** — el que se evalúa es `Edit(ruta)`. Se ponen los dos porque el par es lo convencional, pero el que protege es el segundo.
+
+Y el motivo de que el nombre del árbol deba ser **compuesto**: el glob no depende del nombre del vault, así que un `//**/archivo/**` dejaría en solo lectura cualquier carpeta llamada `archivo` **dentro de un asunto**. En un vault de expedientes, `//**/expediente/**` es aún peor.
+
 ## Qué comprobar al instalarlo
 
 1. El `.json` **parsea** (`node -e "JSON.parse(require('fs').readFileSync('.claude/settings.json','utf8'))"`).
 2. El hook **corre** al arrancar: se ve su mensaje en el contexto inicial.
 3. El catálogo **no se puede escribir** desde el contenedor.
+4. Si el vault tiene archivo documental: **tampoco se puede escribir**, y en cambio **sí se lee**.
 4. `/fast` **no está activo** (la variable de entorno está puesta).
 5. No hay **ninguna ruta absoluta** en el fichero versionado; todas las de máquina están en `settings.local.json`.
