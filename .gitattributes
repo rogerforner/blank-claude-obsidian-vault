@@ -1,0 +1,36 @@
+# Saltos de línea: LF en todo el repositorio, siempre.
+#
+# Sin esto, un editor que guarde en CRLF hace que git vea decenas de líneas
+# cambiadas sin que cambie una sola palabra, y el cambio real queda enterrado.
+# Pasó con MEMORY-doctrinas-index.md: 42 líneas reemplazadas por sí mismas.
+#
+# Este fichero viaja con la plantilla a cada vault que se cree desde ella, así
+# que el problema no se propaga.
+
+* text=auto eol=lf
+
+# Binarios: git no los toca nunca. `text=auto` ya detecta la mayoría, pero
+# declararlos evita que una heurística los normalice y los corrompa.
+# Un vault documental acumula bastantes: escaneos, escritos, certificados.
+
+*.pdf   binary
+*.docx  binary
+*.doc   binary
+*.xlsx  binary
+*.xls   binary
+*.pptx  binary
+*.odt   binary
+*.ods   binary
+*.pages binary
+
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.tif   binary
+*.tiff  binary
+*.heic  binary
+
+*.zip   binary
+*.7z    binary
+*.rar   binary
