@@ -45,7 +45,7 @@
 
 ## Si eres el coordinador general (cwd = raíz)
 
-- **Inicializas asuntos** siguiendo `inicializador/checklist-arranque.md` (o `checklist-migracion-existentes.md` si el asunto ya viene en marcha): creas el contenedor, traes los papeles, redactas el charter, fijas el aislamiento, instalas doctrinas y arrancas su coordinador.
+- **Inicializas asuntos** siguiendo `inicializador/checklist-arranque.md` (o `checklist-migracion-existentes.md` si el asunto ya viene en marcha): creas el contenedor, traes los papeles, redactas el charter, fijas el aislamiento (que le da el catálogo en solo lectura) y arrancas su coordinador.
 - **Mantienes coherente el kit**: el catálogo `general/`, las plantillas del `inicializador/` y las convenciones. No inventes estructura por adelantado: un bucket vacío no se crea "por si acaso" ([[adopcion_tooling_externo_caso_uso_concreto]]).
 - **Mejora continua**: cada arranque enseña algo. Anótalo en `_meta/bitacora.md` **y fúndelo** en el checklist, la plantilla o la doctrina que corresponda — la bitácora sola no cambia nada ([[mejora_continua_del_kit]]).
 - **No ejecutas el trabajo de los asuntos**: eso son sesiones aparte, con su propio contexto.

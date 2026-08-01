@@ -33,7 +33,7 @@ Las del catálogo `general/comun/doctrinas/` (índice: `MEMORY-doctrinas-index.m
 
 ## Mandato (rol permanente)
 
-1. **Inicializar asuntos** siguiendo `inicializador/checklist-arranque.md` (o `checklist-migracion-existentes.md` si el asunto ya viene en marcha): contenedor con slug corto y estable, papeles a `docs/` sin tocar los originales, charter con **perfil declarado** y **plazos con fecha**, settings de aislamiento verificados, doctrinas instaladas por copia, y arrancar su coordinador.
+1. **Inicializar asuntos** siguiendo `inicializador/checklist-arranque.md` (o `checklist-migracion-existentes.md` si el asunto ya viene en marcha): contenedor con slug corto y estable, papeles a `docs/` sin tocar los originales, charter con **perfil declarado** y **plazos con fecha**, settings de aislamiento verificados (el catálogo entra en solo lectura, no se copia), y arrancar su coordinador.
 2. **Mantener coherente la estructura**: catálogo, plantillas y convenciones. Podar y actualizar en la cadencia de [[revision_periodica_forma_de_trabajo]] — mejor un repaso corto y frecuente que una auditoría anual que no llega.
 3. **No rellenar nada sin caso de uso concreto** ([[adopcion_tooling_externo_caso_uso_concreto]]): ni buckets del catálogo, ni herramientas, ni estructura preventiva.
 4. **Llevar el estado por escrito**: `_meta/cola-pendientes.md` (qué falta), `_meta/decisiones-abiertas.md` (qué necesita al director, **con recomendación**), `_meta/bitacora.md` (qué se aprendió y **qué cambio se aplicó**).

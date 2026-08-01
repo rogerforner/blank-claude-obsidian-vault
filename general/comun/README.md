@@ -6,9 +6,11 @@ Piezas de catálogo **transversales a cualquier asunto** (una reclamación, una 
 
 **Se **lee** desde el catálogo; **no** se copia salvo motivo declarado y **no se hereda** automáticamente.**
 
-Un coordinador de asunto **ve este catálogo en read-only** y **copia** a `asuntos/<asunto>/memoria/` solo las piezas que su asunto necesita. La copia es un **snapshot con su `version`**: no se actualiza sola. Cuando el catálogo evoluciona, el coordinador del asunto **resincroniza** explícitamente lo que le afecte.
+Un coordinador de asunto **ve este catálogo en solo lectura** —lo tiene en `additionalDirectories`— y **trabaja contra él**. Un `[[wikilink]]` sin copia local **resuelve aquí, y es lo correcto**: no es un olvido. `asuntos/<asunto>/memoria/` es para las doctrinas **propias** de ese asunto.
 
-Por qué así y no por herencia automática: un asunto abierto no debe cambiar de reglas a mitad de camino porque alguien haya editado el catálogo. La actualización es un acto deliberado, con su commit y su motivo.
+Por qué no por copia: copiar no da autonomía, solo **deber de resync**. Una copia desfasada **miente** con la autoridad de estar instalada, y una copia idéntica no aporta nada mientras el asunto viva dentro del vault. Se copia solo para **fijar** a propósito una versión (diciendo por qué) o si el contenedor va a **salir** del vault; entonces es un **snapshot con su `version`** y **quien copia asume el resync**.
+
+Y tampoco por herencia automática: nada se auto-provee. Lo que aplica a un asunto se decide al arrancarlo, con su commit y su motivo.
 
 ## Buckets
 
@@ -21,5 +23,5 @@ Por qué así y no por herencia automática: un asunto abierto no debe cambiar d
 ## Versionado de doctrinas
 
 - Cada doctrina/convención lleva **`version`** en el frontmatter. La versión **sube** cuando su contenido cambia de forma sustantiva; el cambio se anota en el **footer** de la propia doctrina (changelog corto) y, si es relevante para el kit, en `_meta/bitacora.md`.
-- La **fuente de verdad versionada** es este catálogo `general/`. Las copias instaladas en los asuntos son snapshots.
+- La **fuente de verdad versionada** es este catálogo `general/`, y los asuntos lo leen de aquí. Si un asunto llega a fijar una copia (motivo declarado), esa copia es un snapshot y su resync corre a cargo de quien la hizo.
 - Al actualizar una doctrina, **actualiza su entrada en el índice en el mismo commit**: un índice desfasado miente en silencio ([[verificacion_fuente_primaria]]).

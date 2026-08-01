@@ -1,16 +1,19 @@
-# `memoria/` — doctrinas del asunto
+# `memoria/` — doctrinas propias del asunto
 
-- **Doctrinas instaladas** desde el catálogo `general/` (copia, con su `version`) — solo las que aplican a este asunto.
-- **Doctrinas propias** del asunto, las que no son transversales y por tanto no suben al catálogo.
+## La regla de oro: el catálogo se LEE, no se copia
 
-## La regla de oro
+La fuente de verdad es el **catálogo** (`../../../general/comun/doctrinas/`), que este contenedor tiene en `additionalDirectories` de su `.claude/settings.json`. El coordinador **trabaja contra el catálogo**, en solo lectura.
 
-**Se instalan por copia; no se heredan** (ver `../../../general/comun/README.md`). Cada copia es un **snapshot con su `version`**: no se actualiza sola. Cuando el catálogo evoluciona, el coordinador del asunto **resincroniza explícitamente** lo que le afecte, con su commit y su motivo — un asunto abierto no debe cambiar de reglas a mitad de camino porque alguien editara el catálogo.
+- **Un `[[wikilink]]` sin copia local resuelve al catálogo, y eso es lo normal — no un olvido.** No hay que instalar una doctrina solo porque el `CLAUDE.md` o el charter la enlacen.
+- **Copiar no es gratis: la copia asume el deber de resync.** Una copia **desfasada miente** con la autoridad de estar instalada, y una copia idéntica no aporta nada mientras el asunto viva dentro del vault. Por eso el default es **NO copiar**.
+- **Cuándo SÍ copiar:** cuando el asunto necesita **fijar** una versión concreta (y entonces se dice por qué), o cuando va a **salir** del vault y el catálogo no viaja con él. Quien copia, resincroniza.
 
 El índice de las transversales disponibles está en `../../../general/comun/doctrinas/MEMORY-doctrinas-index.md`. **Empieza por el índice**, no por la lista de ficheros.
 
-## Baseline
+## Qué va aquí
 
-Instala siempre: perfil de modelos ([[modelo_por_tarea]]), higiene de contexto ([[higiene_contexto_y_tokens]]), estructura del contenedor ([[estructura_contenedor_asunto]]) y verificación por el agente ([[verificacion_e2e_por_agente]]). El resto, según el perfil declarado en el charter.
+Solo las doctrinas **propias del asunto**: las que no son transversales y por tanto no suben al catálogo. Si una acaba siendo útil para cualquier asunto, se generaliza y **sube al catálogo**; no se queda duplicada aquí.
 
-**Solo si el perfil es `asunto con software`** se instalan además las nueve del pack `codigo/` (`../../../general/comun/packs/codigo/`), al **mismo** nivel que las del core: una vez instaladas conviven sin subcarpeta, porque la separación es del catálogo, no del asunto.
+## Baseline que el coordinador lee desde el día uno
+
+Perfil de modelos ([[modelo_por_tarea]]), higiene de contexto ([[higiene_contexto_y_tokens]]), estructura del contenedor ([[estructura_contenedor_asunto]]) y verificación por el agente ([[verificacion_e2e_por_agente]]). El resto, según el perfil declarado en el charter. **Si el perfil es `asunto con software`**, aplica además el pack `codigo/` (`../../../general/comun/packs/codigo/`), que se lee igual que el core.

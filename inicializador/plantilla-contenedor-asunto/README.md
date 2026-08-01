@@ -16,7 +16,7 @@ Contenedor de **trabajo con IA** del asunto **{{ASUNTO}}** ({{MATERIA}}). Aquí 
 ├── coordinacion/                 prompts en vuelo + referencia/ (handoffs y buffers, gitignored)
 ├── docs/                         documentación del asunto + originales recibidos y emitidos
 ├── estudios/                     estudios/<tema>/ (investigación → decisión)
-└── memoria/                      doctrinas instaladas + las propias del asunto
+└── memoria/                      doctrinas PROPIAS del asunto (las del catálogo se LEEN)
 ```
 
 **La carpeta `.claude/` no viene en esta plantilla: se crea al instanciar el contenedor.** Sus ficheros se copian desde el inicializador en el paso 4 del checklist — `plantilla-settings-coordinador.json` → `.claude/settings.json`, y `plantilla-settings-consultor.json` → `.claude/settings.consultor.json` si vas a usar consultor. El `settings.local.json` lo escribes tú y **no se versiona**.

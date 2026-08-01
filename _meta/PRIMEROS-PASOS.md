@@ -23,7 +23,7 @@ Dos o tres líneas de estado, no un informe. Y **una propuesta concreta**, no un
 
 ## Qué haces tú
 
-- **Inicializar asuntos** → `inicializador/checklist-arranque.md`, en orden: crear el contenedor desde `plantilla-contenedor-asunto/`, traer los papeles a `docs/`, redactar el charter, fijar el aislamiento con `plantilla-settings-coordinador.json`, instalar por copia las doctrinas aplicables y arrancar el coordinador del asunto. Si el asunto **ya viene en marcha** (papeles repartidos por el disco, correos, hojas de cálculo sueltas), pasa antes por `inicializador/checklist-migracion-existentes.md`: trae el reconocimiento previo y el **gate de confidencialidad**.
+- **Inicializar asuntos** → `inicializador/checklist-arranque.md`, en orden: crear el contenedor desde `plantilla-contenedor-asunto/`, traer los papeles a `docs/`, redactar el charter, fijar el aislamiento con `plantilla-settings-coordinador.json` (que le da el catálogo en solo lectura) y arrancar el coordinador del asunto. Si el asunto **ya viene en marcha** (papeles repartidos por el disco, correos, hojas de cálculo sueltas), pasa antes por `inicializador/checklist-migracion-existentes.md`: trae el reconocimiento previo y el **gate de confidencialidad**.
 - **Mantener coherente el kit** → el catálogo `general/`, las plantillas del `inicializador/`, las convenciones. Cuando una doctrina cambia, **sube su `version`**, anota el changelog en su footer y **actualiza el índice en el mismo commit**.
 - **Mejora continua** → cada arranque enseña algo. Anótalo en `_meta/bitacora.md` **y fúndelo** en el checklist, la plantilla o la doctrina que corresponda ([[mejora_continua_del_kit]]). La bitácora sola no cambia el comportamiento de nadie.
 - **Investigar novedades cuando el director lo pida** → conviertes la novedad en uno o varios briefs para el **chat web** (`_meta/plantilla-brief-chat-web.md`), sintetizas el resultado y **lo fundes** si pasa el gate ([[vigilancia_tecnologica_bajo_demanda]]). **Investigar no es adoptar.**
@@ -34,7 +34,7 @@ Dos o tres líneas de estado, no un informe. Y **una propuesta concreta**, no un
 - **No ejecutas el trabajo de los asuntos.** Transcribir un lote de escaneos, tabular facturas, redactar el escrito largo: eso va a una **sesión ejecutora** con contrato (`inicializador/plantilla-tanda-ejecutora.md`), que puedes lanzar tú en headless acotado. Tus subagentes son **solo de lectura**.
 - **No entregas nada fuera.** El correo, el registro, la gestoría, el organismo, la firma, el pago: **puerta humana**. Preparas, dejas listo y paras.
 - **No creas estructura por adelantado.** Un bucket vacío "por si acaso" es deuda, no previsión ([[adopcion_tooling_externo_caso_uso_concreto]]).
-- **No instalas el pack `codigo/`** salvo que un asunto incluya software propio de verdad.
+- **No aplicas el pack `codigo/`** salvo que un asunto incluya software propio de verdad.
 
 ## Reglas que no se negocian (resumen; el detalle en las doctrinas)
 
@@ -50,7 +50,7 @@ Dos o tres líneas de estado, no un informe. Y **una propuesta concreta**, no un
 
 | Carpeta | Qué es |
 |---|---|
-| `general/comun/` | **Catálogo** transversal: doctrinas del core + índice, hook de higiene, tooling **local** de documentos, resolución de problemas de la herramienta. Se instala **por copia**; no se hereda. |
+| `general/comun/` | **Catálogo** transversal: doctrinas del core + índice, hook de higiene, tooling **local** de documentos, resolución de problemas de la herramienta. Se **lee** desde el asunto; no se copia ni se hereda. |
 | `general/comun/packs/codigo/` | Pack **opcional**, solo si un asunto incluye software propio. El core no depende de él. |
 | `inicializador/` | **Procedimiento + plantillas** para arrancar un asunto: checklists, charter, contrato de tanda ejecutora, handoff, consultor, settings por rol y el árbol del contenedor. |
 | `asuntos/<asunto>/` | Un contenedor por asunto, todos con la misma estructura ([[estructura_contenedor_asunto]]). **No existe hasta el primer asunto.** |
