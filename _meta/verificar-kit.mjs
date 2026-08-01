@@ -60,7 +60,10 @@ for (const f of md.filter(esCore)) {
 }
 
 // --- 4. portabilidad: ni rutas de maquina ni nombres ajenos -------------
-const RUTAS = /([A-Za-z]:\\\\?[Uu]sers|\/home\/[a-z]|\/Users\/)/;
+// Exige un SEGMENTO REAL despues de Users/home: "C:\Users\PD\..." es una fuga,
+// pero "C:\Users\…" escrito como patron de busqueda es documentacion, no una ruta.
+const SEG = '[A-Za-z0-9_.-]';
+const RUTAS = new RegExp(`([A-Za-z]:\\\\{1,2}[Uu]sers\\\\{1,2}${SEG}|/home/${SEG}|/Users/${SEG})`);
 for (const f of [...md, ...['.claude/settings.json', '.gitignore'].map((p) => join(RAIZ, p))]) {
   if (!existsSync(f)) continue;
   readFileSync(f, 'utf8').split('\n').forEach((l, i) => {
