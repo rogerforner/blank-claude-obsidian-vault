@@ -32,6 +32,6 @@ Cuando **puede circular un dato personal** (aunque sea por mal uso del usuario),
 
 Relacionada: [[licencias_permisivas_estrictas]], [[prohibido_uso_herramientas_github_excepto_commits_push]], [[sensitive_file_guard]] (los datos personales viven en el vault pero **no salen de la máquina**: aquí se decide qué pasa cuando algo sí tiene que salir a un servicio).
 
-> Pieza de catálogo `general/comun/packs/codigo/doctrinas/`. v1.0 (2026-06-05). Se instala por copia en `asuntos/<asunto>/memoria/`; no se hereda.
+> Pieza de catálogo `general/comun/packs/codigo/doctrinas/`. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
 
 > Adaptada al esqueleto del seed (`asuntos/<asunto>/`) conservando el vocabulario técnico: el framing neutro del seed aplica al core, no a este pack — 2026-07-29. Cambios del traslado: "proyecto" pasa a "asunto" como unidad. Nota de alcance: esta doctrina decide **región de infraestructura de un servicio que se despliega**, por eso está en el pack; la regla general del seed —los datos personales viven en el vault y **no salen de la máquina**— es del core ([[sensitive_file_guard]]) y no depende de este pack. Las dos categorías se conservan íntegras.

@@ -2,8 +2,14 @@
 name: Guarda de ficheros sensibles y flags de lanzamiento
 description: La config local del asunto la lee y edita la IA sin restricción; la deny-list solo bloquea las credenciales de máquina/usuario (~/.ssh, ~/.aws, …). Los datos personales SÍ viven en el vault —es su sitio— pero no salen de la máquina ni se llevan a un servicio externo. Las tandas que tocan masivamente .claude/ o hooks se lanzan con el flag de permisos amplios desde el inicio.
 type: convention
-version: 2.0
+version: 2.1
 ---
+
+## Ámbito ESTRICTO: secretos y credenciales reales, nada más
+
+Esta doctrina **solo** ampara proteger **secretos y credenciales de verdad**. **NO ampara** proteger el trabajo: ni los documentos del asunto, ni las comprobaciones, ni la configuración de calidad. Si un mecanismo **impide escribir** algo que es trabajo legítimo, no pertenece aquí y se retira — un guard que bloquea no mide nada, solo produce parálisis.
+
+**Y el flag de permisos amplios es lo NORMAL en local**, no una excepción que haya que justificar: lo que sigue protegiendo son las **deny rules**, que aguantan incluso bajo él.
 
 ## Config local del asunto: editable sin restricción
 
@@ -42,5 +48,5 @@ El coordinador indica en el `## Setup` del prompt si la tanda lo requiere. **Cri
 
 Relacionada: [[minimizar_askuserquestion_agente_operativo]], [[verificacion_fuente_primaria]], [[estructura_contenedor_asunto]], [[orquestacion_sesiones_por_herramienta]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v2.0 (2026-06-18):** config local editable sin restricción; la deny-list se reduce a credenciales de máquina (la v1.0 bloqueaba también la config del asunto). v1.0 (2026-06-05). Se instala por copia en `asuntos/<asunto>/memoria/`; no se hereda.
+> Pieza de catálogo `general/comun/doctrinas/`. **v2.1 (2026-08-01):** ámbito acotado a secretos y credenciales reales — **no ampara** proteger el trabajo ni la configuración de calidad, y el flag de permisos amplios pasa a ser **lo normal** en local (lo que protege son las deny rules, que aguantan bajo él). **v2.0 (2026-06-18):** config local editable sin restricción; la deny-list se reduce a credenciales de máquina (la v1.0 bloqueaba también la config del asunto). v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
 > Adaptada al framing neutro del seed (sin referencias al dominio del software) — 2026-07-29.

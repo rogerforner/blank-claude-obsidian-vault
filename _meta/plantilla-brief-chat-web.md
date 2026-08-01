@@ -4,7 +4,7 @@
 >
 > **Dónde se ejecuta: en el CHAT WEB, no aquí.** La investigación abierta —muchas fuentes, mucha lectura, mucho descarte— es exactamente lo que **no** debe correr en una sesión de coordinación ni en subagentes: quema el contexto que hace falta para decidir, y lo que se necesita de vuelta es un **informe**, no la búsqueda entera ([[orquestacion_sesiones_por_herramienta]], [[higiene_contexto_y_tokens]]). Para lo que sí toca a un asunto concreto, usa `inicializador/plantilla-brief-deep-research.md`.
 >
-> ⚠ **Frontera de soberanía — inviolable.** El chat web corre **fuera de esta máquina**. Un brief **no lleva datos personales, ni documentos de ningún asunto, ni nombres de terceros, ni importes identificables**: se pregunta en abstracto. Si la pregunta no se puede formular sin el dato, **no va al chat web**: se resuelve en local ([[sensitive_file_guard]]).
+> **Frontera de soberanía — inviolable.** El chat web corre **fuera de esta máquina**. Un brief **no lleva datos personales, ni documentos de ningún asunto, ni nombres de terceros, ni importes identificables**: se pregunta en abstracto. Si la pregunta no se puede formular sin el dato, **no va al chat web**: se resuelve en local ([[sensitive_file_guard]]).
 
 ## Para qué
 

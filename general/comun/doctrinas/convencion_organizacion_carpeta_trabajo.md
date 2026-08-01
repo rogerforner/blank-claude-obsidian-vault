@@ -59,5 +59,5 @@ Buffer **exclusivo** de texto que el director pega como respuesta a la pregunta 
 
 Relacionada: [[feedback_prompt_delivery]], [[formato_prompts_markdown_limpio]], [[orquestacion_sesiones_por_herramienta]], [[estructura_contenedor_asunto]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v2.2 (2026-07-14). Se instala por copia en `asuntos/<asunto>/memoria/`; no se hereda. *(Las copias ya instaladas se resincronizan por el coordinador del asunto; modelo snapshot.)*
+> Pieza de catálogo `general/comun/doctrinas/`. v2.2 (2026-07-14). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente. *(Las copias ya instaladas se resincronizan por el coordinador del asunto; modelo snapshot.)*
 > Adaptada al framing neutro del seed (sin referencias al dominio del software) — 2026-07-29.

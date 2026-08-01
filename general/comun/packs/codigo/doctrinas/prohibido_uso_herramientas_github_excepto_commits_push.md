@@ -30,6 +30,6 @@ Permanente por defecto. Reapertura puntual para un servicio concreto **solo** ba
 
 Relacionada: [[no_push_por_subagentes]], [[infra_europa_rgpd]], [[licencias_permisivas_estrictas]], [[adopcion_tooling_externo_caso_uso_concreto]] (el gate general de tooling externo, en el core).
 
-> Pieza de catálogo `general/comun/packs/codigo/doctrinas/`. v1.1 (2026-06-09: "push manual del director" → "push como paso verificado", alineado con el nuevo modelo de autonomía). Se instala por copia en `asuntos/<asunto>/memoria/`; no se hereda. Es un default opinado; un asunto con otro modelo de soberanía la adaptaría al instalarla.
+> Pieza de catálogo `general/comun/packs/codigo/doctrinas/`. v1.1 (2026-06-09: "push manual del director" → "push como paso verificado", alineado con el nuevo modelo de autonomía). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente. Es un default opinado; un asunto con otro modelo de soberanía la adaptaría al instalarla.
 
 > Adaptada al esqueleto del seed (`asuntos/<asunto>/`) conservando el vocabulario técnico: el framing neutro del seed aplica al core, no a este pack — 2026-07-29. Cambios del traslado: "proyecto" pasa a "asunto" como unidad, con el repositorio de código dentro; y se añade el aviso de ámbito de arriba porque el vault del seed no tiene remoto. Lo prohibido y lo permitido se conservan íntegros.

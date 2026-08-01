@@ -28,6 +28,6 @@ El **suelo de permisos** de las sesiones bloquea solo lo peligroso/irreversible 
 
 Relacionada: [[no_push_por_subagentes]], [[prohibido_uso_herramientas_github_excepto_commits_push]], [[docs_sin_fases]], [[estructura_contenedor_asunto]] (dónde vive el repositorio dentro del asunto).
 
-> Pieza de catálogo `general/comun/packs/codigo/doctrinas/`. **v2.0 (2026-06-09):** de "push y dev→prod humanos (gateados por deny)" a "la IA los ejecuta como paso verificado; el humano testea lo no-automatizable y da el go". Se instala por copia en `asuntos/<asunto>/memoria/`; no se hereda.
+> Pieza de catálogo `general/comun/packs/codigo/doctrinas/`. **v2.0 (2026-06-09):** de "push y dev→prod humanos (gateados por deny)" a "la IA los ejecuta como paso verificado; el humano testea lo no-automatizable y da el go". Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
 
 > Adaptada al esqueleto del seed (`asuntos/<asunto>/`) conservando el vocabulario técnico: el framing neutro del seed aplica al core, no a este pack — 2026-07-29. Cambios del traslado: la unidad pasa de `proyectos/<repo>/` a `asuntos/<asunto>/`, con el repositorio de código dentro del asunto; y se añade el aviso de ámbito de arriba, porque el vault del seed es **git local sin remoto** y sin esa aclaración la doctrina parecería contradecirlo. El contenido de las reglas se conserva íntegro.

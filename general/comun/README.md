@@ -4,7 +4,7 @@ Piezas de catálogo **transversales a cualquier asunto** (una reclamación, una 
 
 ## La regla de oro
 
-**Se instala por copia; no se hereda.**
+**Se **lee** desde el catálogo; **no** se copia salvo motivo declarado y **no se hereda** automáticamente.**
 
 Un coordinador de asunto **ve este catálogo en read-only** y **copia** a `asuntos/<asunto>/memoria/` solo las piezas que su asunto necesita. La copia es un **snapshot con su `version`**: no se actualiza sola. Cuando el catálogo evoluciona, el coordinador del asunto **resincroniza** explícitamente lo que le afecte.
 

@@ -35,6 +35,6 @@ El código propio debe ser legítimamente propietario para que, ante un incident
 
 Relacionada: [[adopcion_tooling_externo_caso_uso_concreto]], [[infra_europa_rgpd]], [[verificacion_fuente_primaria]] (la licencia se comprueba en la fuente oficial, no en un proxy).
 
-> Pieza de catálogo `general/comun/packs/codigo/doctrinas/`. v1.0 (2026-06-05). Se instala por copia en `asuntos/<asunto>/memoria/`; no se hereda.
+> Pieza de catálogo `general/comun/packs/codigo/doctrinas/`. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
 
 > Adaptada al esqueleto del seed (`asuntos/<asunto>/`) conservando el vocabulario técnico: el framing neutro del seed aplica al core, no a este pack — 2026-07-29. Cambios del traslado: "proyecto" pasa a "asunto" como unidad. Nota de alcance: **esta doctrina cubre las licencias de las dependencias de un asunto de software**; el criterio de licencia para las herramientas de documentos del core vive en `general/comun/tooling-documentos.md`, que no depende de este pack. Las tres líneas rojas se conservan íntegras.

@@ -2,7 +2,7 @@
 name: Higiene de contexto y tokens
 description: El cuello de botella es la ventana de uso, no el contexto. Los mayores ahorros son gratis (sin API): subagentes que resumen, CLAUDE.md <200 líneas y estable, modelo fijo por sesión (no cambiar a media sesión = cache miss), /clear+artefacto en vez de /compact a ciegas, y medir con /context antes de optimizar. "caveman" no aporta y degrada el español.
 type: convention
-version: 1.0
+version: 1.1
 ---
 
 Optimizar **disponibilidad** (la ventana de uso semanal), no "tokens" en abstracto. El mayor desperdicio **no** es la verbosidad de salida (~25% de la sesión) sino **leer ficheros enteros** y el **cache miss por cambiar de modelo**. Las palancas que más amortizan son **gratis** (sin API):
@@ -21,7 +21,15 @@ Optimizar **disponibilidad** (la ventana de uso semanal), no "tokens" en abstrac
 - **Pegar el documento entero en el chat** cuando basta con la ruta: el agente lo lee él, y un subagente lo resume si es largo.
 - **Workflows multiagente masivos:** agotan la ventana de uso ([[modelo_por_tarea]]).
 
+## Sin acuses de recibo entre coordinadores
+
+Un aviso o un encargo de otro coordinador **no se responde por cortesía**. Se responde **solo si el otro necesita un dato para seguir con una tarea**. Lo demás —"recibido", "procesado", "gracias"— gasta contexto de **dos** sesiones y abre un **bucle de conversación que no aporta nada**.
+
+- **Sí justifica respuesta:** un dato que te pidió, un bloqueo que solo tú puedes levantar, o una decisión suya que depende de algo tuyo.
+- **No la justifica:** confirmar que lo has leído, resumir lo que hiciste con su aviso, o devolver un "queda cerrado" que él no necesita para trabajar.
+- **La constancia va en el ARTEFACTO, no en un mensaje:** la doctrina actualizada, el commit, la cola. Quien lo necesite lo encuentra donde vive — y así no caduca.
+
 Relacionada: [[modelo_por_tarea]], [[paralelismo_subagent_opus_principal]], [[orquestacion_sesiones_por_herramienta]], [[convencion_organizacion_carpeta_trabajo]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-11). A partir del estudio de eficiencia de tokens (1.ª ronda de vigilancia). Se instala por copia en `asuntos/<asunto>/memoria/`; no se hereda.
+> Pieza de catálogo `general/comun/doctrinas/`. **v1.1 (2026-08-01):** añadida la regla de **sin acuses de recibo entre coordinadores** — se responde solo si el otro necesita un dato para seguir; la constancia va en el artefacto, no en un mensaje. v1.0 (2026-06-11). A partir del estudio de eficiencia de tokens (1.ª ronda de vigilancia). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
 > Adaptada al framing neutro del seed (sin referencias al dominio del software) — 2026-07-29.

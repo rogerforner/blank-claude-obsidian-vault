@@ -2,7 +2,7 @@
 name: Estrategia de pruebas por tipo de proyecto
 description: Qué garantías se exigen según el tipo de proyecto: greenfield estricto (todo bloqueante desde el día 1), legacy en contención (solo el código nuevo, con baseline que solo decrece; nunca tocar el legacy) e infra (contratos declarativos y smoke reproducible). La criticidad es la variable de gobierno: la batería completa solo donde el riesgo lo justifica. El humano revisa la ESPECIFICACIÓN (acceptance criteria, contratos, diffs de tests), no la implementación.
 type: doctrine
-version: 1.0
+version: 1.1
 ---
 
 No todos los asuntos de software admiten las mismas garantías, y **exigir la batería completa en todos es tan dañino como no exigir nada** (frena el trabajo y genera gates que se acaban ignorando). La **criticidad es la variable de gobierno**. Esta doctrina fija **qué se exige a quién**; la mecánica de cómo se monta está en [[gates_de_calidad_locales]].
@@ -45,7 +45,7 @@ Una tarea está hecha cuando: **(1)** el script de definition-of-done pasa **en 
 
 ## Día 1 de un asunto de software nuevo
 
-1. **Declarar el perfil** (greenfield / legacy / infra) → hereda su columna de exigencias.
+1. **Declarar el perfil** (greenfield / legacy / infra) → hereda su columna de exigencias. **AVISO: el perfil describe el OBJETIVO, no el estado.** Escribirlo en el `CLAUDE.md` **no** implanta los gates: el siguiente que lo lea dará por implantado lo que solo está declarado, y actuará como si midiera algo que no mide. Mientras no existan, **dilo en el propio sitio** ("perfil infra; smoke pendiente") y trátalo como deuda con dueño. *(Caso real: un proyecto de infraestructura llevaba meses con el perfil descrito y **sin ningún smoke a nivel de stack**; se descubrió al necesitar dónde anclar una verificación nueva.)* → [[verificacion_fuente_primaria]]
 2. Instalar los **hooks** (`PostToolUse` lint rápido · `Stop` → definition-of-done con exit 2).
 3. **pre-commit**: detección de secretos + lint-staged + **guard antifraude** de tests.
 4. Framework de test nativo del stack + **mutation testing** configurado con `break` bajo inicial.
@@ -59,6 +59,6 @@ En este orden: **(a)** lo barato y no bloqueante (lint informativo, secretos) �
 
 Relacionada: [[gates_de_calidad_locales]] (la mecánica), [[verificacion_e2e_por_agente]], [[no_push_por_subagentes]], [[rama_desarrollo_y_paso_a_produccion]], [[docs_sin_fases]] (los ADR describen estado, no historia), [[adopcion_tooling_externo_caso_uso_concreto]].
 
-> Pieza de catálogo `general/comun/packs/codigo/doctrinas/`. v1.0 (2026-07-28), a partir de un estudio de deep research verificado (tesis de R. C. Martin verificada en su forma real, no en la versión simplificada). Se instala por copia en `asuntos/<asunto>/memoria/`; no se hereda. Las notas concretas por stack no viajan en el seed: se escriben en el propio asunto.
+> Pieza de catálogo `general/comun/packs/codigo/doctrinas/`. **v1.1 (2026-08-01):** añadido que **el perfil describe el objetivo, no el estado** — declararlo en un `CLAUDE.md` no implanta los gates, y quien lo lea los dará por puestos; mientras no existan, se dice y se trata como deuda con dueño. v1.0 (2026-07-28), a partir de un estudio de deep research verificado (tesis de R. C. Martin verificada en su forma real, no en la versión simplificada). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente. Las notas concretas por stack no viajan en el seed: se escriben en el propio asunto.
 
 > Adaptada al esqueleto del seed (`asuntos/<asunto>/`) conservando el vocabulario técnico: el framing neutro del seed aplica al core, no a este pack — 2026-07-29. Cambios del traslado: la unidad pasa de `proyectos/<repo>/` a `asuntos/<asunto>/` (el asunto es el contenedor; el repositorio de código vive dentro); los tres perfiles conservan su ejemplo, pero **sustituido** por su equivalente genérico, porque los ejemplos originales nombraban asuntos reales del kit de origen y el seed no los lleva; y la remisión al estudio de origen se retira porque los estudios **no viajan en el seed** (la evidencia y el modelo adoptado se conservan íntegros en el cuerpo).

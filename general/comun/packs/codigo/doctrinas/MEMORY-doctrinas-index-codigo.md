@@ -25,6 +25,7 @@
 
 ## Contenedores
 
+- [Verificar en el runtime real, no en el host](verificar_en_el_runtime_no_en_el_host.md) — El filesystem que ves no es el que ejecuta: un árbol de dependencias incompleto en el host **NO** significa que la app esté rota (el contenedor las tiene todas), y su presencia tampoco prueba que el runtime las cargue. Comprueba **dentro**, no "arregles" el host; las librerías servidas desde un host externo son **ilegibles** para un agente, así que lo que afirme de ellas es suposición; "verificado en código" ≠ verificado en el runtime.
 - [Higiene de disco en stacks Podman/Compose](higiene_disco_podman.md) — Los stacks acumulan disco en silencio. **Medir antes de limpiar** (`podman system df`), **backup verificado antes de destruir**, poda quirúrgica (nunca `system prune -a --volumes` por costumbre), proteger imágenes pesadas y volúmenes con datos, rotar backups.
 
 ## Además del catálogo

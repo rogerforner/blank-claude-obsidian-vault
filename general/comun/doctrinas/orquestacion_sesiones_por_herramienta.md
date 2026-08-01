@@ -1,8 +1,8 @@
 ---
 name: Orquestación de sesiones por herramienta — el coordinador divide, no lo ejecuta todo
-description: El coordinador coordina; divide el trabajo en sesiones independientes asignadas a la mejor herramienta (Claude Code CLI, Desktop, cowork, chat) y en subagentes read-only, redacta los prompts y verifica. No ejecuta el trabajo voluminoso en su propia sesión, para no agotar su contexto. Dividir y vencer.
+description: El cwd con el que se LANZA la sesión hija es parte del contrato (decide reglas, hooks y raíz de búsqueda), y toda tanda no trivial va en dos ejecutoras: análisis read-only con fichero de plan y luego ejecución contra la spec corregida. El coordinador coordina; divide el trabajo en sesiones independientes asignadas a la mejor herramienta (Claude Code CLI, Desktop, cowork, chat) y en subagentes read-only, redacta los prompts y verifica. No ejecuta el trabajo voluminoso en su propia sesión, para no agotar su contexto. Dividir y vencer.
 type: doctrine
-version: 1.3
+version: 1.5
 ---
 
 El coordinador **coordina**: su valor es **descomponer** el trabajo, **asignar** cada parte a la **mejor herramienta**, **redactar los prompts** y **verificar/reconciliar** los resultados. **No ejecuta todo en su propia sesión** — eso agota su contexto y desaprovecha herramientas mejores para cada tarea. **Dividir y vencer** supera a una sola sesión que lo hace todo.
@@ -16,13 +16,65 @@ El coordinador **NO produce los documentos del asunto** — **ni directamente ni
 Lo que cambia respecto de v1.1 **no es la regla anterior, es quién aprieta el botón**: el coordinador **puede lanzar él mismo** la sesión ejecutora en modo *headless* y recoger el resultado, **sin** que el director haga de transporte. El trabajo sigue ocurriendo **fuera** de su contexto (proceso aparte, contexto limpio), así que la regla dura se respeta.
 
 ```bash
-claude -p "<tarea + ruta del contrato .md>" \
+cd "<WORKING_DIR>" && claude -p "<tarea + ruta del contrato .md>" \
   --allowedTools "Read,Edit,Bash(git add:*),Bash(git commit:*)" \
   --permission-mode dontAsk --max-turns 20 --max-budget-usd 2.00 \
   --output-format json
 ```
 
 - **No hereda contexto** del padre y **respeta el `.claude/settings.json` del directorio destino** (sus deny rules no las salta ni `bypassPermissions`).
+
+### El `cwd` de la hija ES el working dir — y se fija al LANZARLA, nunca en el prompt
+
+**Ese `cd` no es cosmético: es la mitad del contrato.** El cwd del proceso decide **qué `CLAUDE.md` y qué `.claude/` se auto-cargan** (las reglas del asunto, sus skills, sus subagentes), **qué hooks corren** (se anclan a `CLAUDE_PROJECT_DIR`), **qué reglas de permiso aplican** y **cuál es la raíz de búsqueda por defecto** de las herramientas que buscan ficheros.
+
+Una hija enraizada en el sitio equivocado sufre varias cosas a la vez, y ninguna avisa:
+
+1. Hereda las reglas de **otro** asunto —o las de coordinación, que le dicen justamente que no ejecute— y **no** carga las del asunto en el que tiene que trabajar.
+2. **No dispara los hooks** de ese asunto: la comprobación que debía correr sola no falla, sencillamente no está.
+3. **Busca por defecto donde no es**, así que responde con material que solo *describe* lo que buscabas: fuente secundaria con toda la apariencia de primaria. → [[verificacion_fuente_primaria]]
+4. Paga tokens por cargar unas reglas que no le sirven, encima del coste fijo de arranque.
+
+**Una línea *"Working dir: X"* en el prompt no mueve el cwd.** Es la misma familia de falsa barrera que `--allowedTools`: creer que la configuración dice algo que el proceso no aplica.
+
+- **Lo que está fuera de su cwd no existe para la hija:** el contrato `.md`, el material de consulta o la carpeta de temporales quedan inalcanzables salvo `--add-dir` (o los `additionalDirectories` del destino). **Medido en los dos sentidos.** Regla práctica: **la hija se enraíza donde tiene que escribir, y lo que solo necesita leer entra por `--add-dir`**.
+- **Los subagentes intra-sesión NO se pueden re-enraizar:** heredan el cwd del padre y no admiten otro. Esa es la razón **técnica** —no solo de disciplina de contexto— de que sean read-only y de exploración.
+
+## Dos ejecutoras: análisis read-only primero, ejecución después
+
+**Toda tanda no trivial se lanza en DOS ejecutoras.** Primero una de **análisis estrictamente read-only** cuyo único entregable de escritura es un fichero `plan-tanda-<nombre>.md`; después la de **ejecución**, lanzada contra la spec **ya corregida** con lo que el plan haya destapado.
+
+**El mecanismo, que es lo que hay que entender o el requisito se degrada:** el valor **no** está en que la ejecutora tenga un plan. Está en que **el coordinador LEA ese plan y corrija su propia spec antes de que se produzca nada**. Lo que se instala no es "que la ejecutora planifique", es **un punto de corrección barato entre la spec y el trabajo**. Un plan que se escribe y nadie lee no aporta nada y solo suma coste — quien lo entienda como burocracia lo cumplirá en la forma y perderá el efecto entero.
+
+### Qué lleva el fichero de plan, obligatoriamente
+
+1. **Verificación en fuente primaria de CADA premisa de la spec, con el comando ejecutado y su salida.** No *"se ha comprobado que"*: el comando y lo que devolvió. → [[verificacion_fuente_primaria]]
+2. **Lista explícita de las premisas de la spec que resultan FALSAS.** Es el apartado que convierte el plan en instrumento de corrección y no en resumen. **Si sale vacía, que lo diga vacía.**
+3. **Inventario de lo que va a tocar**, con el perímetro pactado.
+4. **Decisiones que la spec dejó abiertas sin darse cuenta** y hay que cerrar antes de empezar.
+5. **Orden de pasos y riesgos**, incluido qué se hace si un paso falla a mitad.
+
+### El read-only se COMPRUEBA, no se impide
+
+`--allowedTools` **concede y no restringe** (ver abajo), así que la lectura-sola **no es imponible por flags** y **no se instala un guard** para forzarla. Se **declara** en la spec —no modifica material, no registra cambios, deja el historial intacto— y se **mide después**, que es barato y determinista: `git status --short` muestra **solo** el fichero de plan, y `HEAD` no se ha movido. Y **lleva la cuenta** de las fases limpias: el día que una ejecutora de análisis se ponga a producir, el contador lo delata.
+
+### Cuándo SÍ y cuándo NO (esto es lo que evita que se vuelva un impuesto)
+
+**SÍ**, siempre que la tanda **toque varios ficheros**, **estrene una forma de trabajo** que el asunto no tenga, o se apoye en **premisas sobre material que no hayas abierto tú**.
+
+**NO** en tandas mecánicas y pequeñas: **arrancar una hija cuesta ~42.000 tokens fijos de caché aunque no haga nada** (medido en una tanda cuyo único trabajo era responder "PONG"), y ese coste se paga **por lanzamiento, no por trabajo hecho** → trocear de más lo multiplica.
+
+**La excepción se DECLARA.** Saltarse el análisis es legítimo; saltárselo **en silencio**, no: la spec dice *"tanda de fase única declarada"* y por qué.
+
+### Dimensionar los techos
+
+Los cortacircuitos se ponen con **margen del 100% sobre tu propia línea base medida**, no a ojo: una tanda real **murió por `error_max_budget_usd`** con el techo demasiado bajo, y morir a mitad sale más caro que el margen. Referencia medida: **análisis 65 turnos**, **ejecución grande 300**, con el análisis pesando entre el **10% y el 20%** de la tanda que protege. Recuerda que `--max-budget-usd` es un **cortacircuito nominal, no un cargo**: con `ANTHROPIC_API_KEY` ausente lo que se consume es ventana de suscripción.
+
+### Qué evidencia lo sostiene (y qué NO)
+
+**No hubo A/B controlado y no se presenta como tal.** Hay tres casos con contrafactual: un análisis destapó un **bloqueante que la spec no veía** y que habría hecho fallar el resultado desde el primer minuto; otro encontró un **límite de permisos** que iba a quemar tres intentos, y la tanda se **aparcó con razón escrita** en vez de construirse y tirarse; y la **única** tanda lanzada sin análisis es aquella en la que **cuatro decisiones se le cayeron encima a la ejecutora** por huecos de la spec.
+
+**Y el delimitador:** varias tandas posteriores de **fase única declarada** salieron bien, con las ejecutoras cazando premisas falsas sobre la marcha. No refuta el método —se habrían cazado antes y más barato— pero lo acota: **es para la tanda grande o con forma nueva, no para todas.**
 - **Protege tu contexto, en este orden:** (a) **artefacto `.md` como contrato** (la hija escribe el informe, tú lees un extracto) · (b) `--output-format json` (+`--json-schema`) para una salida corta · (c) subagente Explore (Haiku) que resume · (d) ficheros en disco (Bash trunca a 30.000 chars).
 - **Cortacircuitos obligatorios:** `--max-turns` y `--max-budget-usd`; **timeout/watchdog** en el llamante (hay *silent-freeze* documentado al lanzar `claude -p` desde orquestadores de larga vida) y arranque `bash -c 'exec claude -p …'`. Entradas grandes **por ruta de fichero**, no por stdin (topado a 10 MB).
 - **Condición de coste:** consume la ventana de la suscripción **solo mientras siga pausada** la escisión de facturación del Agent SDK/`claude -p`; y **`ANTHROPIC_API_KEY` no debe estar definida** (si lo está, factura API en silencio). **Plan B si se revierte:** subagentes intra-sesión (read-only o `add`+`commit` local). → [[modelo_por_tarea]]
@@ -34,7 +86,7 @@ claude -p "<tarea + ruta del contrato .md>" \
 2. **`defer`** (`permissionDecision` del hook `PreToolUse`, **solo honrado en `-p`**) para lo **irreductiblemente humano**: una comprobación en campo, una autenticación con certificado, una decisión jurídica o económica, y **la entrega fuera** (correo, registro, gestoría, organismo). La sesión se pausa con `stop_reason: "tool_deferred"` y se reanuda con `claude -p --resume <session-id>`; **necesita un wrapper** que lea la petición y decida cuándo reanudar. Precedencia: **`deny > defer > ask > allow`**.
 3. **`--allowedTools`** para **declarar la intención**… pero **NO cuenta como defensa** (ver el aviso de abajo).
 
-## ⚠ `--allowedTools` CONCEDE, no restringe (medido, no supuesto)
+## `--allowedTools` CONCEDE, no restringe (medido, no supuesto)
 
 **`--allowedTools` es una lista ADITIVA, no una lista blanca exclusiva**, y `--permission-mode dontAsk` significa *"no preguntes"*, **no** *"deniega lo no listado"*. Verificado empíricamente en **Claude Code 2.1.220** (sesión real, 2026-07-28, cuatro pruebas): una sesión hija lanzada con `--allowedTools "Read"` (sin `Bash`) **ejecutó Bash igualmente**; se descartaron confusores (retirar `bypassPermissions` del settings y lanzar sin `--permission-mode` no cambió nada) y la prueba concluyente pidió el valor de una **variable de entorno aleatoria** generada segundos antes — inalcanzable por `Read` — y la hija lo devolvió.
 
@@ -82,8 +134,9 @@ claude -p "<tarea + ruta del contrato .md>" \
 1. El coordinador **descompone** la tarea en piezas con dependencias claras.
 2. **Asigna** cada pieza a la herramienta óptima.
 3. **Redacta el prompt `.md`** de cada pieza ([[formato_prompts_markdown_limpio]], [[feedback_prompt_delivery]]).
-4. El director **relaya** el prompt a la sesión correspondiente (o el coordinador la lanza en headless).
-5. El coordinador **verifica y reconcilia** (*trust-but-verify*) y prepara el siguiente paso.
+4. **Lanza él mismo** la sesión (headless, con su `cd`) — o la relaya el director si la herramienta lo exige. **El director no es el transporte por defecto.**
+5. Si la pieza es **no trivial**, ese lanzamiento es primero el de **análisis read-only**: el coordinador **lee el plan**, **corrige su spec** con las premisas falsas que aparezcan, y **solo entonces** lanza la ejecución.
+6. El coordinador **verifica y reconcilia** (*trust-but-verify*) y prepara el siguiente paso.
 
 ## Ritmo de entrega al director
 
@@ -95,5 +148,7 @@ El coordinador entrega los pasos **de uno en uno** — o **dos a la vez solo si 
 
 Relacionada: [[modelo_por_tarea]] (modelo por tarea + evitar workflows multiagente masivos), [[paralelismo_subagent_opus_principal]], [[sesion_consultor_paralelo]], [[recalibracion_tiempos]], [[higiene_contexto_y_tokens]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v1.3 (2026-07-28):** **CORRECCIÓN DE SEGURIDAD** — la v1.2 afirmaba que `--allowedTools` acotado restringe a la sesión hija ("con `dontAsk` lo no listado se deniega"). **Es FALSO**: `--allowedTools` **concede** (lista aditiva) y `dontAsk` solo suprime la pregunta. Medido en Claude Code 2.1.220 con prueba de dato inalcanzable (variable de entorno aleatoria), descartando confusores. **Lo que protege son las deny rules** (aguantan hasta bajo `--dangerously-skip-permissions`), los cortacircuitos `--max-turns`/`--max-budget-usd`, los hooks `PreToolUse` y el watchdog. Regla nueva: **lo que quieras impedir, exprésalo como DENY**. Añadido el método de prueba (el dato pedido debe ser inalcanzable por las herramientas concedidas) y los dos falsos positivos clásicos (`git status` va inyectado en el contexto; lo que ya consta por escrito se lee con `Read`). *(Lección: la afirmación venía de un informe de deep research y se propagó sin verificar empíricamente → [[verificacion_fuente_primaria]].)* **v1.2 (2026-07-28):** cambio de fondo — **el coordinador puede LANZAR él mismo la sesión ejecutora** en headless (`claude -p` acotado, contexto aparte → la regla "coordinar ≠ ejecutar" se mantiene), con sus cortacircuitos, la condición de facturación (pausa reversible + `ANTHROPIC_API_KEY` ausente) y plan B; **puertas en 3 capas** con `defer` (GA, solo en `-p`, precedencia `deny > defer > ask > allow`); MCP fuente-de-verdad para que la ejecutora no pregunte; límite duro de los hooks (no pueden auto-arrancar la sucesora → orquestador externo); `/clear`+handoff validado sobre la compactación; buzón entre asuntos; baja concurrencia; y lo que no se automatiza. **v1.1 (2026-07-15):** palancas soberanas locales (hooks, subagentes, skills, output styles); Cowork GA pero cloud; veto a dynamic workflows. *(El frontmatter quedó en 1.0 por descuido en v1.1; corregido en v1.2.)* v1.0 (2026-06-05). Se instala por copia en `asuntos/<asunto>/memoria/`; no se hereda.
-> Adaptada al framing neutro del seed (sin referencias al dominio del software) — 2026-07-29.
+> Pieza de catálogo `general/comun/doctrinas/`. **v1.3 (2026-07-28):** **CORRECCIÓN DE SEGURIDAD** — la v1.2 afirmaba que `--allowedTools` acotado restringe a la sesión hija ("con `dontAsk` lo no listado se deniega"). **Es FALSO**: `--allowedTools` **concede** (lista aditiva) y `dontAsk` solo suprime la pregunta. Medido en Claude Code 2.1.220 con prueba de dato inalcanzable (variable de entorno aleatoria), descartando confusores. **Lo que protege son las deny rules** (aguantan hasta bajo `--dangerously-skip-permissions`), los cortacircuitos `--max-turns`/`--max-budget-usd`, los hooks `PreToolUse` y el watchdog. Regla nueva: **lo que quieras impedir, exprésalo como DENY**. Añadido el método de prueba (el dato pedido debe ser inalcanzable por las herramientas concedidas) y los dos falsos positivos clásicos (`git status` va inyectado en el contexto; lo que ya consta por escrito se lee con `Read`). *(Lección: la afirmación venía de un informe de deep research y se propagó sin verificar empíricamente → [[verificacion_fuente_primaria]].)* **v1.2 (2026-07-28):** cambio de fondo — **el coordinador puede LANZAR él mismo la sesión ejecutora** en headless (`claude -p` acotado, contexto aparte → la regla "coordinar ≠ ejecutar" se mantiene), con sus cortacircuitos, la condición de facturación (pausa reversible + `ANTHROPIC_API_KEY` ausente) y plan B; **puertas en 3 capas** con `defer` (GA, solo en `-p`, precedencia `deny > defer > ask > allow`); MCP fuente-de-verdad para que la ejecutora no pregunte; límite duro de los hooks (no pueden auto-arrancar la sucesora → orquestador externo); `/clear`+handoff validado sobre la compactación; buzón entre asuntos; baja concurrencia; y lo que no se automatiza. **v1.1 (2026-07-15):** palancas soberanas locales (hooks, subagentes, skills, output styles); Cowork GA pero cloud; veto a dynamic workflows. *(El frontmatter quedó en 1.0 por descuido en v1.1; corregido en v1.2.)* v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
+> **v1.5 (2026-08-01):** dos ejecutoras — análisis read-only con entregable `plan-tanda-<nombre>.md` y luego ejecución contra la spec ya corregida; lo que se instala no es que la ejecutora planifique, sino un punto de corrección barato entre la spec y el trabajo. Con los cinco apartados obligatorios (el de premisas FALSAS es el que lo hace instrumento y no resumen), el cuándo NO anclado en los ~42.000 tokens fijos por lanzamiento, la excepción declarada y el read-only comprobado a posteriori en vez de impuesto por flags. **v1.4 (2026-08-01):** el `cwd` de la hija ES el working dir y se fija con el `cd` del lanzamiento: decide reglas auto-cargadas, hooks, permisos y raíz de búsqueda; una línea "Working dir" en el prompt no lo mueve, y los subagentes intra-sesión no se pueden re-enraizar.
+>
+> Adaptada al framing neutro del seed (sin referencias al dominio del software) — 2026-08-01.

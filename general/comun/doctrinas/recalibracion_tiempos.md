@@ -30,5 +30,5 @@ Un asunto puede tardar cuatro meses aunque el trabajo de redacción sean dos hor
 
 Relacionada: [[modelo_por_tarea]], [[cuestionar_premisas_arquitectonicas_antes_deep_research]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-05). Se instala por copia en `asuntos/<asunto>/memoria/`; no se hereda.
+> Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
 > Adaptada al framing neutro del seed (sin referencias al dominio del software) — 2026-07-29.

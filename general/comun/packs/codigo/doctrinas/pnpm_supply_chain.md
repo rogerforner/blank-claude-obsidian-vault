@@ -35,6 +35,6 @@ En asuntos con código Node, usar **pnpm v11+** como gestor de paquetes para mit
 
 Relacionada: [[licencias_permisivas_estrictas]], [[adopcion_tooling_externo_caso_uso_concreto]], [[verificacion_fuente_primaria]] (la versión y la licencia de un paquete se comprueban en su fuente oficial, no en un proxy).
 
-> Pieza de catálogo `general/comun/packs/codigo/doctrinas/`. v1.0 (2026-06-05). Se instala por copia en `asuntos/<asunto>/memoria/` del asunto Node que la necesite; no se hereda.
+> Pieza de catálogo `general/comun/packs/codigo/doctrinas/`. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado y **no se hereda** automáticamente.
 
 > Adaptada al esqueleto del seed (`asuntos/<asunto>/`) conservando el vocabulario técnico: el framing neutro del seed aplica al core, no a este pack — 2026-07-29. Cambios del traslado: en el kit de origen esta pieza vivía en el bucket por tecnología (`general/node/convenciones/`), no en el catálogo común; en el seed **el bucket por tecnología no existe** y la pieza entra en el pack `codigo/`, que es el único sitio donde el seed habla de stacks concretos. Es, por tanto, la más específica del pack: si el asunto no lleva Node, se ignora. Las reglas se conservan íntegras.

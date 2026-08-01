@@ -2,7 +2,7 @@
 
 > Plantilla de **brief de investigación a fondo**. La investigación se ejecuta en el **chat web** (función de investigación profunda), **no con subagentes** ([[orquestacion_sesiones_por_herramienta]]). Rellena los `{{…}}` y **borra este bloque**. Vive en `asuntos/<asunto>/estudios/<tema>/`. Vuelve como `informe.md` y se condensa en `sintesis-decisiones.md`.
 >
-> ⚠ **Frontera de soberanía — inviolable.** El chat web corre **fuera de esta máquina**. Un brief **no lleva datos personales, ni documentos del asunto, ni nombres de terceros, ni importes identificables**: se redacta en abstracto ("un seguro de hogar con cláusula de daños por agua", no la póliza con su número y su titular). Si la pregunta no se puede formular sin el dato, **no va al chat web**: se resuelve en local ([[sensitive_file_guard]]).
+> **Frontera de soberanía — inviolable.** El chat web corre **fuera de esta máquina**. Un brief **no lleva datos personales, ni documentos del asunto, ni nombres de terceros, ni importes identificables**: se redacta en abstracto ("un seguro de hogar con cláusula de daños por agua", no la póliza con su número y su titular). Si la pregunta no se puede formular sin el dato, **no va al chat web**: se resuelve en local ([[sensitive_file_guard]]).
 
 ## Para qué
 

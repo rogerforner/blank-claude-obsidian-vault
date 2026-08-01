@@ -35,5 +35,5 @@ Estudios de **kit** en `_meta/estudios/<tema>/`; de **asunto** en `asuntos/<asun
 
 Relacionada: [[revision_periodica_forma_de_trabajo]], [[cuestionar_premisas_arquitectonicas_antes_deep_research]], [[adopcion_tooling_externo_caso_uso_concreto]], [[orquestacion_sesiones_por_herramienta]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-10). Se instala por copia en `asuntos/<asunto>/memoria/`; no se hereda.
+> Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-10). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
 > Adaptada al framing neutro del seed (sin referencias al dominio del software) — 2026-07-29.

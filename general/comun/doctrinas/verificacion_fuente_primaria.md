@@ -2,7 +2,7 @@
 name: Verificar en la fuente primaria antes de propagar
 description: Un dato que contradice lo documentado es un conflicto a resolver en la fuente primaria (el documento real, el escrito registrado, la cifra oficial), NUNCA licencia para "corregir" la nota desde un proxy (tamaño/fecha/nombre de fichero). No lleves una conclusión a docs/doctrina/prompts/commits sin verificarla, y acota la afirmación a lo realmente probado. Como tus notas se propagan a otras sesiones, tu listón de verificación es más alto, no más bajo.
 type: practice
-version: 1.1
+version: 1.3
 ---
 
 El coordinador **propaga**: lo que escribe en `docs/`, doctrinas, prompts y commits lo leen y dan por bueno otras sesiones —y el propio director dentro de seis meses—. Por eso su listón de verificación es **más alto**, no más bajo. La regla: **verifica en la fuente primaria ANTES de propagar.**
@@ -14,6 +14,15 @@ El coordinador **propaga**: lo que escribe en `docs/`, doctrinas, prompts y comm
 - **Acota la afirmación a lo realmente probado.** "Comprobado en un recibo" ≠ "todos los recibos del año cuadran"; "la plantilla oficial pide el anexo III" ≠ "el organismo lo exige en este trámite"; "el PDF pesa 4 MB" ≠ "el PDF contiene los 12 anexos". Di qué comprobaste y qué no.
 - **Distingue medir de inferir.** Si solo tienes un proxy, dilo como proxy ("el fichero es de marzo → *probablemente* la versión antigua"), y **verifica el contenido** antes de declarar un estado (abre el PDF y cuenta las páginas, no mires la fecha).
 - **Ante anomalía, investiga la causa; no "arregles" el síntoma en la nota.** Si la nota y la realidad discrepan, la nota puede tener razón y la realidad ser el error (o al revés): determina cuál antes de editar.
+- **Un comentario que declara algo "defensivo" sin haberlo medido es PEOR que no tener comentario.** Un comentario también es propagación: el siguiente lo lee como conclusión ya verificada y **deja de mirar**. *(Caso real: una anotación de configuración sostenía que un valor inexistente era "defensivo" y que solo fallaría en un caso marginal; medido, rompía mucho más que ese caso, porque otros procesos heredaban el valor y lo validaban al arrancar. De ahí la regla general: **un valor de configuración inválido no es latente si otros lo heredan y lo comprueban**.)*
+
+## Lo que VIAJA en un encargo: marca qué está medido y qué está por confirmar
+
+Un encargo entre coordinadores —o el que te escribes a ti mismo para dentro de tres semanas— lleva **datos de apoyo** además de la petición. Quien lo recibe los hereda **como si estuvieran verificados**, porque del otro lado ya no queda rastro de cómo se obtuvieron. Por eso **un dato de apoyo erróneo sobrevive al viaje** y se convierte en premisa donde nadie puede auditarlo.
+
+**Regla: cada dato de apoyo va etiquetado.** `[MEDIDO]` — con **quién**, **con qué** y **cuándo** (el comando o el documento, y la fecha) — o `[A CONFIRMAR POR EL RECEPTOR]`. Si no sabes en cuál cae, es *a confirmar*. Cuesta una línea y evita que el otro construya sobre arena.
+
+*(Caso real: un encargo afirmaba que cierto sistema "solo ofrecía dos opciones disponibles"; medidas contra el sistema real eran 48. Lo único que importaba para el encargo sí era cierto, así que el encargo era válido — pero el dato de apoyo era falso y viajó entero. Quien lo detectó fue el receptor, al chocar con la realidad.)*
 
 ## Fuente única también DENTRO del documento
 
@@ -37,5 +46,5 @@ Corolario de diagnóstico: **una limitación que alguien impuso "porque si no fa
 
 Relacionada: [[higiene_contexto_y_tokens]], [[mejora_continua_del_kit]], [[commits_de_otros_no_se_investigan]] (ante anomalía del histórico que no distingue actor, preguntar en vez de asumir).
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v1.1 (2026-07-29):** añadidas dos reglas aportadas por la implantación real — **fuente única dentro del propio documento** (la deriva entre copias no se detecta leyendo; incluye el par índice↔ficha, que se actualiza en el mismo commit) y **una comprobación favorable no prueba que el procedimiento sea fiable**, con su corolario de diagnóstico (una limitación impuesta puede ser el síntoma de un ajuste ausente). v1.0 (2026-06-15). Se instala por copia en `asuntos/<asunto>/memoria/`; no se hereda.
+> Pieza de catálogo `general/comun/doctrinas/`. **v1.3 (2026-08-01):** dos reglas nacidas de encargos reales — lo que viaja en un encargo se etiqueta `[MEDIDO]` / `[A CONFIRMAR]` (un dato de apoyo erróneo sobrevive al viaje y el receptor lo hereda como verificado) y un comentario que declara algo "defensivo" sin haberlo medido es peor que no tenerlo, con su corolario de que un valor de configuración inválido no es latente si otros procesos lo heredan. **v1.1 (2026-07-29):** añadidas dos reglas aportadas por la implantación real — **fuente única dentro del propio documento** (la deriva entre copias no se detecta leyendo; incluye el par índice↔ficha, que se actualiza en el mismo commit) y **una comprobación favorable no prueba que el procedimiento sea fiable**, con su corolario de diagnóstico (una limitación impuesta puede ser el síntoma de un ajuste ausente). v1.0 (2026-06-15). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
 > Adaptada al framing neutro del seed (sin referencias al dominio del software) — 2026-07-29.

@@ -6,9 +6,31 @@
 
 ## Setup
 
-Working dir: `{{RUTA}}` (el contenedor del asunto, o una ruta relativa dentro de él). Modelo: `{{MODELO}}` (Opus 5 para lo difícil —un escrito con consecuencias, un cálculo que sostiene un importe—; Sonnet 5 para volumen; **fija modelo y `effort` al arrancar y no los cambies**: el cambio provoca cache-miss). Effort: `{{EFFORT}}`. Plan mode: `{{SÍ/NO}}`. Git: local, un commit por hito, por pathspec.
+**Working dir: `{{RUTA_ABSOLUTA}}`** — el **cwd real del proceso**, no una frase de este prompt: normalmente el contenedor del asunto. **La ejecutora se lanza DENTRO de él** (`cd "{{RUTA_ABSOLUTA}}" && claude -p …`), porque el cwd decide qué `CLAUDE.md` y qué `.claude/` se cargan, qué hooks y permisos aplican y **dónde busca por defecto**: enraizarla en el sitio equivocado le da las reglas de otro asunto, deja sus hooks sin disparar y la manda a buscar donde no está lo que busca. Lo que esté **fuera** de ese directorio se le pasa con **`--add-dir`** o **no lo ve**. → [[orquestacion_sesiones_por_herramienta]]
+
+**Dónde vive este contrato:** esta spec y su fichero de plan viven **dentro del working dir** — la hija se enraíza donde tiene que **escribir**, y el plan tiene que nacer donde ella puede escribirlo. Ninguno de los dos se versiona: son material de trabajo y **se borran al cerrar la tanda** ([[convencion_organizacion_carpeta_trabajo]]); el commit por **pathspec** ya impide que se cuelen.
+
+**Fase: `{{análisis | ejecución}}`** — si es ejecución y la tanda lleva análisis, **Plan de referencia:** `plan-tanda-{{NOMBRE}}.md`. *(Ojo: el `Plan mode` de abajo es el modo del CLI y **no** es esto; la fase de análisis es una **ejecutora aparte con entregable escrito**.)*
+
+Modelo: `{{MODELO}}` (Opus 5 para lo difícil —un escrito con consecuencias, un cálculo que sostiene un importe—; Sonnet 5 para volumen; **fija modelo y `effort` al arrancar y no los cambies**: el cambio provoca cache-miss). Effort: `{{EFFORT}}`. Plan mode: `{{SÍ/NO}}`. Git: local, un commit por hito, por pathspec.
 
 *(Si el material que hay que manejar roza el vocabulario de la seguridad informática —contraseñas, cifrado, credenciales, control de accesos— usa **Opus 5**: los clasificadores de seguridad pueden enrutar la petición a otro modelo, y el cambio de modelo rompe el hilo de trabajo. → [[modelo_por_tarea]])*
+
+## Fase de análisis (si la tanda la lleva)
+
+**Cuándo la lleva:** si la tanda **toca varios ficheros**, **estrena una forma de trabajo** que el asunto no tiene, o se apoya en **premisas sobre material que no has abierto tú**. Si no la lleva, escríbelo aquí: **"tanda de fase única declarada"** y por qué — saltársela es legítimo; saltársela en silencio, no.
+
+**Contrato de la ejecutora de análisis:** **no modifica material, no commitea y deja el historial intacto.** Su **único** entregable de escritura es `plan-tanda-{{NOMBRE}}.md` en el working dir, con estos cinco apartados:
+
+1. **Verificación en fuente primaria de CADA premisa de esta spec, con el comando ejecutado y su salida.** No "se ha comprobado que": el comando y lo que devolvió. → [[verificacion_fuente_primaria]]
+2. **Premisas de la spec que resultan FALSAS**, listadas explícitamente. Es el apartado que hace útil el plan; **si está vacío, dilo vacío**.
+3. **Inventario de lo que va a tocar**, con el perímetro.
+4. **Decisiones que la spec dejó abiertas sin darse cuenta** y hay que cerrar antes de empezar.
+5. **Orden de pasos y riesgos**, incluido qué hacer si un paso falla a mitad.
+
+**Y luego lo importante, que es tuyo:** lee el plan, **corrige esta spec** con lo que haya destapado, y **solo entonces** lanza la ejecución. El plan no existe para que la ejecutora se organice: existe para que **tú arregles la spec antes de que cueste trabajo**. Si no vas a leerlo, no lances la fase.
+
+**Comprueba que fue read-only de verdad** (un comando, y llevas la cuenta): `git status --short` muestra solo el fichero de plan, y `HEAD` no se ha movido. No se instala ningún guard para forzarlo — se mide después.
 
 ## Objetivo
 
@@ -21,7 +43,9 @@ Working dir: `{{RUTA}}` (el contenedor del asunto, o una ruta relativa dentro de
 
 ## Contexto verificado (para que no lo re-derives ni lo supongas)
 
-{{Hechos ya confirmados con su ubicación: fichero y línea, número de expediente, fecha del sello, importe y de qué documento sale, nombre del organismo. Marca explícitamente lo que sea "a confirmar" para que la ejecutora lo verifique en lugar de asumirlo.}} → [[verificacion_fuente_primaria]]
+{{Hechos ya confirmados con su ubicación: fichero y línea, número de expediente, fecha del sello, importe y de qué documento sale, nombre del organismo.}}
+
+**Etiqueta cada dato, sin excepción: `[MEDIDO]`** — con quién, con qué y cuándo — **o `[A CONFIRMAR]`**, para que la ejecutora lo verifique en vez de asumirlo. Si dudas de en cuál cae, es *a confirmar*. Un dato de apoyo erróneo **sobrevive al viaje** y quien lo recibe lo hereda como verificado. → [[verificacion_fuente_primaria]]
 
 ## Decisiones ya tomadas (NO las reabras)
 
@@ -37,6 +61,10 @@ Ejemplos de cómo se escribe un criterio **comprobable** en un asunto:
 - "El PDF generado abre, tiene **14 páginas** y los cinco anexos citados existen como fichero en `docs/anexos/`", no "generar el PDF".
 - "Cada fecha del cronograma sale de un documento de `docs/` **citado por nombre de fichero**", no "poner las fechas bien".
 - "Ningún enlace interno del expediente apunta a un fichero inexistente", no "revisar los enlaces".
+
+**Antes de convertir un invariante en criterio, comprueba que el entorno lo cumple HOY.** Un criterio que el entorno **viola por su cuenta** es un falso positivo garantizado, y acompañado de un *"para en seco si difiere"* **frena la tanda sin que nada esté roto**. *(Caso real: "el recuento de filas es idéntico antes y después", sobre unos datos que otro proceso estaba usando en vivo — cambiaron solos en 11 segundos.)* Para *"no se ha perdido nada"*, el invariante correcto no es el contenido volátil sino la **identidad** de lo que quieres proteger (un identificador estable, una fecha de creación, un recuento que no dependa del uso).
+
+**No fijes como criterio el comando de una herramienta que no has ejecutado nunca**: verifica su *idiom* real primero. *(Caso real: una aserción suelta de una herramienta de comprobación era inválida — exigía abrir declarando el plan y cerrar con su función de cierre.)* → [[verificacion_fuente_primaria]]
 
 ## Definition of done (comandos exactos)
 
@@ -70,15 +98,33 @@ Qué has hecho y **dónde** (ficheros y commits). El **output literal** de los c
 
 Cuando la tanda está bien cerrada, el coordinador puede **lanzarla él mismo** y recoger el resultado sin intermediario ([[orquestacion_sesiones_por_herramienta]]). El contrato es este mismo fichero; la ejecutora escribe su informe en un `.md` y el coordinador lee solo el extracto. El trabajo ocurre en un **proceso aparte con contexto limpio**, así que "coordinar ≠ ejecutar" se mantiene intacto.
 
+**El `cd` de la primera línea no es decorativo:** es lo que fija el working dir del § Setup — sin él, la hija se enraíza donde estés tú.
+
+**Primero, la de análisis** (si la tanda la lleva). Único entregable: el fichero de plan.
+
 ```bash
-claude -p "Ejecuta la tanda descrita en <ruta-de-esta-spec>.md. Escribe tu reporte en <ruta>/informe-tanda.md" \
-  --allowedTools "Read,Edit,Bash(git add:*),Bash(git commit:*)" \
+cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "Analiza la tanda descrita en <spec>.md. NO modifiques material, NO commitees, deja el historial intacto. Tu UNICO entregable de escritura es plan-tanda-<nombre>.md, con los cinco apartados que pide la spec" \
+  --add-dir "<solo lo que tenga que LEER fuera de su cwd>" \
+  --allowedTools "Read,Grep,Glob" \
   --permission-mode dontAsk \
-  --max-turns 30 --max-budget-usd 3.00 \
+  --max-turns 65 --max-budget-usd 8.00 \
   --output-format json
 ```
 
-### ⚠ `--allowedTools` **CONCEDE, no restringe**
+**Al volver, antes de nada:** `git status --short` (solo el fichero de plan) y `git rev-parse HEAD` (sin mover). Lee el plan, **corrige la spec**, y entonces:
+
+```bash
+cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "Ejecuta la tanda descrita en <spec-ya-corregida>.md, apoyandote en plan-tanda-<nombre>.md. Escribe tu reporte en informe-tanda.md" \
+  --add-dir "<solo lo que tenga que LEER fuera de su cwd>" \
+  --allowedTools "Read,Edit,Bash(git add:*),Bash(git commit:*)" \
+  --permission-mode dontAsk \
+  --max-turns 300 --max-budget-usd 60.00 \
+  --output-format json
+```
+
+**Los techos, con criterio:** los de arriba son una **referencia medida**, no constantes — pon los tuyos con **margen del 100% sobre tu propia línea base**. Una tanda real **murió por `error_max_budget_usd`** con el techo demasiado ajustado, y morir a mitad sale más caro que el margen. `--max-budget-usd` es un **cortacircuito nominal, no un cargo**: sin `ANTHROPIC_API_KEY` lo que se consume es ventana de suscripción. Para una tanda mecánica y pequeña, 30 turnos siguen bastando: cada lanzamiento cuesta **~42.000 tokens fijos** aunque no haga nada, y eso se paga **por lanzamiento, no por trabajo hecho**.
+
+### `--allowedTools` **CONCEDE, no restringe**
 
 **Es una lista ADITIVA, no una lista blanca exclusiva**, y `--permission-mode dontAsk` significa *"no preguntes"*, **no** *"deniega lo no listado"*. Medido, no supuesto: una sesión hija lanzada con `--allowedTools "Read"` (sin `Bash`) **ejecutó Bash igualmente**. Se sigue pasando el flag porque **documenta la intención**, pero **no lo cuentes como barrera**.
 

@@ -16,5 +16,5 @@ Aplica a referencias a documentación, carpetas del vault, doctrinas de memoria,
 
 Relacionada: [[formato_prompts_markdown_limpio]], [[feedback_prompt_delivery]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-05). Se instala por copia en `asuntos/<asunto>/memoria/`; no se hereda.
+> Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
 > Adaptada al framing neutro del seed (sin referencias al dominio del software) — 2026-07-29.
