@@ -44,7 +44,7 @@ El resultado perdura en los commits, en `docs/`/`estudios/` y en la cola. Si alg
 
 La limpieza no puede depender solo del cierre de tanda: las sesiones a menudo **mueren por límite de contexto** antes de cerrar, y el efímero se acumula. Por eso hay un **hook `SessionStart`** (`general/comun/hooks/limpieza-coordinacion.mjs`, cableado en el `settings.json` de perfil coordinador) que, al arrancar/reanudar cualquier sesión de coordinación:
 
-- **Auto-borra** los handoffs y buffers `tmp-otros-actual.md` **gitignored y superados** (conserva el más reciente de cada serie y los de hoy; cero impacto en git).
+- **Auto-borra** los handoffs y buffers `tmp-otros-actual.md` **gitignored** que ya no sirven, por cualquiera de dos motivos independientes: **superados** (hay otro más reciente en su misma serie) o **caducados** (más de 14 días, aunque sean los únicos de su serie). Los de **hoy** no se tocan nunca; cero impacto en git. La caducidad no es redundante: **una serie de un solo elemento no tiene sucesor que la desplace**, así que sin ella un handoff con nombre único se conservaba para siempre.
 - **Avisa** por contexto de los **prompts/briefs trackeados** ya cumplidos, para que el coordinador los quite con `git rm` (con criterio: puede haber prompts en vuelo). One-liner de apoyo: `LIMPIEZA_LIST_TRACKED=1 node <script> | while IFS= read -r f; do git rm -- "$f"; done`.
 
 Nunca bloquea el arranque (exit 0). La limpieza es, por tanto, **ritual de arranque además de cierre**. El script es un único fichero compartido en `general/` (read-only para los coordinadores de asunto); se referencia con `${CLAUDE_PROJECT_DIR}/../../general/comun/hooks/…` (contenedor a 2 niveles bajo la raíz) y `${CLAUDE_PROJECT_DIR}/general/comun/hooks/…` desde la raíz.
@@ -56,6 +56,7 @@ Buffer **exclusivo** de texto que el director pega como respuesta a la pregunta 
 > v2.0 (2026-06-08): se sustituye el archivado en `cerrados/` por **borrado** (git es el histórico). Mantener los directorios sin ficheros obsoletos.
 > v2.1 (2026-06-09): se distingue **local/gitignored** (handoffs, buffers — nunca se versionan) de **versionado-y-borrado** (prompts, briefs). Añadidos al `.gitignore` raíz `**/handoff-*.md`.
 > v2.2 (2026-07-14): enforcement por **hook `SessionStart`** (auto-borra handoffs gitignored superados + avisa de prompts/briefs trackeados) → la limpieza es **ritual de arranque además de cierre**. Motivado por acumulación real observada (las sesiones morían antes de limpiar al cerrar).
+> v2.3 (2026-08-12): el hook añade **caducidad a los 14 días**, porque "superado por otro de su serie" dejaba fuera las series de **un solo elemento** — medidos seis handoffs de julio vivos en dos contenedores, cada uno con nombre propio y por tanto sin sucesor posible. Corregido además un fallo del propio hook que hacía que **solo informase las veces que no borraba nada**: listaba los ficheros antes de borrar y luego consultaba los ya borrados, con lo que la excepción se tragaba el informe entero.
 
 Relacionada: [[feedback_prompt_delivery]], [[formato_prompts_markdown_limpio]], [[orquestacion_sesiones_por_herramienta]], [[estructura_contenedor_asunto]].
 

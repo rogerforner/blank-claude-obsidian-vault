@@ -3,8 +3,15 @@
 //
 // Hook SessionStart de higiene de coordinación (doctrina convencion_organizacion_carpeta_trabajo).
 // Al arrancar/reanudar una sesión de coordinación:
-//   1. AUTO-BORRA los handoffs y buffers `tmp-otros-actual.md` que estén GITIGNORED y superados
-//      (no son el más reciente de su serie y su fecha no es de hoy) → cero impacto en git.
+//   1. AUTO-BORRA los handoffs y buffers `tmp-otros-actual.md` que estén GITIGNORED y ya no sirvan
+//      → cero impacto en git. Un handoff ya no sirve por dos motivos independientes:
+//        a) SUPERADO: hay otro más reciente en su misma serie.
+//        b) CADUCADO: tiene más de DIAS_VIVO días, aunque sea el único de su serie.
+//      El (b) existe porque el (a) solo por sí mismo deja un agujero: una serie de UN SOLO
+//      elemento nunca tiene sucesor, así que su handoff se conservaba para siempre. Medido en el
+//      vault el 2026-08-12: seis handoffs de julio vivos en dos contenedores, cada uno con un
+//      nombre distinto y por tanto cada uno su propia serie de uno.
+//      Lo de HOY nunca se toca, pase lo que pase.
 //   2. AVISA por stdout (que Claude recibe como contexto) de los prompts/briefs TRACKEADOS ya
 //      cumplidos, para que el coordinador los quite con `git rm` (con criterio: puede haber en vuelo).
 //
@@ -26,6 +33,11 @@ const LIST = process.env.LIMPIEZA_LIST_TRACKED === '1';
 const NO_DELETE = DRY || LIST;
 const ROOT = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 const ZONES = ['coordinacion', 'estudios', '_meta'];
+// Días que se conserva un handoff que sigue siendo el más reciente de su serie. Un handoff sirve
+// hasta que arranca la sesión siguiente; dos semanas es margen de sobra y evita que un fichero
+// efímero se quede vivo indefinidamente solo porque nadie escribió otro con su mismo nombre.
+const DIAS_VIVO = 14;
+const MS_VIVO = DIAS_VIVO * 24 * 60 * 60 * 1000;
 const SKIP_DIRS = new Set(['cerrados', 'node_modules', '.git', '.claude', 'docs', 'referencia']);
 
 function todayStr() {
@@ -86,13 +98,15 @@ function main() {
     if (!groups.has(k)) groups.set(k, []);
     groups.get(k).push(f);
   }
+  const ahora = Date.now();
   for (const [, group] of groups) {
     group.sort((a, b) => mtimeOf(b) - mtimeOf(a)); // más reciente primero
     const newest = group[0];
     for (const f of group) {
-      if (f === newest) continue;                              // conserva el vivo de la serie
       const st = statSync(f);
-      if (st.mtime.toISOString().slice(0, 10) === today) continue; // conserva lo de hoy
+      if (st.mtime.toISOString().slice(0, 10) === today) continue; // lo de hoy no se toca nunca
+      const caducado = ahora - st.mtime.getTime() > MS_VIVO;
+      if (f === newest && !caducado) continue; // el vivo de la serie se conserva mientras no caduque
       if (!isIgnored(f)) { surfaced.push([f, 'handoff TRACKEADO (revisar)']); continue; }
       if (!NO_DELETE) { try { rmSync(f); } catch { continue; } }
       deleted.push(f);
@@ -107,7 +121,11 @@ function main() {
   }
 
   // --- 2. Prompts + briefs-con-informe trackeados y no-de-hoy → avisar (no borrar) ---
-  for (const f of files) {
+  // `files` se listó ANTES de borrar, así que aquí ya hay rutas muertas. Sin este filtro, el
+  // primer statSync sobre una de ellas lanza ENOENT, el catch de main() se lo traga y se pierde
+  // TODO el informe -- de modo que el hook solo informaba las veces que NO borraba nada, que es
+  // justo al revés de lo que hace falta. Detectado el 2026-08-12 probando el borrado de verdad.
+  for (const f of files.filter((x) => existsSync(x))) {
     const b = basename(f);
     const st = statSync(f);
     const isToday = st.mtime.toISOString().slice(0, 10) === today;

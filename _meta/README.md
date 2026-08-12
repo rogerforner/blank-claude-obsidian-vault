@@ -12,10 +12,10 @@ La idea de fondo: **el kit no es infraestructura invisible, es un asunto con su 
 - **[decisiones-abiertas.md](decisiones-abiertas.md)** — decisiones de diseño aún sin cerrar, cada una con su recomendación; se resuelven **con el director**.
 - **[bitacora.md](bitacora.md)** — qué se aprendió al usar el kit y **qué cambio se aplicó** a raíz de ello ([[mejora_continua_del_kit]]).
 - **[plantilla-brief-chat-web.md](plantilla-brief-chat-web.md)** — plantilla de brief para investigar **fuera de esta herramienta**, en el chat web, cuando la pregunta es sobre la forma de trabajar (un modelo nuevo, una herramienta, un método) y no sobre un asunto concreto ([[vigilancia_tecnologica_bajo_demanda]]).
-- **[guia-arranque-sesiones.md](guia-arranque-sesiones.md)** — prompts para copiar al arrancar o relevar una sesión.
-- **[verificar-kit.mjs](verificar-kit.mjs)** — el verificador del kit (`node _meta/verificar-kit.mjs`): portabilidad, wikilinks, vocabulario del core, entre otras reglas.
-- **memoria/** — hechos duraderos sobre el director y sobre cómo trabajar, uno por fichero y versionados; índice en [`memoria/MEMORY.md`](memoria/MEMORY.md).
-- **estudios/** — vigilancia e investigaciones a nivel de kit/vault, no de un asunto; un tema por carpeta, criterio de qué se conserva y qué se borra en [`estudios/README.md`](estudios/README.md).
+- **[guia-arranque-sesiones.md](guia-arranque-sesiones.md)** — para el **director**: los prompts que copia y pega para abrir, relevar y cerrar sesiones, organizados por rol y **sin nada que editar** al pegarlos.
+- **[verificar-kit.mjs](verificar-kit.mjs)** — el verificador del kit (`node _meta/verificar-kit.mjs`): frontmatter y pie de las doctrinas, índices cuadrados con sus ficheros, wikilinks, portabilidad, emojis en el kit y vocabulario del core. Se ejecuta **solo, sin tubería**, o su código de salida queda enmascarado.
+- **[memoria/](memoria/MEMORY.md)** — hechos duraderos sobre el director y sobre cómo trabajar, uno por fichero y **versionados dentro del vault** para que los lea cualquier agente. Índice en [`memoria/MEMORY.md`](memoria/MEMORY.md).
+- **[estudios/](estudios/README.md)** — vigilancia e investigaciones a nivel de kit y de vault, no de un asunto: un tema por carpeta, con el criterio de qué se conserva y qué se borra en [`estudios/README.md`](estudios/README.md).
 
 Los estudios y los briefs de este vault, cuando existan, viven **aquí dentro**, junto a lo demás del kit. El hook de higiene barre esta carpeta igual que las de coordinación: un brief que ya tiene su informe se **borra** ([[convencion_organizacion_carpeta_trabajo]]).
 
