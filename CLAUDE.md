@@ -31,7 +31,7 @@
 
 - **El directorio de trabajo con el que lanzas la hija ES su raíz**, y se fija con el `cd` del lanzamiento o con la opción equivalente, **no con una frase del prompt**: decide qué ficheros de contexto y qué configuración se cargan, qué hooks y permisos aplican y **dónde busca por defecto**. Enraizarla donde no es le da las reglas de otro sitio y la manda a buscar donde no está lo que busca. Lo que solo tenga que **leer** entra por la opción de directorio adicional; lo que está fuera de su raíz **no existe para ella**.
 
-- **SIN EMOJIS y sin acuses de recibo.** Nada de emojis en lo escrito: los estados van como etiquetas (`[OK]`, `[PENDIENTE]`) y el énfasis lo da el markdown; flechas, símbolos matemáticos y dibujo de árboles **sí** se quedan, que son tipografía. Y un aviso de otra sesión **no se contesta por cortesía**: solo si el otro **necesita un dato para seguir**; la constancia queda en el **artefacto**, no en un mensaje.
+- **Sin emojis EN EL KIT, y sin acuses de recibo.** En el **catálogo, las plantillas, los ficheros de reglas e identidad** (`CLAUDE.md`, `README.md`, charters, índices) y en lo que se **entrega fuera**: los estados van como etiquetas (`[OK]`, `[PENDIENTE]`) y el énfasis lo da el markdown. **En las zonas de trabajo —cola, bitácora, estudios, coordinación, informes de tanda, chat— no se persiguen: un emoji suelto no es un defecto y no se gasta contexto en quitarlo.** La limpieza es **siempre oportunista, nunca una pasada dedicada**. Flechas, símbolos matemáticos y dibujo de árboles **sí** se quedan en todas partes, que son tipografía. Y un aviso de otra sesión **no se contesta por cortesía**: solo si el otro **necesita un dato para seguir**; la constancia queda en el **artefacto**, no en un mensaje.
 
 - **Modelo por tarea, fijado por sesión.** El **modelo capaz** para lo difícil y para la coordinación; el **barato** para volumen, subagentes y mecánica, **subiendo su esfuerzo antes de saltar al capaz**. **No des por hecho que el escalón intermedio sirve:** puede quedar **aplastado** entre un barato casi igual de capaz por una fracción del coste y un capaz que sí resuelve lo difícil — y entonces **no se usa nunca**. Ojo: eso es un cálculo **de lo que escasea** (cuota o dinero), no una ley. **Fija modelo y esfuerzo al arrancar** y no los cambies a mitad: la caché es **por modelo**, así que el nuevo arranca en frío aunque el contexto no cambie. Los nombres concretos y los modos de facturación a vigilar están en "Ejecución".
 
@@ -49,7 +49,7 @@
 
 - **Portabilidad: cero rutas absolutas en lo versionado.** Dentro del vault, rutas **relativas**; lo que depende de esta máquina va a ficheros locales gitignored. Una ruta absoluta en un fichero versionado convierte el vault en no-trasladable sin avisar.
 
-- **Detalle, y el pack opcional.** El detalle de todo lo anterior está en `general/comun/doctrinas/MEMORY-doctrinas-index.md` (27 doctrinas del core). **Solo si** un asunto incluye software propio se instala además el pack `codigo/` (`general/comun/packs/codigo/`, con su propio índice): el core **no depende** de él y sin él nada queda cojo.
+- **Detalle, y el pack opcional.** El detalle de todo lo anterior está en el índice del catálogo, `general/comun/doctrinas/MEMORY-doctrinas-index.md`. **Solo si** un asunto incluye software propio se instala además el pack `codigo/` (`general/comun/packs/codigo/`, con su propio índice): el core **no depende** de él y sin él nada queda cojo.
 
 ## Ejecución
 

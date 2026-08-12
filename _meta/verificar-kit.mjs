@@ -93,13 +93,22 @@ for (const f of [...md, ...jsonInicializador, ...['.claude/settings.json', '.git
   });
 }
 
-// --- 5. sin emojis (flechas, matematicos y arboles NO son emojis) -------
-// Cubre tambien los .mjs y los .json del kit: el hook de higiene escribe DIRECTAMENTE al contexto
-// del coordinador, asi que su salida es "lo escrito" tanto como un markdown -- y estuvo emitiendo
-// dos emojis mientras el kit los prohibia, precisamente porque la regla solo miraba los .md.
+// --- 5. sin emojis EN EL KIT (flechas, matematicos y arboles NO son emojis) -------
+// AMBITO ACOTADO (2026-08-12, decision del director): la regla se exige donde el texto se lee
+// muchas veces, lo heredan otras sesiones y viaja a otros vaults -- catalogo, plantillas y los
+// ficheros de reglas e identidad de cualquier carpeta. En las ZONAS DE TRABAJO (cola, bitacora,
+// estudios, coordinacion, docs de un asunto, informes de tanda) ya NO se mira: escribir emojis le
+// sale natural al modelo y la reescritura para quitarlos costaba mas que el beneficio; ademas un
+// emoji en un informe de tanda -- que no es el kit -- ponia el kit ENTERO en rojo.
+// Los .mjs y .json del kit se miran SIEMPRE: el hook escribe directo al contexto del coordinador.
+const REGLAS_E_IDENTIDAD = /^(CLAUDE|README|charter-coordinador|PRIMEROS-PASOS|MEMORY-.+)\.md$/;
+const zonaDeEstiloEstricto = (f) => {
+  const r = relative(RAIZ, f).replace(/\\/g, '/');
+  return r.startsWith('general/') || r.startsWith('inicializador/') || REGLAS_E_IDENTIDAD.test(basename(f));
+};
 const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2300}-\u{23FF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}]/gu;
 const FUNCIONALES = new Set(['\u{1F916}']); // va dentro de un patron de deteccion, no es decoracion
-for (const f of [...md, ...mjs, ...jsonInicializador]) {
+for (const f of [...md.filter(zonaDeEstiloEstricto), ...mjs, ...jsonInicializador]) {
   for (const m of readFileSync(f, 'utf8').matchAll(EMOJI))
     if (!FUNCIONALES.has(m[0])) nota('emoji', f, m[0]);
 }
