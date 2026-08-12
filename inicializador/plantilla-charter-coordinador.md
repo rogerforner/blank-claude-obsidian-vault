@@ -34,6 +34,16 @@ Elige **uno**. El perfil no es una etiqueta decorativa: fija **qué es bloqueant
 
 **Si tu perfil no es `asunto con software`, no instales el pack `codigo/`:** el equivalente de su puerta de calidad es la **comprobación en campo** con procedimiento escrito que ya cubre [[verificacion_e2e_por_agente]], y el core no queda cojo sin él.
 
+## Frontera con otros asuntos *(parametrizar — borra esta sección si no hay ninguno acoplado)*
+
+Dos asuntos pueden estar acoplados sin ser el mismo asunto: la obra y la reclamación al seguro que la motivó, el sistema físico y su control, el inmueble y el contrato de alquiler. **Cada uno tiene su contenedor y su coordinador**, y esta sección dice dónde acaba el tuyo.
+
+- **Qué NO entra en tu alcance:** *(lista explícita — "la integración de X", "el trato con la aseguradora", "la parte fiscal". Escríbelo aunque parezca obvio: lo que no está escrito se acaba haciendo por iniciativa propia.)*
+- **Cada coordinador hace lo suyo y no ejecuta lo del otro.** Si tu trabajo necesita algo del asunto vecino, **no lo haces tú**: **redactas un prompt o un handoff dirigido a su coordinador** y el director lo lanza. Tampoco es tuyo decidir por él: le pasas el dato y la pregunta, no la conclusión ya tomada.
+- **No puedes verlo, y es a propósito.** Tu aislamiento deja invisibles los demás `asuntos/**`. Así que las referencias cruzadas van **por nombre del asunto**, no por ruta a su contenedor: una ruta que tú no puedes leer no es un enlace, es una promesa rota.
+- **El dato que viaja se etiqueta.** Lo que le pases va marcado como **medido** (quién, cómo, cuándo) o **a confirmar**; un dato de apoyo erróneo sobrevive al viaje y el otro coordinador lo hereda como verificado ([[verificacion_fuente_primaria]]).
+- **Sin acuses de recibo.** Se responde solo si el otro necesita un dato para seguir; la constancia queda en el artefacto, no en un mensaje de cortesía ([[higiene_contexto_y_tokens]]).
+
 ## Mapa del contenedor
 
 ```
@@ -52,6 +62,8 @@ asuntos/{{SLUG}}/
 Aplica las doctrinas instaladas en `memoria/` (índice del catálogo: `../../general/comun/doctrinas/MEMORY-doctrinas-index.md`). En particular: prompts `.md` con [[formato_prompts_markdown_limpio]] entregados según [[feedback_prompt_delivery]]; [[prompts_rutas_absolutas_fuera_del_working_dir]] (solo en prompts efímeros); **verificaciones ejecutadas, no asumidas** — lo comprobable por comando lo ejecuta el agente y reporta el **output literal**, y lo demás se comprueba **en campo** con procedimiento escrito ([[verificacion_e2e_por_agente]]); **perfil de modelos por tarea** e **higiene de contexto** (`CLAUDE.md` corto, modelo y esfuerzo fijos por sesión, subagentes para lectura voluminosa, `/clear` + artefacto) ([[modelo_por_tarea]], [[higiene_contexto_y_tokens]]); **estructura uniforme del contenedor** ([[estructura_contenedor_asunto]]); [[minimizar_askuserquestion_agente_operativo]]; organización de la carpeta de trabajo [[convencion_organizacion_carpeta_trabajo]]; documentos de consulta sin narrativa histórica ([[docs_sin_fases]]); datos personales que **no salen de la máquina** ([[sensitive_file_guard]]). **Nada de rutas absolutas de máquina en lo versionado.** **Orquesta el trabajo en sesiones independientes por herramienta**, no lo ejecutes todo en la tuya ([[orquestacion_sesiones_por_herramienta]]).
 
 *(Si el perfil es `asunto con software`, aplican además las del pack `codigo/`: [[gates_de_calidad_locales]], [[estrategia_de_pruebas_por_tipo_de_proyecto]], [[rama_desarrollo_y_paso_a_produccion]], [[no_push_por_subagentes]].)*
+
+*(Si este asunto tiene convenciones documentales **propias** —nombrado, metadatos, plantillas de documento, unidades—, viven en `docs/convenciones-dominio.md` y se aplican igual que las del catálogo: **especializan** la convención del vault, no la derogan. Si no las tiene, ese fichero no existe y está bien así.)*
 
 ## Plazos *(parametrizar)*
 

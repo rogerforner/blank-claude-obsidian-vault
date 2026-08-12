@@ -53,6 +53,22 @@ Guarda el inventario en `coordinacion/referencia/reconocimiento-<fecha>.md` (doc
 - **Transcribe lo escaneado** con tooling local ([tooling-documentos](../general/comun/tooling-documentos.md)); la transcripción es un documento nuevo que **se coteja con el original** antes de darlo por bueno, y el original no se toca.
 - **Coordinación previa fuera del vault** (borradores, cálculos, la lista de pendientes que llevabas en una nota): tráela a `coordinacion/`/`estudios/`/`cola-pendientes.md` **preservando el estado y los plazos** — es lo crítico a no perder.
 
+### 3.1 Reparar los enlaces internos — por script, y comprobado con un checker
+
+Al mover el material, **los enlaces relativos se rompen por dos motivos a la vez**: el fichero cambia de nivel (`04_mantenimiento/investigaciones/` → `estudios/` sube uno) y además gana prefijo (`docs/`). Por eso **una sustitución global no vale**: el número de `../` correcto **depende de la profundidad de cada fichero**, así que la reparación se hace con un script que **recalcula el prefijo fichero a fichero** ([[scripts_adhoc_tareas_repetitivas]]), nunca a mano ni con un reemplazo único para todo el árbol.
+
+- **Verifica con un checker de enlaces rotos, no a ojo.** Recorre los `.md` traídos, resuelve cada enlace relativo contra el árbol nuevo y lista los que no existen. **"Están todos reparados" sin checker es una afirmación, no un hecho**, y es el checker el que dice cuándo has terminado.
+- **Las referencias al material podado se neutralizan a texto plano.** Una poda selectiva deja enlaces apuntando a lo que decidiste **no** traer. Se convierten en texto —el nombre del documento, sin enlace— para que se lea que existió y no parezca un enlace roto pendiente de arreglar.
+- **Para cifrar cuánta deuda de enlaces hay, busca por el nombre de los ficheros podados contra el árbol ya traído.** No lo estimes ni lo delegues a un escaneo semántico: en la primera migración uno los contó en 25 cuando eran del orden de 39, porque su búsqueda no cubrió las secciones de referencias de todos los documentos.
+
+### 3.2 Si el material trae convenciones documentales propias
+
+Material que ya venía organizado con método (frontmatter, un nombrado propio de ficheros, plantillas de documento, un fichero de estado) trae **dos clases de reglas mezcladas**, y se separan:
+
+- **Reglas de coordinación** (cómo se trabaja, quién decide, qué se verifica) → **se sustituyen** por el `CLAUDE.md` del kit y las doctrinas del catálogo. **No se vuelcan** al `CLAUDE.md` del contenedor, que es de coordinación y se mantiene corto.
+- **Reglas de dominio** (frontmatter, nombrado, plantillas propias del tema) → **se conservan** en `docs/convenciones-dominio.md`, desde [plantilla-convenciones-dominio.md](plantilla-convenciones-dominio.md). Son valiosas y no las cubre el kit: perderlas obliga al coordinador a reinventar el criterio documento a documento.
+- **El estado vivo** (pendientes, plazos, qué está en curso) → charter + `cola-pendientes.md`. Nunca se queda en `docs/`.
+
 ## 4. Cross-links si hay asuntos acoplados
 
 - Define los vínculos en ambos sentidos (el asunto dependiente enlaza al que le da origen; el origen lista en su README los que lo consumen) con **rutas relativas**. Documenta el acoplamiento —importes que viajan de uno a otro, fechas que fijan plazos, un mismo perito o un mismo contrato— **citando el documento fuente, sin copiar la cifra**. Convención en [[estructura_contenedor_asunto]] § Cross-links.

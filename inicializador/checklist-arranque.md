@@ -23,6 +23,8 @@ Pasos para inicializar la coordinación de un asunto nuevo. Lo hace el director 
 - Desde `inicializador/plantilla-charter-coordinador.md`: sustituye `{{ASUNTO}}`, `{{SLUG}}`, `{{MATERIA}}` y `{{PERFIL}}` (sin rutas absolutas; las rutas de la máquina —la carpeta del escáner, la unidad de copias— van en `settings.local.json`).
 - Rellena **Estado actual**, **Mandato inicial**, **Plazos** y **Decisiones abiertas** con la realidad del asunto. El mandato inicial empieza por **entender el expediente** (reconocimiento y cronología) antes de proponer nada — y ese reconocimiento inicial **lo hace un subagente de solo lectura**, que devuelve un resumen y preserva el contexto del coordinador.
 - **Los plazos van al charter y a la cola, con fecha.** Es la diferencia más grande respecto a un asunto sin terceros: un plazo perdido no se recupera con más trabajo.
+- **¿Hay otro asunto acoplado?** Rellena la sección **"Frontera con otros asuntos"** del charter: qué **no** entra en el alcance de este coordinador y cómo se cruza (redactando un prompt para el coordinador vecino, que lanza el director; nunca invadiendo su contenedor, que además no ve). Si no hay ninguno acoplado, **borra la sección** en vez de dejarla vacía.
+- **¿El asunto trae convenciones documentales propias?** Si viene de material que ya tenía método —frontmatter, un nombrado propio, plantillas de documento—, esas reglas **se conservan** en `docs/convenciones-dominio.md` desde [plantilla-convenciones-dominio.md](plantilla-convenciones-dominio.md); las de **coordinación** las sustituye el kit. Si se conforma con la convención del vault, ese fichero **no se crea**.
 
 ## 4. Fijar el `.claude/settings.json` de aislamiento
 
