@@ -1,6 +1,8 @@
 # Cola de pendientes — {{ASUNTO}}
 
-Estado vivo del asunto: bloques de trabajo en orden, el activo arriba. Los cerrados se tachan o se mueven al histórico del final. **Este fichero y el charter son lo primero que lee una sesión nueva.**
+Estado vivo del asunto: bloques de trabajo en orden, el activo arriba. Los cerrados se tachan o se mueven al histórico. **Este fichero y el charter son lo primero que lee una sesión nueva.**
+
+> **Techo: 40 KB.** Como este fichero se lee **entero en cada arranque**, su tamaño se paga en todas las sesiones futuras. Al superarlo, lo **cerrado** baja a `coordinacion/referencia/historico-<asunto>.md` y aquí queda solo lo **vivo**. Compruébalo con `wc -c` al cerrar tanda —en KB, no en líneas: un párrafo denso son 300 caracteres por línea— porque un fichero que crece no avisa ([[convencion_organizacion_carpeta_trabajo]]).
 
 ## Plazos (lo primero)
 
