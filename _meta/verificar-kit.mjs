@@ -21,11 +21,14 @@ const nota = (regla, fichero, detalle) =>
 // así que delimita su ámbito excluyéndolo igual que ya excluye .git/.obsidian/node_modules —
 // esto NO es ajustar el verificador para que pase: es que esas reglas nunca le aplicaron a repo/.
 const md = [];
+const mjs = []; // scripts del kit (hooks, este mismo verificador): tambien son "lo escrito"
 (function walk(p) {
   if (/[\\/](\.git|\.obsidian|node_modules|repo)$/.test(p)) return;
   for (const e of readdirSync(p)) {
     const f = join(p, e);
-    statSync(f).isDirectory() ? walk(f) : f.endsWith('.md') && md.push(f);
+    if (statSync(f).isDirectory()) walk(f);
+    else if (f.endsWith('.md')) md.push(f);
+    else if (f.endsWith('.mjs')) mjs.push(f);
   }
 })(RAIZ);
 
@@ -91,9 +94,12 @@ for (const f of [...md, ...jsonInicializador, ...['.claude/settings.json', '.git
 }
 
 // --- 5. sin emojis (flechas, matematicos y arboles NO son emojis) -------
+// Cubre tambien los .mjs y los .json del kit: el hook de higiene escribe DIRECTAMENTE al contexto
+// del coordinador, asi que su salida es "lo escrito" tanto como un markdown -- y estuvo emitiendo
+// dos emojis mientras el kit los prohibia, precisamente porque la regla solo miraba los .md.
 const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2300}-\u{23FF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}]/gu;
 const FUNCIONALES = new Set(['\u{1F916}']); // va dentro de un patron de deteccion, no es decoracion
-for (const f of md) {
+for (const f of [...md, ...mjs, ...jsonInicializador]) {
   for (const m of readFileSync(f, 'utf8').matchAll(EMOJI))
     if (!FUNCIONALES.has(m[0])) nota('emoji', f, m[0]);
 }
@@ -136,8 +142,9 @@ for (const dir of [...new Set(md.filter(esDoctrina).map(dirname))]) {
 }
 
 // --- resultado ----------------------------------------------------------
+const revisados = `${md.length} markdown y ${mjs.length + jsonInicializador.length} script/config`;
 if (!hallazgos.length) {
-  console.log(`RESULTADO: VERDE — ${md.length} ficheros markdown revisados, 0 hallazgos.`);
+  console.log(`RESULTADO: VERDE — ${revisados} revisados, 0 hallazgos.`);
   process.exit(0);
 }
 console.log(`RESULTADO: ROJO — ${hallazgos.length} hallazgos\n`);

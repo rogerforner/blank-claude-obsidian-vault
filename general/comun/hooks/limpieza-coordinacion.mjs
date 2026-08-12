@@ -133,11 +133,11 @@ function main() {
   const rel = (f) => f.startsWith(ROOT) ? f.slice(ROOT.length + 1).replace(/\\/g, '/') : f;
   const lines = [];
   if (deleted.length) {
-    lines.push(`🧹 Higiene de coordinación: ${DRY ? '[DRY-RUN] borraría' : 'borrados'} ${deleted.length} handoff/buffer superado(s) (gitignored, cero impacto git):`);
+    lines.push(`[HIGIENE] Coordinación: ${DRY ? '[DRY-RUN] borraría' : 'borrados'} ${deleted.length} handoff/buffer superado(s) (gitignored, cero impacto git):`);
     for (const f of deleted) lines.push(`  - ${rel(f)}`);
   }
   if (surfaced.length) {
-    lines.push(`⚠ Higiene de coordinación: ${surfaced.length} fichero(s) trackeado(s) probablemente obsoleto(s). Revísalos y quita con \`git rm\` los ya cumplidos (git conserva el histórico); CONSERVA los que sigan en vuelo. Doctrina: convencion_organizacion_carpeta_trabajo.`);
+    lines.push(`[AVISO] Higiene de coordinación: ${surfaced.length} fichero(s) trackeado(s) probablemente obsoleto(s). Revísalos y quita con \`git rm\` los ya cumplidos (git conserva el histórico); CONSERVA los que sigan en vuelo. Doctrina: convencion_organizacion_carpeta_trabajo.`);
     for (const [f, why] of surfaced) lines.push(`  - ${rel(f)}  (${why})`);
   }
   if (lines.length) process.stdout.write(lines.join('\n') + '\n');
