@@ -1,6 +1,6 @@
 # Índice de doctrinas del pack `codigo/` — `general/comun/packs/codigo/doctrinas/`
 
-> **Este pack presupone el core.** No es un catálogo alternativo: es un **añadido** a `general/comun/doctrinas/`, que se instala **encima** y **nunca en lugar de él**. Las nueve piezas de aquí dan por supuestas las del core (estructura del contenedor de asunto, verificación por el agente, modelo por tarea, commits sin coautor, guarda de ficheros sensibles…) y enlazan a ellas con normalidad. Instalar el pack sin el core deja doctrinas cojas; instalar el core sin el pack **no deja nada cojo** → [`../README.md`](../README.md) para qué es un pack y cómo se instala.
+> **Este pack presupone el core.** No es un catálogo alternativo: es un **añadido** a `general/comun/doctrinas/`, que se instala **encima** y **nunca en lugar de él**. Las diez piezas de aquí dan por supuestas las del core (estructura del contenedor de asunto, verificación por el agente, modelo por tarea, commits sin coautor, guarda de ficheros sensibles…) y enlazan a ellas con normalidad. Instalar el pack sin el core deja doctrinas cojas; instalar el core sin el pack **no deja nada cojo** → [`../README.md`](../README.md) para qué es un pack y cómo se instala.
 >
 > **Aquí sí se habla de software.** El resto del seed usa vocabulario neutro de dominio (asunto, producto, verificaciones); en este pack el vocabulario técnico —repositorio, rama, push, tests, lint, contenedores, gestor de paquetes— **se conserva a propósito**: el valor del pack es ser concreto. Cada pieza **se instala por copia** en `asuntos/<asunto>/memoria/`; **no se hereda**.
 
@@ -11,7 +11,7 @@
 
 ## Git del asunto: ramas, push y proveedor de hosting
 
-*(Las tres aplican al **repositorio de código que vive dentro del asunto**, no al vault de coordinación, que es git local sin remoto.)*
+*(Las tres aplican al **repositorio de código, que vive fuera del vault** — donde el runtime lo sirve, según `docs/emplazamiento-runtime.md` del asunto —, no al vault de coordinación, que es git local sin remoto.)*
 
 - [Rama de desarrollo y paso a producción](rama_desarrollo_y_paso_a_produccion.md) — La IA edita siempre en la rama de desarrollo, nunca sobre producción; el merge dev→prod, el tag y el push los **ejecuta la IA como paso final verificado**, con el director testeando lo que la IA no puede y dando el go.
 - [Los subagentes no hacen push](no_push_por_subagentes.md) — El push lo cierra la **sesión principal**; el subagente es read-only o, como mucho, `add`+`commit` local, y **nunca** reescribe historia ni cambia de rama en árbol compartido (los worktrees aíslan ficheros, no el estado git). El reflog **no distingue al actor**: ante anomalía, preguntar antes de declarar incidencia.

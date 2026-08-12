@@ -43,7 +43,7 @@ Guarda el inventario en `coordinacion/referencia/reconocimiento-<fecha>.md` (doc
 ## 2. Crear el contenedor estándar (= checklist-arranque pasos 1, 3, 4, 5)
 
 - Contenedor `asuntos/<asunto>/` desde la plantilla; **slug = nombre corto y estable del asunto**. Aunque dos asuntos compartan protagonista o inmueble, **un contenedor estándar por asunto** ([[estructura_contenedor_asunto]]).
-- Charter + `CLAUDE.md` + `settings.json` + `settings.local.json` (rutas de esta máquina, gitignored).
+- Charter + `CLAUDE.md` + configuración del agente + `settings.local.json` (rutas de esta máquina, gitignored).
 - Doctrinas baseline por copia, registrando su `version`. Si el asunto trae una casuística nueva para el catálogo, **generaliza la doctrina al catálogo** y luego instálala ([[mejora_continua_del_kit]]).
 
 ## 3. Traer la documentación (copiar al vault, adaptar)

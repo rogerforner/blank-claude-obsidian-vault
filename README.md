@@ -7,7 +7,7 @@ Un **asunto** es cualquier cosa que se lleva de principio a fin con papeles y de
 ## Para qué sirve
 
 - **Que el trabajo no se pierda.** El estado vivo está escrito (cola, charter, bitácora), no en la memoria de una conversación que se cerró.
-- **Que la IA trabaje igual en cada sesión.** Las reglas están en un `CLAUDE.md` **auto-cargado** y en un catálogo de **doctrinas versionadas**, no en el recuerdo de lo que se pactó el mes pasado.
+- **Que la IA trabaje igual en cada sesión.** Las reglas están en un `CLAUDE.md` **canónico** y en un catálogo de **doctrinas versionadas**, no en el recuerdo de lo que se pactó el mes pasado.
 - **Que los plazos no se pasen.** Los asuntos con terceros enfrente (un organismo, una aseguradora, un juzgado) viven de fechas; el andamiaje las pone delante.
 - **Que lo irreversible lo decida una persona.** Entregar fuera, firmar, pagar y las decisiones jurídicas o económicas son **puerta humana**, siempre.
 - **Que los datos no salgan de la máquina.** Los papeles llevan DNI, cuentas, nóminas, informes médicos y datos de terceros: viven aquí y se trabajan aquí, con herramientas locales. Git es **local**: no hay nube, ni servidor al que enviar nada.
@@ -28,10 +28,10 @@ Lo que **no** hay que hacer al arrancar: rellenar carpetas por adelantado, insta
 | Ruta | Qué es |
 |---|---|
 | `README.md` | Esto: qué es la plantilla y cómo se arranca un vault temático con ella. |
-| `CLAUDE.md` | Las reglas **siempre activas**, auto-cargadas en cada sesión. Tu rol lo fija tu cwd: raíz → coordinador general; `asuntos/<asunto>/` → coordinador de ese asunto. |
+| `CLAUDE.md` | Las reglas **siempre activas**, canónicas y auto-cargadas en cada sesión. Tu rol lo fija tu cwd: raíz → coordinador general; `asuntos/<asunto>/` → coordinador de ese asunto. |
 | `.claude/settings.json` | Perfil de la sesión coordinadora de la raíz: hook de higiene al arrancar, veto de `/fast` por configuración y reglas de **denegación** (credenciales de la máquina, y nada de destinos externos para git). |
 | `.gitignore` | Qué no se versiona y **por qué**: handoffs y buffers (efímeros), config local de la máquina, interfaz de Obsidian. |
-| [`general/comun/`](general/comun/README.md) | **Catálogo** transversal: 24 **doctrinas** del core con su índice, el **hook** de higiene, el tooling **local** de documentos y la resolución de problemas de la herramienta. Se **instala por copia; no se hereda**, y para un coordinador de asunto es **solo lectura**. |
+| [`general/comun/`](general/comun/README.md) | **Catálogo** transversal: 27 **doctrinas** del core con su índice, el **hook** de higiene, el tooling **local** de documentos y la resolución de problemas de la herramienta. Se **instala por copia; no se hereda**, y para un coordinador de asunto es **solo lectura**. |
 | [`general/comun/packs/codigo/`](general/comun/packs/codigo/README.md) | Pack **opcional**: 10 doctrinas que solo tienen sentido si un asunto incluye **software propio**. Si tu vault no toca software, ignóralo entero — el core no depende de él. |
 | [`inicializador/`](inicializador/README.md) | **Procedimiento + plantillas** para arrancar un asunto: los dos checklists, el charter, el contrato de tanda ejecutora, el handoff, el consultor, los `settings.json` por rol y el árbol `plantilla-contenedor-asunto/` a copiar. |
 | [`_meta/`](_meta/README.md) | **El kit tratado como un asunto más**: el charter del coordinador general, la cola, las decisiones abiertas, la bitácora de mejora continua y los primeros pasos. Aquí se gestiona la evolución del propio vault. |

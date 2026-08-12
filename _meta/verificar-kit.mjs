@@ -12,9 +12,17 @@ const nota = (regla, fichero, detalle) =>
   hallazgos.push({ regla, fichero: relative(RAIZ, fichero).replace(/\\/g, '/'), detalle });
 
 // --- recoger ficheros ---------------------------------------------------
+// repo/ (el repositorio de código de un asunto con perfil `asunto con software`, ver
+// estructura_contenedor_asunto.md) es un árbol AJENO al kit: es el código de un asunto, con
+// sus propias reglas (README con emojis, rutas de ejemplo, sin frontmatter de doctrina). El
+// caso NORMAL es que el repositorio viva FUERA del vault (nada que caminar aquí); esta
+// exclusión es la red de seguridad para el caso EXCEPCIONAL en que, declaradamente, queda
+// anidado dentro del contenedor. El verificador comprueba el kit, no el código de un asunto,
+// así que delimita su ámbito excluyéndolo igual que ya excluye .git/.obsidian/node_modules —
+// esto NO es ajustar el verificador para que pase: es que esas reglas nunca le aplicaron a repo/.
 const md = [];
 (function walk(p) {
-  if (/[\\/](\.git|\.obsidian|node_modules)$/.test(p)) return;
+  if (/[\\/](\.git|\.obsidian|node_modules|repo)$/.test(p)) return;
   for (const e of readdirSync(p)) {
     const f = join(p, e);
     statSync(f).isDirectory() ? walk(f) : f.endsWith('.md') && md.push(f);
@@ -62,9 +70,20 @@ for (const f of md.filter(esCore)) {
 // --- 4. portabilidad: ni rutas de maquina ni nombres ajenos -------------
 // Exige un SEGMENTO REAL despues de Users/home: "C:\Users\PD\..." es una fuga,
 // pero "C:\Users\…" escrito como patron de busqueda es documentacion, no una ruta.
+// Los .json de inicializador/ (perfiles de settings, p. ej. plantilla-settings-*.json) no son
+// .md y sin esto la regla nunca los mira: una ruta de maquina colada en un perfil de permisos
+// pasaria desapercibida. No es opcional (tanda repo-fuera, D6).
+const jsonInicializador = [];
+(function walkJson(p) {
+  for (const e of readdirSync(p)) {
+    const f = join(p, e);
+    statSync(f).isDirectory() ? walkJson(f) : f.endsWith('.json') && jsonInicializador.push(f);
+  }
+})(join(RAIZ, 'inicializador'));
+
 const SEG = '[A-Za-z0-9_.-]';
 const RUTAS = new RegExp(`([A-Za-z]:\\\\{1,2}[Uu]sers\\\\{1,2}${SEG}|/home/${SEG}|/Users/${SEG})`);
-for (const f of [...md, ...['.claude/settings.json', '.gitignore'].map((p) => join(RAIZ, p))]) {
+for (const f of [...md, ...jsonInicializador, ...['.claude/settings.json', '.gitignore'].map((p) => join(RAIZ, p))]) {
   if (!existsSync(f)) continue;
   readFileSync(f, 'utf8').split('\n').forEach((l, i) => {
     if (RUTAS.test(l)) nota('ruta de maquina', f, `linea ${i + 1}`);

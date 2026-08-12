@@ -1,0 +1,47 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(pwd:*)",
+      "Bash(find:*)",
+      "Bash(wc:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(grep:*)",
+      "Bash(file:*)",
+      "Bash(stat:*)",
+      "Bash(git:*)",
+      "PowerShell(git:*)"
+    ],
+    "deny": [
+      "Bash(git remote add:*)",
+      "Bash(git remote set-url:*)",
+      "PowerShell(git remote add:*)",
+      "PowerShell(git remote set-url:*)",
+      "Bash(git config --global:*)",
+      "PowerShell(git config --global:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "PowerShell(Invoke-WebRequest:*)",
+      "PowerShell(Invoke-RestMethod:*)",
+      "Bash(sudo:*)",
+      "Bash(su:*)",
+      "Bash(rm -rf:*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.config/gh/**)",
+      "Read(//**/id_rsa)",
+      "Read(//**/id_ed25519)"
+    ]
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "env": {
+    "CLAUDE_CODE_DISABLE_FAST_MODE": "1"
+  }
+}

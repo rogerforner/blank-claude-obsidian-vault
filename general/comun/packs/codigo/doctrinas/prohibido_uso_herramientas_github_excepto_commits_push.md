@@ -2,12 +2,12 @@
 name: Repo remoto como Git puro; CI/tooling local, no SaaS externo
 description: El repositorio remoto se trata como remoto Git puro (commits locales + push como paso verificado + visualización read-only). Prohibido el resto del ecosistema del proveedor de hosting y cualquier SaaS externo de CI/CD/testing/security/build; todo se ejecuta local o en infraestructura propia.
 type: doctrine
-version: 1.1
+version: 1.2
 ---
 
 El repositorio en el proveedor de hosting (GitHub u otro) se trata **exclusivamente como remoto Git puro**. Razón fundacional: **soberanía operativa total + control de datos + cero dependencia de SaaS extranjeros** para procesos críticos del ciclo de desarrollo.
 
-> **Ámbito: el repositorio del asunto, no el vault.** El **vault de coordinación** es git **local sin remoto**: no tiene proveedor de hosting y esta doctrina no le aplica. Aplica al **repositorio de código que vive dentro de `asuntos/<asunto>/`**, que sí puede tener remoto. La consecuencia práctica se conserva igual en ambos: **nada de SaaS externo** para lo que se puede ejecutar en local.
+> **Ámbito: el repositorio del asunto, no el vault.** El **vault de coordinación** es git **local sin remoto**: no tiene proveedor de hosting y esta doctrina no le aplica. Aplica al **repositorio de código, que vive fuera del vault** (donde el runtime lo sirve, según `docs/emplazamiento-runtime.md` del asunto), que sí puede tener remoto. La consecuencia práctica se conserva igual en ambos: **nada de SaaS externo** para lo que se puede ejecutar en local.
 
 ## Las tres acciones permitidas
 
@@ -30,6 +30,6 @@ Permanente por defecto. Reapertura puntual para un servicio concreto **solo** ba
 
 Relacionada: [[no_push_por_subagentes]], [[infra_europa_rgpd]], [[licencias_permisivas_estrictas]], [[adopcion_tooling_externo_caso_uso_concreto]] (el gate general de tooling externo, en el core).
 
-> Pieza de catálogo `general/comun/packs/codigo/doctrinas/`. v1.1 (2026-06-09: "push manual del director" → "push como paso verificado", alineado con el nuevo modelo de autonomía). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente. Es un default opinado; un asunto con otro modelo de soberanía la adaptaría al instalarla.
+> Pieza de catálogo `general/comun/packs/codigo/doctrinas/`. **v1.2 (2026-08-10):** corregida la frase de ámbito — el repositorio de código no vive "dentro de `asuntos/<asunto>/`", vive **fuera del vault**, donde el runtime lo sirve (tanda `repo-fuera`); solo se toca esa frase, el resto de la doctrina no se reescribe. v1.1 (2026-06-09: "push manual del director" → "push como paso verificado", alineado con el nuevo modelo de autonomía). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente. Es un default opinado; un asunto con otro modelo de soberanía la adaptaría al instalarla.
 
-> Adaptada al esqueleto del seed (`asuntos/<asunto>/`) conservando el vocabulario técnico: el framing neutro del seed aplica al core, no a este pack — 2026-07-29. Cambios del traslado: "proyecto" pasa a "asunto" como unidad, con el repositorio de código dentro; y se añade el aviso de ámbito de arriba porque el vault del seed no tiene remoto. Lo prohibido y lo permitido se conservan íntegros.
+> Adaptada al esqueleto del seed (`asuntos/<asunto>/`) conservando el vocabulario técnico: el framing neutro del seed aplica al core, no a este pack — 2026-07-29. Cambios del traslado: "proyecto" pasa a "asunto" como unidad, con el repositorio de código fuera del vault (tanda `repo-fuera` corrige esta mención, que databa de la adaptación original); y se añade el aviso de ámbito de arriba porque el vault del seed no tiene remoto. Lo prohibido y lo permitido se conservan íntegros.

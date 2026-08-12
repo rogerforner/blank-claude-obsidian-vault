@@ -37,6 +37,20 @@ Renderiza **HTML + CSS → PDF** con control de **maquetación y estilos** (tipo
 - **Lote de facturas → tabla:** Docling extrae, un script corto tabula importes y fechas, y se suma para cotejar con el total reclamado ([[scripts_adhoc_tareas_repetitivas]]).
 - **Borrador → entregable:** `.md` → Pandoc → HTML → WeasyPrint → PDF maquetado, listo para firmar y presentar. El envío es **puerta humana**: el agente deja el PDF hecho, no lo manda.
 
+## Rellenar un modelo `.docx` ajeno sin romperlo
+
+> **Sección reconstruida (2026-08-10)** a partir del registro del commit que la contenía, perdido al cambiar de sitio la copia de la plantilla. El método y los tres detalles son los que se aprendieron entonces; **la redacción es nueva**, así que si algo no encaja al aplicarlo, manda la prueba en la máquina y se corrige aquí.
+
+Caso frecuente en un vault de papeles, y que **ninguna de las tres herramientas de arriba cubre**: un organismo facilita un modelo en `.docx` con huecos, y lo que se entrega tiene que seguir siendo **ese** documento, con su formato y su membrete.
+
+**Convertir a Markdown y volver no sirve.** El conversor **reconstruye** en vez de conservar, y el resultado es otro documento parecido — que en un trámite es exactamente lo que no vale. La vía que funciona es **editar el XML del `.docx` original**, clonando **párrafos reales del propio documento** para que lo insertado herede sus propiedades tipográficas en vez de declararlas a mano.
+
+Tres detalles que costaron un intento cada uno:
+
+1. **El espaciado se pone en el párrafo**, no se hereda del estilo: el estilo del modelo puede traerlo a cero, y entonces todo sale pegado sin que se vea el motivo en ninguna parte.
+2. **Los títulos se marcan en el origen**, en vez de detectarlos después por su aspecto. Detectarlos es adivinar, y adivina mal en cuanto el modelo usa negrita para algo que no es un título.
+3. **La imagen se incrusta en el paquete**, no se enlaza: un `.docx` es un paquete, y una imagen enlazada viaja rota en cuanto el fichero cambia de máquina.
+
 ## Soberanía y datos
 
 Las tres corren **en local** → el documento **no sale de la máquina**. Es la razón por la que se recomiendan estas y no un conversor web: un expediente doméstico lleva DNI, cuentas, informes médicos y datos de terceros, y eso no se sube a un servicio ajeno ([[sensitive_file_guard]]). A diferencia de un servicio en la nube, estas herramientas son **aptas incluso para documentos con datos personales**.

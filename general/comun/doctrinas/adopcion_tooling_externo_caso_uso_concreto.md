@@ -21,7 +21,9 @@ El principio se extiende a **estructuras preventivas internas**: carpetas, plant
 
 ## Excepciones
 
-No aplica a: la **mecánica imprescindible** (git, el propio Claude Code, el editor de textos, el escáner), ni a herramientas **ya en el flujo** del director.
+No aplica a: la **mecánica imprescindible** (git, el editor de textos, el escáner), ni a herramientas **ya en el flujo** del director.
+
+**El agente que ejecuta el trabajo NO está exento**, aunque lo parezca por ser la herramienta con la que se trabaja a diario: es una **dependencia sustituible**, se mide y no se deduce, y el que está en uso se declara con su versión. Eximirlo fue un punto ciego real de esta doctrina: dejaba sin criterio justo la pieza que más condiciona el método.
 
 ## Recursos externos (formularios, plantillas oficiales, tablas, modelos de IA)
 

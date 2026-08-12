@@ -1,6 +1,6 @@
 # Plantilla del README del repo de código + alineación de `CLAUDE.md`/`rules`
 
-Cuando un asunto incluye software propio, el repositorio de código vive **dentro del contenedor del asunto** (`asuntos/<asunto>/`) y guarda **solo código + un README típico**. Toda la documentación de coordinación (arquitectura, decisiones, guías, charters, handoffs, briefs, estudios) vive en el **vault de coordinación**, en `asuntos/<asunto>/`, no en el repositorio. El repositorio **apunta** a ella **por el nombre del vault + la ruta relativa interna**, nunca por una ruta absoluta de una máquina concreta.
+Cuando un asunto incluye software propio, el repositorio de código vive **fuera del vault**, donde el runtime lo sirve — registrado en `docs/emplazamiento-runtime.md` del contenedor del asunto (`asuntos/<asunto>/`) —, y guarda **solo código + un README típico**. Toda la documentación de coordinación (arquitectura, decisiones, guías, charters, handoffs, briefs, estudios) vive en el **vault de coordinación**, en `asuntos/<asunto>/`, no en el repositorio. El repositorio **apunta** a ella **por el nombre del vault + la ruta relativa interna**, nunca por una ruta absoluta de una máquina concreta.
 
 ## Plantilla de `README.md` del repo
 
@@ -57,6 +57,6 @@ Reglas operativas vivas, concisas, alineadas con las doctrinas instaladas. La de
 
 ## Dónde encaja esto en el contenedor del asunto
 
-La estructura del contenedor la fija [[estructura_contenedor_asunto]]: `asuntos/<asunto>/` con su raíz de coordinación, `.claude/`, `docs/`, `estudios/`, `memoria/` y `coordinacion/`. El repositorio de código es **un elemento más dentro de ese contenedor**, con su propio `.git`; no lo sustituye ni se coloca por encima.
+La estructura del contenedor la fija [[estructura_contenedor_asunto]]: `asuntos/<asunto>/` con su raíz de coordinación, `.claude/`, `docs/`, `estudios/`, `memoria/` y `coordinacion/`. El repositorio de código vive **fuera de ese contenedor**, con su propio `.git`; el contenedor lo **referencia** por la ficha de emplazamiento (`docs/emplazamiento-runtime.md`), no lo contiene.
 
 > Pieza del pack `codigo/`. Adaptada al esqueleto del seed (`asuntos/<asunto>/`) conservando el vocabulario técnico: el framing neutro del seed aplica al core, no a este pack — 2026-07-29. Cambios del traslado: `proyectos/<repo>/` pasa a `asuntos/<asunto>/`; el vault de origen, que se nombraba y se enlazaba por su remoto, pasa a ser el marcador `{{VAULT}}` (el vault del seed es **local, sin remoto**, así que "clona ese vault" ya no aplica: el pointer es por nombre + ruta relativa interna); se retira la ruta absoluta de ejemplo de la nota de portabilidad, que en un fichero del seed sería ella misma un fallo de portabilidad, conservando la advertencia; y se añaden la nota de los dos árboles y el encaje en el contenedor del asunto, que en el kit de origen se daban por sabidos.

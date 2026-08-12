@@ -28,7 +28,8 @@ Que el kit de este vault quede **idéntico** al de la plantilla, que el informe 
 
 - `general/` completo: doctrinas del core, el pack `codigo/`, los dos índices, los README y el hook.
 - `inicializador/` completo: plantillas y checklists.
-- `CLAUDE.md` de la raíz del vault.
+- **El `CLAUDE.md` de la raíz del vault**, el fichero canónico completo.
+- `_meta/guia-arranque-sesiones.md`.
 - `_meta/verificar-kit.mjs` (si no existe, se crea).
 
 **NO entra, no lo toques aunque lo veas:**
@@ -73,6 +74,7 @@ Ejecuta `node _meta/verificar-kit.mjs` en el vault actualizado y **pega el outpu
 ```
 node _meta/verificar-kit.mjs          # tiene que salir VERDE
 git status --short                     # solo los ficheros del kit + el informe
+find . -name AGENTS.md -not -path "./.git/*"                                                # no debe devolver nada
 ```
 
 ## Reporta al cerrar

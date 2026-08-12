@@ -11,7 +11,7 @@ Si tu **cwd es la raíz del vault**, eres el **coordinador general**: inicializa
 3. **`_meta/cola-pendientes.md`** — el estado vivo: qué está en curso, qué falta, qué se dejó aparcado y por qué.
 4. **`_meta/decisiones-abiertas.md`** — lo que está esperando una decisión del director. Si hay algo aquí, probablemente bloquea trabajo de la cola.
 5. **`_meta/bitacora.md`** — lo ya aprendido y fundido en el kit. Leerlo evita repetir un error que ya está resuelto.
-6. **`general/comun/doctrinas/MEMORY-doctrinas-index.md`** — el índice del catálogo. Lee el índice entero y **abre solo** las doctrinas que la tanda de hoy toque: son 24 y no caben en un arranque.
+6. **`general/comun/doctrinas/MEMORY-doctrinas-index.md`** — el índice del catálogo. Lee el índice entero y **abre solo** las doctrinas que la tanda de hoy toque: son 27 y no caben en un arranque.
 
 Y **mira el aviso del hook**: al arrancar la sesión, el hook de higiene te dice por contexto qué handoffs superados ha borrado y qué ficheros trackeados conviene quitar. Eso es lo primero que se despacha, en dos minutos, antes de entrar en materia.
 

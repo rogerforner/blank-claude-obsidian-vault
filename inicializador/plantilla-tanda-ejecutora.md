@@ -3,10 +3,12 @@
 > **Para qué.** La palanca de mayor retorno para reducir el trasiego manual **no es automatizar el transporte, es hacer las tandas más grandes y autónomas**: una spec bien cerrada reduce a la vez los **relevos** y las **preguntas**. Esta plantilla es el **contrato** entre el coordinador y la sesión ejecutora. Rellena, **borra este bloque** y entrega. Formato: [[formato_prompts_markdown_limpio]]; frases en una línea continua, saltos solo en la estructura.
 >
 > **Regla de oro:** si la ejecutora tiene que **preguntar algo**, es que faltaba en la spec. Cada pregunta que recibas es *feedback* para mejorar la siguiente tanda.
+>
+> **Y esta spec se escribe LIGERA, no exhaustiva.** Un plan rígido empeora las tareas dinámicas —cuando un paso sorprende a mitad, el plan estático no se adapta—, y un plan tan detallado que llena el contexto **degrada al propio agente**. Ligero significa: pasos, criterio de aceptación por paso y diagnóstico previo; nada más para una tarea pequeña. El detalle de más no es prudencia, es coste.
 
 ## Setup
 
-**Working dir: `{{RUTA_ABSOLUTA}}`** — el **cwd real del proceso**, no una frase de este prompt: normalmente el contenedor del asunto. **La ejecutora se lanza DENTRO de él** (`cd "{{RUTA_ABSOLUTA}}" && claude -p …`), porque el cwd decide qué `CLAUDE.md` y qué `.claude/` se cargan, qué hooks y permisos aplican y **dónde busca por defecto**: enraizarla en el sitio equivocado le da las reglas de otro asunto, deja sus hooks sin disparar y la manda a buscar donde no está lo que busca. Lo que esté **fuera** de ese directorio se le pasa con **`--add-dir`** o **no lo ve**. → [[orquestacion_sesiones_por_herramienta]]
+**Working dir: `{{RUTA_ABSOLUTA}}`** — el **cwd real del proceso**, no una frase de este prompt: normalmente el contenedor del asunto. **La ejecutora se lanza DENTRO de él** (`cd "{{RUTA_ABSOLUTA}}" && claude -p …`), porque el cwd decide qué `CLAUDE.md` y qué configuración de proyecto se cargan, qué hooks y permisos aplican y **dónde busca por defecto**: enraizarla en el sitio equivocado le da las reglas de otro asunto, deja sus hooks sin disparar y la manda a buscar donde no está lo que busca. Lo que esté **fuera** de ese directorio se le pasa con **`--add-dir`** (solo para LEER) o **no lo ve**. → [[orquestacion_sesiones_por_herramienta]]
 
 **Dónde vive este contrato:** esta spec y su fichero de plan viven **dentro del working dir** — la hija se enraíza donde tiene que **escribir**, y el plan tiene que nacer donde ella puede escribirlo. Ninguno de los dos se versiona: son material de trabajo y **se borran al cerrar la tanda** ([[convencion_organizacion_carpeta_trabajo]]); el commit por **pathspec** ya impide que se cuelen.
 
@@ -20,6 +22,8 @@ Modelo: `{{MODELO}}` (Opus 5 para lo difícil —un escrito con consecuencias, u
 
 **Cuándo la lleva:** si la tanda **toca varios ficheros**, **estrena una forma de trabajo** que el asunto no tiene, o se apoya en **premisas sobre material que no has abierto tú**. Si no la lleva, escríbelo aquí: **"tanda de fase única declarada"** y por qué — saltársela es legítimo; saltársela en silencio, no.
 
+**Si la tanda EDITA CÓDIGO, "fase única declarada" no existe: nunca se salta.** El pack `codigo/` lo hace incondicional ([`general/comun/packs/codigo/README.md`](../general/comun/packs/codigo/README.md) § "Plan antes de tocar código") — la excepción que el resto de este párrafo permite para otro tipo de material **no aplica aquí**, sea cual sea el tamaño de la tanda.
+
 **Contrato de la ejecutora de análisis:** **no modifica material, no commitea y deja el historial intacto.** Su **único** entregable de escritura es `plan-tanda-{{NOMBRE}}.md` en el working dir, con estos cinco apartados:
 
 1. **Verificación en fuente primaria de CADA premisa de esta spec, con el comando ejecutado y su salida.** No "se ha comprobado que": el comando y lo que devolvió. → [[verificacion_fuente_primaria]]
@@ -32,6 +36,9 @@ Modelo: `{{MODELO}}` (Opus 5 para lo difícil —un escrito con consecuencias, u
 
 **Comprueba que fue read-only de verdad** (un comando, y llevas la cuenta): `git status --short` muestra solo el fichero de plan, y `HEAD` no se ha movido. No se instala ningún guard para forzarlo — se mide después.
 
+> **Y una trampa que estrena el perfil de software: `git status` limpio ya NO prueba que no haya restos.** El `.gitignore` excluye `asuntos/*/repo/` para que el vault no versione el código ni lo trate como submódulo accidental — con el efecto de que **git no ve nada dentro de esa ruta**. Una tanda que cree ahí un directorio de prueba puede reportar `git status --short` vacío con toda honestidad y **habérselo dejado en disco**; y `git clean -ffd` **tampoco lo borra**, porque sin `-x` no toca lo ignorado. *(Caso real: una ejecutora reportó la limpieza correctamente y el resto siguió ahí hasta que alguien mirón el disco.)* Si tu tanda toca `repo/`, la comprobación de limpieza es **mirar el disco** (`ls` o `find` sobre la ruta), y el borrado necesita `git clean -ffdx -- <ruta acotada>`.
+
+
 ## Objetivo
 
 {{Una o dos frases: qué debe existir al terminar que no exista ahora. En términos de resultado observable, no de actividad. "Existe el escrito de alegaciones con sus cinco anexos numerados", no "trabajar en las alegaciones".}}
@@ -40,6 +47,16 @@ Modelo: `{{MODELO}}` (Opus 5 para lo difícil —un escrito con consecuencias, u
 
 **SÍ entra:** {{ficheros, carpetas o documentos exactos}}
 **NO entra (no lo toques aunque lo veas):** {{lo que queda fuera. Los **originales recibidos o emitidos** están fuera SIEMPRE: no se editan, no se renombran, no se regeneran. Si hay que trabajar sobre uno, se trabaja sobre copia.}}
+
+### Tamaño de la tanda
+
+Dimensiona por la **menor** de estas tres cosas — y dilo como lo que es, una **analogía**, no una medición: no hay estudio que mida el tamaño óptimo de tanda para un agente; la cifra que circula (unos cientos de líneas por revisión) es de revisión humana de código, y se traslada aquí por analogía razonada con esa práctica, no por evidencia directa sobre agentes. Presentarla como medida en agentes sería folclore.
+
+1. **Una unidad de comportamiento completa y verificable** (un test que pasa, una comprobación que da OK o FALLO).
+2. **Un diff o un volumen de cambio que quepa en una revisión humana.**
+3. **Lo que el director pueda revisar de una sentada.**
+
+Si la tanda no cabe en la menor de las tres, se trocea antes de lanzarla.
 
 ## Contexto verificado (para que no lo re-derives ni lo supongas)
 
@@ -52,6 +69,8 @@ Modelo: `{{MODELO}}` (Opus 5 para lo difícil —un escrito con consecuencias, u
 {{Las decisiones ya cerradas —de fondo, de forma, económicas o jurídicas— para que la ejecutora no vuelva a plantearlas ni pida confirmación. Esto es lo que más reduce las preguntas.}}
 
 ## Criterios de aceptación (el contrato)
+
+**Esto es lo que más rinde de todo el contrato — más que el plan mismo.** No es una preferencia de este vault: es lo que el fabricante señala como la práctica de mayor apalancamiento para un agente — darle una forma de verificar su propio trabajo (un test que pasa, un comando que devuelve OK o FALLO, una comprobación observable). Sin este apartado bien escrito, el agente produce trabajo que **parece** correcto y no lo es; con él, el trabajo se verifica solo.
 
 {{Lista verificable, en términos de resultado observable. Cada punto debe poder comprobarse con un comando o un cotejo, no con una opinión.}}
 
@@ -98,7 +117,18 @@ Qué has hecho y **dónde** (ficheros y commits). El **output literal** de los c
 
 Cuando la tanda está bien cerrada, el coordinador puede **lanzarla él mismo** y recoger el resultado sin intermediario ([[orquestacion_sesiones_por_herramienta]]). El contrato es este mismo fichero; la ejecutora escribe su informe en un `.md` y el coordinador lee solo el extracto. El trabajo ocurre en un **proceso aparte con contexto limpio**, así que "coordinar ≠ ejecutar" se mantiene intacto.
 
-**El `cd` de la primera línea no es decorativo:** es lo que fija el working dir del § Setup — sin él, la hija se enraíza donde estés tú.
+**El `cd`/`--cd` del lanzamiento no es decorativo:** es lo que fija el working dir del § Setup — sin él, la hija se enraíza donde estés tú.
+
+Esto de aquí abajo es **sintaxis**: cómo se lanza la ejecutora.
+
+| Necesidad | Claude Code |
+|---|---|
+| Lanzar la ejecutora | `cd "<ruta>" && claude -p "<prompt>"` |
+| Informe a fichero | `--output-format json` |
+| Directorio adicional (solo para LEER) | `--add-dir` |
+| Fase de análisis, solo lectura | perfil de `settings.json` en modo plan |
+| Fase de ejecución | perfil por defecto del destino |
+| Tope de turnos y de gasto | `--max-turns`, `--max-budget-usd` |
 
 **Primero, la de análisis** (si la tanda la lleva). Único entregable: el fichero de plan.
 
@@ -122,24 +152,27 @@ cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "Ejecuta la tanda descrita en 
   --output-format json
 ```
 
-**Los techos, con criterio:** los de arriba son una **referencia medida**, no constantes — pon los tuyos con **margen del 100% sobre tu propia línea base**. Una tanda real **murió por `error_max_budget_usd`** con el techo demasiado ajustado, y morir a mitad sale más caro que el margen. `--max-budget-usd` es un **cortacircuito nominal, no un cargo**: sin `ANTHROPIC_API_KEY` lo que se consume es ventana de suscripción. Para una tanda mecánica y pequeña, 30 turnos siguen bastando: cada lanzamiento cuesta **~42.000 tokens fijos** aunque no haga nada, y eso se paga **por lanzamiento, no por trabajo hecho**.
+**Los techos.** Los de arriba son una **referencia medida**, no constantes — pon los tuyos con **margen del 100% sobre tu propia línea base**. Una tanda real **murió por `error_max_budget_usd`** con el techo demasiado ajustado, y morir a mitad sale más caro que el margen. `--max-budget-usd` es un **cortacircuito nominal, no un cargo**: sin `ANTHROPIC_API_KEY` lo que se consume es ventana de suscripción. Para una tanda mecánica y pequeña, 30 turnos siguen bastando: cada lanzamiento cuesta **~42.000 tokens fijos** aunque no haga nada, y eso se paga **por lanzamiento, no por trabajo hecho**.
 
-### `--allowedTools` **CONCEDE, no restringe**
+### Una lista de permitidos **CONCEDE, no restringe**
 
-**Es una lista ADITIVA, no una lista blanca exclusiva**, y `--permission-mode dontAsk` significa *"no preguntes"*, **no** *"deniega lo no listado"*. Medido, no supuesto: una sesión hija lanzada con `--allowedTools "Read"` (sin `Bash`) **ejecutó Bash igualmente**. Se sigue pasando el flag porque **documenta la intención**, pero **no lo cuentes como barrera**.
+**Es aditiva, no una lista blanca exclusiva**, y que el modo de permisos no pregunte (`--permission-mode dontAsk`) significa *"no preguntes"*, **no** *"deniega lo no listado"*. Medido, no supuesto: una sesión hija lanzada con `--allowedTools "Read"` (sin `Bash`) **ejecutó Bash igualmente**. Se sigue pasando la opción porque **documenta la intención**, pero **no la cuentes como barrera**.
 
-**Lo que SÍ protege, por orden:**
+**Lo que SÍ protege:** las **deny rules del `settings.json` del directorio destino** — la hija las respeta y **no las puede saltar**; aguantan incluso bajo el flag de permisos amplios. Son la única barrera real, y **lo que quieras impedir, exprésalo como DENY, nunca como ausencia del allow**. Dato medido (2026-08-10): el `settings.json` de un proyecto se resuelve por el **directorio de trabajo exacto**, **sin heredar del directorio padre** — una sesión enraizada más adentro del árbol (p. ej. en un `repo/` dentro del contenedor) **no** hereda las deny rules puestas más arriba; si necesita las suyas, van **en su propio directorio**, o queda más abierta que su padre en vez de más protegida.
 
-1. **Las deny rules del `settings.json` del directorio destino** — la hija las respeta y **no las puede saltar**; aguantan incluso bajo el flag de permisos amplios. Son la única barrera real. **Lo que quieras impedir, exprésalo como DENY, nunca como ausencia del allow.**
-2. **`--max-turns` y `--max-budget-usd`** — cortacircuitos duros, obligatorios.
-3. **Los hooks `PreToolUse`** — corren al margen del modo de permisos.
+**Lo que protege de verdad, por orden:**
+
+1. **Las deny rules** del `settings.json`, por ruta.
+2. **Los cortacircuitos duros** — `--max-turns`/`--max-budget-usd`.
+3. **Los hooks previos a la herramienta** (`PreToolUse`) — corren al margen del modo de permisos.
 4. **El watchdog/timeout del llamante.**
 
 ### Antes de usarla, comprueba
 
-- Que **`ANTHROPIC_API_KEY` NO está definida**. Si lo está, Claude Code la prioriza sobre la suscripción y **factura por API en silencio**.
-- Que el `.claude/settings.json` del directorio destino tiene sus **deny rules** puestas (ver [plantilla-settings-coordinador.json](plantilla-settings-coordinador.json)): los originales del asunto, los almacenes de credenciales de la máquina, el catálogo `general/` en solo lectura, y los comandos que sacan algo fuera.
-- Que pones **`--max-turns` y `--max-budget-usd`** como cortacircuitos.
+- **Que la sesión del agente está autenticada, y compruébalo en el propio agente, no en la tuya.** Es lo **primero**, porque sin ello **no se lanza nada** y es un fallo que la sesión padre no ve venir: tú puedes estar trabajando con normalidad y el binario del agente **no tener sesión guardada**, porque se autentican por vías distintas. Se comprueba con `claude auth status`, que responde en JSON y no es interactivo; se arregla con `claude auth login`, que **sí** lo es — y por tanto **lo hace el director**, no el agente. *(Medido el 2026-08-10: `claude auth status` devolvía `loggedIn: false` mientras la sesión del coordinador funcionaba sin problema. La tanda murió en **1,3 segundos con 0 tokens** y `Failed to authenticate`, sin escribir una línea de su entregable. Fallar rápido y barato es la suerte de este caso; no cuentes con ella.)*
+- Que **`ANTHROPIC_API_KEY` NO está definida**, ni como variable de entorno ni en un **`.env` bajo el directorio de trabajo**: si lo está, Claude Code la prioriza sobre la suscripción y **factura por API en silencio**.
+- Que la barrera del destino está puesta: el `.claude/settings.json` del directorio destino con sus **deny rules** (ver [plantilla-settings-coordinador.json](plantilla-settings-coordinador.json)) — los originales del asunto, los almacenes de credenciales de la máquina, el catálogo `general/` en solo lectura, y los comandos que sacan algo fuera.
+- Que pones los cortacircuitos: `--max-turns` y `--max-budget-usd`.
 - Que hay un **timeout/watchdog en el llamante**: hay *silent-freeze* documentado al lanzar `claude -p` desde procesos de larga vida.
 - **Entradas grandes por ruta de fichero**, nunca por stdin.
 - **Baja concurrencia: 1-2 ejecutoras**, no un enjambre. Un enjambre reduce el trabajo útil semanal de una persona sola.

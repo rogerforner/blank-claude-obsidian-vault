@@ -11,7 +11,12 @@
 # y solo puede borrar sin tocar git porque están ignorados aquí.
 # ⚠ La PLANTILLA `inicializador/plantilla-handoff.md` SÍ se versiona: no empieza por
 # "handoff-", así que este patrón no la captura. Es deliberado.
-**/handoff-*.md
+# Los handoffs de coordinacion viven en dos sitios y solo esos dos se ignoran. El patron
+# amplio `**/handoff-*.md` capturaba tambien `_meta/memoria/handoff-*.md`, y dejo una
+# memoria invisible para git desde que se escribio. Un patron de higiene no debe poder
+# tragarse contenido: se ancla a la carpeta donde vive lo efimero.
+/_meta/handoff-*.md
+**/coordinacion/handoff-*.md
 
 # Buffer sobreescribible de respuestas al director ("Otros"): se pisa a sí mismo en cada
 # vuelta, no tiene histórico que conservar.
@@ -43,6 +48,18 @@
 # !/<archivo>/**/
 # !/<archivo>/**/README.md
 # !/<archivo>/**/INDICE.md
+
+# --- Red de seguridad para el caso EXCEPCIONAL (perfil `asunto con software` sin runtime propio) ---
+# El caso NORMAL es el repositorio de código FUERA del vault (docs/emplazamiento-runtime.md de
+# cada asunto dice dónde). Este patrón es la red de seguridad de la excepción declarada: si,
+# excepcionalmente, el repositorio queda anidado en repo/ dentro del contenedor del asunto,
+# trae su propio .git y el vault no debe versionar su contenido (lo versiona el propio
+# repositorio) ni tratarlo como submódulo accidental. Medido (informe-tanda-pack-codigo.md):
+# sin este patrón, un `git add` que alcance el contenedor que lo envuelve genera el aviso
+# "adding embedded git repository" y un gitlink en el índice del vault. Con el patrón, ni
+# aparece en `git status` ni se puede añadir sin forzar con -f.
+# Doctrina: general/comun/doctrinas/estructura_contenedor_asunto.md § convivencia de los dos .git
+asuntos/*/repo/
 
 # --- Basura del sistema operativo ---
 Thumbs.db
