@@ -111,6 +111,30 @@ for (const f of md.filter(esCore)) {
   });
 }
 
+// --- 7. cada indice de doctrinas cuadra con sus ficheros ----------------
+// El par indice <-> ficha es fuente unica: una doctrina que no esta en su indice NO EXISTE para
+// quien lee el catalogo, porque el arranque manda leer el indice y abrir solo lo que toque. Esto
+// ha fallado dos veces (una doctrina fuera del indice durante meses; tres ficheros declarando un
+// recuento inventado), y las dos veces el kit salio en verde: se comprueba por comando, no a ojo.
+// Solo se miran las carpetas `doctrinas/` que tienen indice propio (`MEMORY-*.md`); una carpeta
+// de doctrinas PROPIAS de un asunto, sin indice, no esta obligada a tenerlo.
+for (const dir of [...new Set(md.filter(esDoctrina).map(dirname))]) {
+  const entradas = readdirSync(dir).filter((e) => e.endsWith('.md'));
+  const indices = entradas.filter((e) => e.startsWith('MEMORY-'));
+  if (!indices.length) continue;
+  const fichas = entradas.filter((e) => !e.startsWith('MEMORY-'));
+  const enlazados = new Set();
+  for (const i of indices)
+    for (const m of readFileSync(join(dir, i), 'utf8').matchAll(/\]\(([^)\s]+\.md)\)/g))
+      if (!m[1].includes('/')) enlazados.add(m[1]); // solo las del propio directorio
+  for (const f of fichas)
+    if (!enlazados.has(f))
+      nota('doctrina fuera del indice', join(dir, f), `no la enlaza ${indices.join(' ni ')}`);
+  for (const e of enlazados)
+    if (!fichas.includes(e))
+      nota('indice apunta a nada', join(dir, indices[0]), `${e} no existe en la carpeta`);
+}
+
 // --- resultado ----------------------------------------------------------
 if (!hallazgos.length) {
   console.log(`RESULTADO: VERDE — ${md.length} ficheros markdown revisados, 0 hallazgos.`);

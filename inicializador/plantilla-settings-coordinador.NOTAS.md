@@ -89,5 +89,5 @@ Y el motivo de que el nombre del árbol deba ser **compuesto**: el glob no depen
 2. El hook **corre** al arrancar: se ve su mensaje en el contexto inicial.
 3. El catálogo **no se puede escribir** desde el contenedor.
 4. Si el vault tiene archivo documental: **tampoco se puede escribir**, y en cambio **sí se lee**.
-4. `/fast` **no está activo** (la variable de entorno está puesta).
-5. No hay **ninguna ruta absoluta** en el fichero versionado; todas las de máquina están en `settings.local.json`.
+5. `/fast` **no está activo** (la variable de entorno está puesta).
+6. No hay **ninguna ruta absoluta** en el fichero versionado; todas las de máquina están en `settings.local.json`.

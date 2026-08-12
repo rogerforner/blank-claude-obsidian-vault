@@ -35,7 +35,7 @@ Un vault puede tener asuntos de los dos tipos. El pack se instala **por asunto**
 
 ## Qué NO hace este pack
 
-- **No sustituye al core.** Un asunto de software necesita las 27 doctrinas transversales igual que cualquier otro: el pack solo añade las 10 que el core no puede tener.
+- **No sustituye al core.** Un asunto de software necesita **todas** las doctrinas transversales del core igual que cualquier otro: el pack solo añade las 10 que el core no puede tener.
 - **No cambia el framing del resto del vault.** El seed usa vocabulario neutro de dominio (**asunto**, **producto**, **verificaciones**, **entregar fuera**); aquí dentro se conserva el vocabulario técnico a propósito, porque el valor del pack es ser concreto. Esa excepción **empieza y acaba en `packs/codigo/`**.
 - **No convierte el vault en un repositorio de código.** El vault de coordinación sigue siendo **git local, sin remoto y sin ramas de entorno**. Las doctrinas de rama, push y proveedor de hosting aplican al **repositorio de código, que vive fuera del vault** (excepcionalmente dentro de `repo/`, solo si el asunto declaró esa excepción en `docs/emplazamiento-runtime.md`), y cada una lo dice en su cabecera.
 - **No documenta stacks.** Las notas de una tecnología concreta se escriben en el propio asunto, no aquí. La única pieza atada a un stack es `pnpm_supply_chain`, y está porque la cadena de suministro de paquetes es un riesgo de seguridad, no una preferencia de tooling.
