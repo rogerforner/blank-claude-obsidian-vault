@@ -54,6 +54,8 @@
       "Bash(mkdir:*)",
       "Bash(chmod:*)",
       "Bash(chown:*)",
+      "Bash(agy:*)",
+      "Bash(antigravity:*)",
       "Bash(sudo:*)",
       "Bash(su:*)",
       "Bash(curl:*)",

@@ -2,7 +2,9 @@
 
 Índice de memorias. Una línea por memoria; el contenido vive en su fichero.
 
-*(Vacío al nacer de la plantilla. Se puebla según el vault opera: cada memoria nueva añade aquí su línea en el mismo commit que crea su fichero.)*
+- [Segundo proveedor de IA: interruptor](proveedor-secundario-ia.md) — **`PROVEEDOR_SECUNDARIO_IA = false`**: ninguna sesión lanza su CLI ni le manda nada. Qué habilita cada estado, qué NO cambia al girarlo, y los cuatro pasos para ponerlo en `true`.
+
+*(Al nacer de la plantilla solo está la de arriba, que es método y viene puesta a propósito. Lo demás se puebla según el vault opera: cada memoria nueva añade aquí su línea en el mismo commit que crea su fichero.)*
 
 ## Convención
 

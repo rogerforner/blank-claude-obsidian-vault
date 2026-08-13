@@ -37,6 +37,8 @@
       "Bash(wget:*)",
       "PowerShell(Invoke-WebRequest:*)",
       "PowerShell(Invoke-RestMethod:*)",
+      "Bash(agy:*)",
+      "Bash(antigravity:*)",
       "Bash(sudo:*)",
       "Bash(su:*)",
       "Bash(rm -rf:*)",

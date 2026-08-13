@@ -45,6 +45,7 @@ Dos o tres líneas de estado, no un informe. Y **una propuesta concreta**, no un
 - **Portabilidad:** cero rutas absolutas de máquina en lo versionado; lo local va a `.claude/settings.local.json`, gitignored.
 - **Los SECRETOS no salen de la máquina:** contraseñas, claves de API, tokens y certificados, a ningún servicio y por ningún canal — eso es **seguridad de sistemas**. Los **documentos de trabajo** sí pueden ir a un **cuaderno cerrado** que no entrene con ellos (decisión del director, 2026-08-14); lo que conserva su cautela es el **chat web abierto**, que entrena por defecto. El tooling de documentos sigue siendo **local** ([[soberania_datos_local]], [[sensitive_file_guard]]).
 - **Modelo y esfuerzo fijos por sesión**; **`/fast` vetado** por configuración ([[modelo_por_tarea]]).
+- **El segundo proveedor de IA se activa a propósito o no está activo.** Lo dice `_meta/memoria/proveedor-secundario-ia.md` en una línea; mientras esté en `false`, no se lanza su CLI ni se cuenta con él ([[reparto_entre_proveedores_ia]]). **Al arrancar un vault nuevo es una de las preguntas al director** —¿hay cuenta de un segundo proveedor?— y la respuesta se **escribe ahí**, no se recuerda.
 
 ## Mapa del vault
 

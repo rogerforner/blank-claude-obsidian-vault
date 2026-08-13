@@ -1,8 +1,8 @@
 ---
 name: Reparto de trabajo entre proveedores de IA
-description: Cuando entra un segundo proveedor de IA junto al que coordina, el reparto tiene TRES ejes — lo que el primero no hace (imagen, audio, vídeo), lo que el otro hace mejor (consultar un corpus con cita) y, el que más rinde, REPARTIR CARGA ENTRE DOS CUOTAS INDEPENDIENTES: lo que se manda al segundo no consume la ventana del primero. Un SOLO ESCRITOR del vault, y lo que vuelve se revisa antes de entrar. Lo que no sale nunca son SECRETOS (contraseñas, claves, tokens), no los datos personales. Automatizar la sesión de navegador de un servicio VIOLA sus condiciones de uso y arriesga la cuenta: no se hace aunque funcione.
+description: El segundo proveedor se ACTIVA con un interruptor de dos caras (valor declarado + deny del CLI en todos los perfiles) y nace APAGADO; sin interruptor el vault no esta protegido, esta sin decidir. Cuando entra un segundo proveedor de IA junto al que coordina, el reparto tiene TRES ejes — lo que el primero no hace (imagen, audio, vídeo), lo que el otro hace mejor (consultar un corpus con cita) y, el que más rinde, REPARTIR CARGA ENTRE DOS CUOTAS INDEPENDIENTES: lo que se manda al segundo no consume la ventana del primero. Un SOLO ESCRITOR del vault, y lo que vuelve se revisa antes de entrar. Lo que no sale nunca son SECRETOS (contraseñas, claves, tokens), no los datos personales. Automatizar la sesión de navegador de un servicio VIOLA sus condiciones de uso y arriesga la cuenta: no se hace aunque funcione.
 type: doctrine
-version: 1.1
+version: 1.2
 ---
 
 Antes o después aparece un segundo proveedor de IA que hace algo que el que coordina no hace. La pregunta que importa **no es "integrar sí o no"**, sino **qué trabajo se le da y con qué barrera** — porque las dos formas de equivocarse aquí son caras: no aprovecharlo, y dejarle tocar lo que no debe.
@@ -59,6 +59,33 @@ Lo que se automatiza y lo que no tiene un criterio simple: **entra automatizable
 
 **Regla operativa:** un mecanismo de integración se evalúa por **tres** cosas, y la tercera se olvida siempre — que funcione, que no exija credenciales de programador, **y que esté permitido**. Si la herramienta necesita disfrazarse de humano para operar, la respuesta ya está dada.
 
+## El segundo proveedor se ACTIVA, no se supone: el interruptor
+
+Todo lo anterior describe **qué trabajo se le da si lo hay**. Falta lo primero: **si lo hay o no, en este vault y hoy**. Sin esa pieza, cada sesión lo deduce del contexto que le toque, y deducirlo mal cuesta en las dos direcciones — o no se aprovecha una cuota que está pagada, o se improvisa una integración que nadie autorizó.
+
+**El estado del vault se declara en un fichero que alcanza cualquier agente**, con un valor que se lee de un vistazo:
+
+```
+PROVEEDOR_SECUNDARIO_IA = false   →  ninguna sesión lanza su CLI, ni le manda nada,
+                                     ni cuenta con él para planificar una tanda
+PROVEEDOR_SECUNDARIO_IA = true    →  canal abierto, con los límites de esta doctrina
+```
+
+**Y el interruptor tiene DOS caras, porque una sola no funciona:**
+
+| Cara | Qué es | Qué hace |
+|---|---|---|
+| **Declarativa** | el valor escrito donde lo lee cualquier coordinador | que un agente **sepa** en qué estado está sin auditar cinco ficheros de configuración |
+| **Técnica** | el `deny` del CLI en **todos** los perfiles de `settings.json` | que un agente **no pueda** lanzarlo aunque no haya leído nada |
+
+**La declarativa sola es una nota, no una barrera** — es la misma regla que el kit repite en todas partes: *lo que quieras impedir, exprésalo como prohibición explícita, nunca como ausencia del permiso*. Las dos se cambian **en el mismo commit**; si algún día se contradicen, **gana el `deny`** y lo que hay que corregir es la ficha.
+
+**Lo que el interruptor NO decide** — y conviene tenerlo claro para no darle más poder del que tiene: no toca el **escritor único**, ni la lista de lo que nunca se delega (coordinar, decidir, verificarse a sí mismo, escribir), ni la frontera de datos. Eso es igual con la llave puesta o quitada. **El interruptor decide si existe el canal, no qué se le confía.**
+
+**Nace en `false`, y ahí está su valor.** Un vault sin interruptor no está protegido: está **sin decidir**. La posición apagada es la que impide que una sesión futura, con una tanda pesada delante, se invente la vía y crea que hace lo correcto.
+
+**El procedimiento concreto se deja EN BLANCO hasta que haya un piloto medido en la propia máquina.** Escribir los pasos a partir de un informe es exactamente el error que esta doctrina ya documenta más abajo: un informe llegó a recomendar como mecanismo principal una herramienta retirada dos meses antes. **Un interruptor sin procedimiento es honesto; un procedimiento inventado es una trampa para el que venga.**
+
 ## Cómo se evalúa un mecanismo, en cuatro columnas
 
 Cualquier candidato se anota así antes de decidir, y **los descartados se conservan en la tabla con su motivo** — para no volver a investigarlos dentro de seis meses:
@@ -83,4 +110,4 @@ Lo de arriba es método y aguanta. Esto son hechos de plataforma, y son lo más 
 
 Relacionada: [[soberania_datos_local]], [[sensitive_file_guard]], [[adopcion_tooling_externo_caso_uso_concreto]], [[verificacion_fuente_primaria]], [[orquestacion_sesiones_por_herramienta]], [[modelo_por_tarea]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v1.1 (2026-08-14): corrección del director, y corrige un sesgo mío de la v1.0.** La v1.0 planteaba el reparto como "el segundo hace lo que el primero no hace", y eso deja fuera el argumento más fuerte: **las cuotas son independientes**, así que mover volumen al segundo **estira los límites del primero**, que son el cuello de botella real. Añadido ese tercer eje, y con él que **la regla del modelo apropiado no se detiene en la frontera del proveedor** — el modelo económico del otro puede ganar al propio en tareas concretas, y su ventana puede ser mayor. Se separa además **ejecutar/leer/resumir** (sí se delega) de **coordinar/decidir** (no). **Frontera de datos redefinida por el director:** lo que no sale nunca son **secretos** —contraseñas, claves, tokens—, que es seguridad de sistemas; los **datos personales sí pueden ir a un cuaderno cerrado** que no entrene con ellos, con la cautela escrita sobre datos de terceros. Y los reparos a la terminal del otro proveedor quedan marcados como lo que son: **reportes de comunidad no verificados**, que justifican pilotar midiendo, no descartar. **v1.0 (2026-08-13):** nace de dos investigaciones sobre sumar un segundo proveedor de IA al sistema. Lo estructural —un solo escritor, el reparto funcional, el flujo con puerta humana, la evaluación en cuatro columnas y la prohibición de automatizar sesiones— **no depende del proveedor** y se mantiene. La sección de estado sí caduca: refréscala con [[vigilancia_tecnologica_bajo_demanda]]. **Nada de esto está adoptado todavía**: describe el marco con el que se decidirá cuando exista la cuenta, no una integración en marcha. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado y **no se hereda** automáticamente.
+> Pieza de catálogo `general/comun/doctrinas/`. **v1.2 (2026-08-14): el segundo proveedor pasa a ACTIVARSE con un interruptor, en vez de deducirse del contexto.** Encargo del director al plantear que un vault nuevo debería preguntar si hay cuenta y guardar la respuesta como un valor que el agente entienda. Se añade el interruptor de **dos caras** —el valor declarado donde lo lee cualquier coordinador, y el `deny` del CLI en **todos** los perfiles— porque la cara declarativa sola es una nota y no una barrera. **Nace en `false`, y esa es su función**: apagado es cuando sirve, porque impide que una sesión futura improvise la integración creyendo que hace lo correcto. Y **el procedimiento se deja en blanco** hasta que haya piloto medido en la propia máquina: escribirlo desde un informe es el error que esta misma doctrina documenta. **v1.1 (2026-08-14): corrección del director, y corrige un sesgo mío de la v1.0.** La v1.0 planteaba el reparto como "el segundo hace lo que el primero no hace", y eso deja fuera el argumento más fuerte: **las cuotas son independientes**, así que mover volumen al segundo **estira los límites del primero**, que son el cuello de botella real. Añadido ese tercer eje, y con él que **la regla del modelo apropiado no se detiene en la frontera del proveedor** — el modelo económico del otro puede ganar al propio en tareas concretas, y su ventana puede ser mayor. Se separa además **ejecutar/leer/resumir** (sí se delega) de **coordinar/decidir** (no). **Frontera de datos redefinida por el director:** lo que no sale nunca son **secretos** —contraseñas, claves, tokens—, que es seguridad de sistemas; los **datos personales sí pueden ir a un cuaderno cerrado** que no entrene con ellos, con la cautela escrita sobre datos de terceros. Y los reparos a la terminal del otro proveedor quedan marcados como lo que son: **reportes de comunidad no verificados**, que justifican pilotar midiendo, no descartar. **v1.0 (2026-08-13):** nace de dos investigaciones sobre sumar un segundo proveedor de IA al sistema. Lo estructural —un solo escritor, el reparto funcional, el flujo con puerta humana, la evaluación en cuatro columnas y la prohibición de automatizar sesiones— **no depende del proveedor** y se mantiene. La sección de estado sí caduca: refréscala con [[vigilancia_tecnologica_bajo_demanda]]. **Nada de esto está adoptado todavía**: describe el marco con el que se decidirá cuando exista la cuenta, no una integración en marcha. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado y **no se hereda** automáticamente.

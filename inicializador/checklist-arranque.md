@@ -28,7 +28,8 @@ Pasos para inicializar la coordinación de un asunto nuevo. Lo hace el director 
 
 ## 4. Fijar el `.claude/settings.json` de aislamiento
 
-- Copia `inicializador/plantilla-settings-coordinador.json` → `asuntos/<asunto>/.claude/settings.json`. Ya es **portable**: apunta al catálogo con ruta relativa (`../../general`) y no lleva ninguna ruta de máquina que sustituir.
+- Copia `inicializador/plantilla-settings-coordinador.json` → `asuntos/<asunto>/.claude/settings.json`. Ya es **portable**: apunta con rutas relativas al catálogo (`../../general`) y a la memoria del vault (`../../_meta/memoria`), y no lleva ninguna ruta de máquina que sustituir.
+  - **Si el vault tiene el segundo proveedor de IA activado** (`PROVEEDOR_SECUNDARIO_IA = true` en `_meta/memoria/proveedor-secundario-ia.md`), **retira de este perfil el `deny` de su CLI**, que la plantilla trae puesto. Si está en `false` —lo normal—, **no toques nada**: viene bien por defecto ([[reparto_entre_proveedores_ia]]).
 - Crea tu **`asuntos/<asunto>/.claude/settings.local.json`** (gitignored) con las **rutas de esta máquina** que el asunto necesite en `additionalDirectories` (la carpeta donde el escáner deja los PDF, la unidad externa de copias). Distintas por máquina, no se versionan. Plantilla en [plantilla-settings-coordinador.NOTAS.md](plantilla-settings-coordinador.NOTAS.md).
 - **Verifica el aislamiento antes de fiarte de él:** que el coordinador escribe en su contenedor, que lee `general/` pero **no puede escribirlo**, y que no anda por otros asuntos. Los caveats conocidos (el deny por ruta relativa no funciona en Windows; la invisibilidad entre asuntos hermanos es blanda) están en las NOTAS. Compruébalo, no lo supongas.
 

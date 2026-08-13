@@ -15,6 +15,7 @@ Consecuencia directa: si `git push` se permitiera aflojando el `deny` de `planti
 Si este `.json` solo añadiera `git push` a un perfil vacío, la sesión quedaría **más abierta que el coordinador** — justo lo contrario de lo que busca esta tanda. Por eso reconstruye desde cero, **sin partir de una copia recortada del perfil del coordinador**, lo que allí se da por hereditario:
 
 - **`sudo` / `su` / `rm -rf`** — suelo de seguridad mínimo. Sin esto, una sesión con permiso de `git push` y sin restricción de sistema es más peligrosa que cualquier otro perfil del kit.
+- **`agy` / `antigravity`** — el interruptor del segundo proveedor de IA, apagado. **Aquí importa más que en ningún otro perfil**, porque este es el único que puede publicar: un segundo agente suelto en la sesión que tiene `git push` es exactamente el escenario que la regla del **escritor único** existe para impedir. Detalle en [`plantilla-settings-coordinador.NOTAS.md`](plantilla-settings-coordinador.NOTAS.md).
 - **Lectura de credenciales de máquina** (`~/.ssh`, `~/.aws`, `~/.gnupg`, `~/.config/gh`, `id_rsa`, `id_ed25519`) — las llaves a cuentas reales. Especialmente sensible aquí: es la sesión que sí toca un remoto de verdad.
 - **`curl` / `wget` / `Invoke-WebRequest` / `Invoke-RestMethod`** — comandos genéricos de red, contramedida contra inyección de instrucciones (el código y los commits que esta sesión ve pueden venir de fuera).
 - **`git config --global`** — no toca configuración de usuario fuera de este repositorio.
