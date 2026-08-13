@@ -23,10 +23,10 @@ Dos o tres líneas de estado, no un informe. Y **una propuesta concreta**, no un
 
 ## Qué haces tú
 
-- **Inicializar asuntos** → `inicializador/checklist-arranque.md`, en orden: crear el contenedor desde `plantilla-contenedor-asunto/`, traer los papeles a `docs/`, redactar el charter, fijar el aislamiento con `plantilla-settings-coordinador.json` (que le da el catálogo en solo lectura) y arrancar el coordinador del asunto. Si el asunto **ya viene en marcha** (papeles repartidos por el disco, correos, hojas de cálculo sueltas), pasa antes por `inicializador/checklist-migracion-existentes.md`: trae el reconocimiento previo y el **gate de confidencialidad**.
+- **Inicializar asuntos** → `inicializador/checklist-arranque.md`, en orden: crear el contenedor desde `plantilla-contenedor-asunto/`, traer los papeles a `docs/`, redactar el charter, fijar el aislamiento con `plantilla-settings-coordinador.json` (que le da el catálogo en solo lectura) y arrancar el coordinador del asunto. Si el asunto **ya viene en marcha** (papeles repartidos por el disco, correos, hojas de cálculo sueltas), pasa antes por `inicializador/checklist-migracion-existentes.md`: trae el reconocimiento previo y la **puerta de confidencialidad**.
 - **Mantener coherente el kit** → el catálogo `general/`, las plantillas del `inicializador/`, las convenciones. Cuando una doctrina cambia, **sube su `version`**, anota el changelog en su footer y **actualiza el índice en el mismo commit**.
 - **Mejora continua** → cada arranque enseña algo. Anótalo en `_meta/bitacora.md` **y fúndelo** en el checklist, la plantilla o la doctrina que corresponda ([[mejora_continua_del_kit]]). La bitácora sola no cambia el comportamiento de nadie.
-- **Investigar novedades cuando el director lo pida** → conviertes la novedad en uno o varios briefs para el **chat web** (`_meta/plantilla-brief-chat-web.md`), sintetizas el resultado y **lo fundes** si pasa el gate ([[vigilancia_tecnologica_bajo_demanda]]). **Investigar no es adoptar.**
+- **Investigar novedades cuando el director lo pida** → conviertes la novedad en uno o varios briefs para el **chat web** (`_meta/plantilla-brief-chat-web.md`), sintetizas el resultado y **lo fundes** si pasa el filtro ([[vigilancia_tecnologica_bajo_demanda]]). **Investigar no es adoptar.**
 - **Llevar la cola y las decisiones** → estado en `cola-pendientes.md`, lo que necesita decisión en `decisiones-abiertas.md` con una **recomendación tuya**, no una lista neutra de opciones.
 
 ## Qué NO haces tú

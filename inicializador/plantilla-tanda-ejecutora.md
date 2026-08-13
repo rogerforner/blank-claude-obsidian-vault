@@ -1,14 +1,14 @@
-# Plantilla de tanda ejecutora — specs grandes y autónomas
+# Plantilla de tanda ejecutora — especificaciones grandes y autónomas
 
-> **Para qué.** La palanca de mayor retorno para reducir el trasiego manual **no es automatizar el transporte, es hacer las tandas más grandes y autónomas**: una spec bien cerrada reduce a la vez los **relevos** y las **preguntas**. Esta plantilla es el **contrato** entre el coordinador y la sesión ejecutora. Rellena, **borra este bloque** y entrega. Formato: [[formato_prompts_markdown_limpio]]; frases en una línea continua, saltos solo en la estructura.
+> **Para qué.** La palanca de mayor retorno para reducir el trasiego manual **no es automatizar el transporte, es hacer las tandas más grandes y autónomas**: una especificación bien cerrada reduce a la vez los **relevos** y las **preguntas**. Esta plantilla es el **contrato** entre el coordinador y la sesión ejecutora. Rellena, **borra este bloque** y entrega. Formato: [[formato_prompts_markdown_limpio]]; frases en una línea continua, saltos solo en la estructura.
 >
-> **Regla de oro:** si la ejecutora tiene que **preguntar algo**, es que faltaba en la spec. Cada pregunta que recibas es *feedback* para mejorar la siguiente tanda.
+> **Regla de oro:** si la ejecutora tiene que **preguntar algo**, es que faltaba en la especificación. Cada pregunta que recibas es *feedback* para mejorar la siguiente tanda.
 >
-> **Y esta spec se escribe LIGERA, no exhaustiva.** Un plan rígido empeora las tareas dinámicas —cuando un paso sorprende a mitad, el plan estático no se adapta—, y un plan tan detallado que llena el contexto **degrada al propio agente**. Ligero significa: pasos, criterio de aceptación por paso y diagnóstico previo; nada más para una tarea pequeña. El detalle de más no es prudencia, es coste.
+> **Y esta especificación se escribe LIGERA, no exhaustiva.** Un plan rígido empeora las tareas dinámicas —cuando un paso sorprende a mitad, el plan estático no se adapta—, y un plan tan detallado que llena el contexto **degrada al propio agente**. Ligero significa: pasos, criterio de aceptación por paso y diagnóstico previo; nada más para una tarea pequeña. El detalle de más no es prudencia, es coste.
 
 ## ANULACIÓN DE ROL — este bloque va PRIMERO y se copia tal cual
 
-> **Déjalo literal en la spec. No lo resumas, no lo muevas al final y no lo des por sobreentendido.** No es formalismo: sin él, la tanda se puede perder entera.
+> **Déjalo literal en la especificación. No lo resumas, no lo muevas al final y no lo des por sobreentendido.** No es formalismo: sin él, la tanda se puede perder entera.
 
 ```text
 No eres el coordinador de este asunto. Eres una SESIÓN EJECUTORA con un contrato cerrado.
@@ -23,15 +23,15 @@ Tu trabajo es HACER lo que dice esta spec, con tus propias manos, en esta misma 
 
 **De dónde sale, con su factura.** Una ejecutora lanzada correctamente —enraizada en el contenedor, como manda la doctrina— **cargó el `CLAUDE.md` del asunto, leyó "COORDINAS Y PROTEGES TU CONTEXTO… el trabajo voluminoso lo delegas", concluyó que su tanda era voluminosa e intentó lanzar OTRA ejecutora**. No hizo nada de lo encargado y **devolvió `success`**. Coste medido: **1,11 USD y una pasada en vacío** *(caso real de este vault, 2026-08-14)*.
 
-**Y la lección de fondo, que vale más allá de este bloque: dos reglas correctas del kit se pisaban entre sí.** "El directorio de trabajo es el contrato" manda enraizar la hija en el contenedor; "los ficheros de contexto se acumulan hasta tu carpeta" hace que ahí dentro se cargue un fichero que dice *"eres el coordinador"*. Las dos siguen siendo verdad. **Lo que no funciona es confiar en que llamarla "ejecutora" en la spec baste: el `CLAUDE.md` pesa más que un rótulo**, porque llega antes y con más autoridad. **Un rol solo se anula anulándolo explícitamente.**
+**Y la lección de fondo, que vale más allá de este bloque: dos reglas correctas del kit se pisaban entre sí.** "El directorio de trabajo es el contrato" manda enraizar la hija en el contenedor; "los ficheros de contexto se acumulan hasta tu carpeta" hace que ahí dentro se cargue un fichero que dice *"eres el coordinador"*. Las dos siguen siendo verdad. **Lo que no funciona es confiar en que llamarla "ejecutora" en la especificación baste: el `CLAUDE.md` pesa más que un rótulo**, porque llega antes y con más autoridad. **Un rol solo se anula anulándolo explícitamente.**
 
-**Repítelo en el prompt de lanzamiento, no solo en la spec.** Son dos sitios a propósito: la spec la lee cuando abre el fichero; el prompt lo tiene delante desde el primer token.
+**Repítelo en el prompt de lanzamiento, no solo en la especificación.** Son dos sitios a propósito: la especificación la lee cuando abre el fichero; el prompt lo tiene delante desde el primer token.
 
 ## Setup
 
 **Working dir: `{{RUTA_ABSOLUTA}}`** — el **cwd real del proceso**, no una frase de este prompt: normalmente el contenedor del asunto. **La ejecutora se lanza DENTRO de él** (`cd "{{RUTA_ABSOLUTA}}" && claude -p …`), porque el cwd decide qué `CLAUDE.md` y qué configuración de proyecto se cargan, qué hooks y permisos aplican y **dónde busca por defecto**: enraizarla en el sitio equivocado le da las reglas de otro asunto, deja sus hooks sin disparar y la manda a buscar donde no está lo que busca. Lo que esté **fuera** de ese directorio se le pasa con **`--add-dir`** (solo para LEER) o **no lo ve**. → [[orquestacion_sesiones_por_herramienta]]
 
-**Dónde vive este contrato:** esta spec y su fichero de plan viven **dentro del working dir** — la hija se enraíza donde tiene que **escribir**, y el plan tiene que nacer donde ella puede escribirlo. Ninguno de los dos se versiona: son material de trabajo y **se borran al cerrar la tanda** ([[convencion_organizacion_carpeta_trabajo]]); el commit por **pathspec** ya impide que se cuelen.
+**Dónde vive este contrato:** esta especificación y su fichero de plan viven **dentro del working dir** — la hija se enraíza donde tiene que **escribir**, y el plan tiene que nacer donde ella puede escribirlo. Ninguno de los dos se versiona: son material de trabajo y **se borran al cerrar la tanda** ([[convencion_organizacion_carpeta_trabajo]]); el commit por **pathspec** ya impide que se cuelen.
 
 **Fase: `{{análisis | ejecución}}`** — si es ejecución y la tanda lleva análisis, **Plan de referencia:** `plan-tanda-{{NOMBRE}}.md`. *(Ojo: el `Plan mode` de abajo es el modo del CLI y **no** es esto; la fase de análisis es una **ejecutora aparte con entregable escrito**.)*
 
@@ -47,13 +47,13 @@ Modelo: `{{MODELO}}`. Effort: `{{EFFORT}}`. **Los dos salen de la tabla rol → 
 
 **Contrato de la ejecutora de análisis:** **no modifica material, no commitea y deja el historial intacto.** Su **único** entregable de escritura es `plan-tanda-{{NOMBRE}}.md` en el working dir, con estos cinco apartados:
 
-1. **Verificación en fuente primaria de CADA premisa de esta spec, con el comando ejecutado y su salida.** No "se ha comprobado que": el comando y lo que devolvió. → [[verificacion_fuente_primaria]]
-2. **Premisas de la spec que resultan FALSAS**, listadas explícitamente. Es el apartado que hace útil el plan; **si está vacío, dilo vacío**.
+1. **Verificación en fuente primaria de CADA premisa de esta especificación, con el comando ejecutado y su salida.** No "se ha comprobado que": el comando y lo que devolvió. → [[verificacion_fuente_primaria]]
+2. **Premisas de la especificación que resultan FALSAS**, listadas explícitamente. Es el apartado que hace útil el plan; **si está vacío, dilo vacío**.
 3. **Inventario de lo que va a tocar**, con el perímetro.
-4. **Decisiones que la spec dejó abiertas sin darse cuenta** y hay que cerrar antes de empezar.
+4. **Decisiones que la especificación dejó abiertas sin darse cuenta** y hay que cerrar antes de empezar.
 5. **Orden de pasos y riesgos**, incluido qué hacer si un paso falla a mitad.
 
-**Y luego lo importante, que es tuyo:** lee el plan, **corrige esta spec** con lo que haya destapado, y **solo entonces** lanza la ejecución. El plan no existe para que la ejecutora se organice: existe para que **tú arregles la spec antes de que cueste trabajo**. Si no vas a leerlo, no lances la fase.
+**Y luego lo importante, que es tuyo:** lee el plan, **corrige esta especificación** con lo que haya destapado, y **solo entonces** lanza la ejecución. El plan no existe para que la ejecutora se organice: existe para que **tú arregles la especificación antes de que cueste trabajo**. Si no vas a leerlo, no lances la fase.
 
 **Comprueba que fue read-only de verdad** (un comando, y llevas la cuenta): `git status --short` muestra solo el fichero de plan, y `HEAD` no se ha movido. No se instala ningún guard para forzarlo — se mide después.
 
@@ -134,7 +134,7 @@ La ejecutora **ejecuta estos comandos y reporta el output literal** antes de cer
 
 **Límite del informe: `{{N}}` líneas.** *(Campo obligatorio, no adorno.)* Lo que devuelve una sesión hija **entra íntegro en el contexto de quien la lanzó**: el aislamiento protege del ruido intermedio —tus lecturas, tus descartes— pero no de un informe verboso. Un informe sin límite no es un ahorro, es un rodeo. Si no cabe en el límite, **el detalle va a un fichero** y el informe lo referencia. → [[orquestacion_sesiones_por_herramienta]]
 
-Dentro de ese límite: qué has hecho y **dónde** (ficheros y commits). El **output literal** de los comandos de la definition of done. Los criterios de aceptación, **uno por uno**, con la evidencia de que se cumplen. Lo que **NO** has hecho y por qué. Hallazgos y decisiones que tomaste tú. Y si algo de la spec estaba mal o faltaba, **dilo explícitamente**: es lo que mejora la siguiente tanda.
+Dentro de ese límite: qué has hecho y **dónde** (ficheros y commits). El **output literal** de los comandos de la definition of done. Los criterios de aceptación, **uno por uno**, con la evidencia de que se cumplen. Lo que **NO** has hecho y por qué. Hallazgos y decisiones que tomaste tú. Y si algo de la especificación estaba mal o faltaba, **dilo explícitamente**: es lo que mejora la siguiente tanda.
 
 **Y una línea de constancia al arrancar:** con qué **modelo y esfuerzo** estás corriendo de verdad (`/status` lo dice, y el esfuerzo aparece junto al indicador de actividad). No existe ninguna variable que lo estampe sola: es convención, y sirve para saber después con qué se hizo un trabajo — sobre todo si un clasificador te cambió el modelo por el camino.
 
@@ -175,7 +175,7 @@ cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "No eres el coordinador de est
 > - **`subtype: success` NO significa trabajo hecho.** Es el veredicto del **runner**, no del modelo: una ejecutora que no hizo nada de lo encargado devolvió `success` igual. **El verde falso puede venir de la tubería y no del trabajo.** Lo que lo destapó fue un `wc -c` **desde fuera**, no su informe — que ni llegó a existir. **Comprueba el efecto en el disco, no el código de salida.**
 > - **El modo plan DESVÍA el entregable.** Si lanzas la fase de análisis con `--permission-mode plan` para tener barrera real de solo lectura, la hija puede **escribir su plan en `~/.claude/plans/`** en vez de devolverlo, y lo que te llega es una frase diciendo *"está en el plan"* — con el contenido fuera del working dir y recuperable solo del transcript. **Si quieres un fichero de una sesión en modo plan, dale permiso de escritura acotado a ese fichero o recoge la salida por redirección.** No des por hecho que el entregable aparecerá donde lo pediste.
 
-Lee el plan, **corrige la spec**, y entonces:
+Lee el plan, **corrige la especificación**, y entonces:
 
 ```bash
 cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "No eres el coordinador de este asunto: el CLAUDE.md que vas a cargar es suyo y no se te aplica. NO lances subprocesos ni otra ejecutora, NO uses subagentes, y que el trabajo sea voluminoso no es motivo para delegarlo: es el motivo por el que existes. Ejecuta con tus propias manos la tanda descrita en <spec-ya-corregida>.md, apoyandote en plan-tanda-<nombre>.md. Escribe tu reporte en informe-tanda.md" \
@@ -213,6 +213,6 @@ cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "No eres el coordinador de est
 
 ## Nota de trazabilidad
 
-La conclusión de la que sale esta plantilla —que cerrar mejor la spec rinde más que automatizar el transporte— venía de un estudio interno del kit. **El estudio no viaja en el seed** (es evidencia de las rondas del vault de origen); el argumento y el dato se conservan aquí, en el cuerpo. Lo que se ha retirado es el anexo, no el razonamiento.
+La conclusión de la que sale esta plantilla —que cerrar mejor la especificación rinde más que automatizar el transporte— venía de un estudio interno del kit. **El estudio no viaja en el seed** (es evidencia de las rondas del vault de origen); el argumento y el dato se conservan aquí, en el cuerpo. Lo que se ha retirado es el anexo, no el razonamiento.
 
 *(También se ha retirado del `## Setup` la línea de rama de trabajo y promoción entre entornos: el vault es **git local sin ramas de entorno**, así que no tiene equivalente. Si el asunto incluye software propio, eso vive en el pack `codigo/`.)*

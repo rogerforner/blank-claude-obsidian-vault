@@ -40,4 +40,4 @@ Alternativa oficial: `claude install latest` (o `claude update`) desde un shell 
 Una entrada útil tiene: **síntoma literal** (lo que se ve en pantalla), **causa raíz** (por qué pasa, no solo qué lo arregla), **diagnóstico reproducible** (comandos con su output esperado) y **solución verificada** — verificada de verdad, no supuesta ([[verificacion_fuente_primaria]]). Si solo tienes una hipótesis, escríbela **como hipótesis**.
 
 > Pieza de catálogo `general/comun/`. Referencia de troubleshooting (no es doctrina). Rutas con `~`/`%APPDATA%` por portabilidad.
-> Adaptada al framing neutro del seed (sin referencias a repositorios de software) — 2026-07-29. Lo específico de software vive en el pack `codigo/`.
+> Adaptada al enfoque neutro de la plantilla (sin referencias a repositorios de software) — 2026-07-29. Lo específico de software vive en el pack `codigo/`.

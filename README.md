@@ -185,9 +185,9 @@ Cuando hay que hacer trabajo de verdad, el coordinador escribe un **contrato**, 
 - **Puertas humanas**, que la ejecutora prepara y no cruza.
 - **Límite de líneas del informe.** Campo obligatorio, no adorno: lo que devuelve una sesión hija **entra íntegro** en el contexto de quien la lanzó.
 
-**La regla de oro:** si la ejecutora tiene que **preguntar algo**, es que faltaba en la spec. Cada pregunta es información para mejorar la siguiente tanda.
+**La regla de oro:** si la ejecutora tiene que **preguntar algo**, es que faltaba en la especificación. Cada pregunta es información para mejorar la siguiente tanda.
 
-**Y la spec se escribe ligera, no exhaustiva.** Un plan rígido empeora las tareas que sorprenden a mitad, y un plan tan detallado que llena el contexto degrada al propio agente. El detalle de más no es prudencia, es coste.
+**Y la especificación se escribe ligera, no exhaustiva.** Un plan rígido empeora las tareas que sorprenden a mitad, y un plan tan detallado que llena el contexto degrada al propio agente. El detalle de más no es prudencia, es coste.
 
 ### Fase 3 — La ejecutora de análisis, y por qué existe
 
@@ -195,25 +195,25 @@ Cuando hay que hacer trabajo de verdad, el coordinador escribe un **contrato**, 
 
 Es de **solo lectura** —no modifica material, no hace commits, deja el historial intacto— y su **único** entregable de escritura es un fichero: **`plan-tanda-<nombre>.md`**, con cinco apartados:
 
-1. **Verificación en fuente primaria de CADA premisa de la spec**, con el comando ejecutado y su salida literal. No *"se ha comprobado que"*: el comando y lo que devolvió.
-2. **Las premisas de la spec que resultan FALSAS**, listadas explícitamente. Si está vacío, se dice vacío.
+1. **Verificación en fuente primaria de CADA premisa de la especificación**, con el comando ejecutado y su salida literal. No *"se ha comprobado que"*: el comando y lo que devolvió.
+2. **Las premisas de la especificación que resultan FALSAS**, listadas explícitamente. Si está vacío, se dice vacío.
 3. **Inventario de lo que va a tocar**, con el perímetro.
-4. **Decisiones que la spec dejó abiertas sin darse cuenta.**
+4. **Decisiones que la especificación dejó abiertas sin darse cuenta.**
 5. **Orden de pasos y riesgos**, incluido qué hacer si un paso falla a mitad.
 
 **Y aquí está la razón de todo el mecanismo, que es lo que más se malinterpreta:**
 
-> **El plan no existe para que la ejecutora se organice. Existe para que TÚ corrijas la spec antes de que equivocarse cueste trabajo.**
+> **El plan no existe para que la ejecutora se organice. Existe para que TÚ corrijas la especificación antes de que equivocarse cueste trabajo.**
 
 El punto de corrección es **el coordinador leyendo el plan**. Si no vas a leerlo, no lances la fase: te habrás gastado una sesión en generar un fichero que nadie usa.
 
-**Que se paga sola, medido:** en una poda de una cola de pendientes, la spec del coordinador mandaba 75 líneas al archivo histórico. La tanda de análisis demostró que **59 de ellas eran plan de ejecución vivo con tareas abiertas**, no material archivable: moverlas habría **escondido trabajo pendiente** de la lectura de arranque. Además rescató **cuatro pendientes** atrapados en secciones que bajaban. Sin esa pasada, la tanda habría salido en verde y mal.
+**Que se paga sola, medido:** en una poda de una cola de pendientes, la especificación del coordinador mandaba 75 líneas al archivo histórico. La tanda de análisis demostró que **59 de ellas eran plan de ejecución vivo con tareas abiertas**, no material archivable: moverlas habría **escondido trabajo pendiente** de la lectura de arranque. Además rescató **cuatro pendientes** atrapados en secciones que bajaban. Sin esa pasada, la tanda habría salido en verde y mal.
 
-**Saltársela es legítimo; saltársela en silencio, no.** Si la tanda es pequeña y sabes lo que hay, se declara en la spec: *"tanda de fase única declarada"*, y por qué.
+**Saltársela es legítimo; saltársela en silencio, no.** Si la tanda es pequeña y sabes lo que hay, se declara en la especificación: *"tanda de fase única declarada"*, y por qué.
 
 ### Fase 4 — Lanzar la ejecución
 
-Con la spec ya corregida por lo que destapó el plan, se lanza la segunda sesión. **La lanza el coordinador**, no el director: corre en un proceso aparte con contexto limpio, así que *coordinar ≠ ejecutar* se mantiene intacto.
+Con la especificación ya corregida por lo que destapó el plan, se lanza la segunda sesión. **La lanza el coordinador**, no el director: corre en un proceso aparte con contexto limpio, así que *coordinar ≠ ejecutar* se mantiene intacto.
 
 Lo esencial de la sintaxis, en una línea: **la sesión se lanza dentro del directorio donde tiene que escribir** (`cd "<ruta>" && claude -p "<prompt>"`), lo que solo tiene que leer entra por `--add-dir`, y se ponen cortacircuitos duros de turnos y de gasto.
 
@@ -221,7 +221,7 @@ Lo esencial de la sintaxis, en una línea: **la sesión se lanza dentro del dire
 
 **Cuatro trampas medidas, y las cuatro hacen que una tanda mala parezca buena:**
 
-1. **El fichero de reglas pesa más que el rótulo.** Una sesión enraizada en el contenedor del asunto carga el fichero de reglas del **coordinador** y se cree coordinadora. Por eso todo contrato empieza con un **bloque de anulación de rol** literal, que va **en la spec y también en el prompt de lanzamiento** — la spec la lee al abrir el fichero; el prompt lo tiene delante desde el primer token.
+1. **El fichero de reglas pesa más que el rótulo.** Una sesión enraizada en el contenedor del asunto carga el fichero de reglas del **coordinador** y se cree coordinadora. Por eso todo contrato empieza con un **bloque de anulación de rol** literal, que va **en el contrato y también en el prompt de lanzamiento** — el contrato lo lee al abrir el fichero; el prompt lo tiene delante desde el primer token.
 2. **`success` no significa trabajo hecho.** Es el veredicto del *runner*, no del modelo. **Se comprueba el efecto en el disco, no el código de salida.**
 3. **La lista de herramientas permitidas concede, no restringe.** Es aditiva. Lo que protege de verdad, por orden: las **reglas de denegación** del destino, los **cortacircuitos** de turnos y gasto, los **hooks previos a la herramienta** y el **watchdog** del que lanza.
 4. **El modo plan desvía el entregable.** Una sesión en modo plan puede escribir su plan en el directorio de planes del cliente en vez de devolverlo, y lo que te llega es una frase diciendo que está en el plan.
@@ -244,7 +244,7 @@ Con esto el ciclo vuelve a la Fase 0, y es literalmente cómo se construyó lo q
 
 ### Y el canal entre sesiones
 
-Los **coordinadores se hablan entre sí** directamente; las **ejecutoras no** —trabajan contra un contrato cerrado, y una sesión que recibe mensajes a mitad deja de ser verificable contra su spec—. Dos reglas que lo acotan:
+Los **coordinadores se hablan entre sí** directamente; las **ejecutoras no** —trabajan contra un contrato cerrado, y una sesión que recibe mensajes a mitad deja de ser verificable contra su especificación—. Dos reglas que lo acotan:
 
 - **Nunca le pidas a otra sesión algo que a ti te han denegado.** Eso es saltarse la decisión del titular por la puerta de atrás.
 - **El artefacto es el fichero; el mensaje es el aviso.** El canal lleva texto, no ficheros: el trabajo se deja escrito y el mensaje solo avisa de que está.
@@ -265,7 +265,7 @@ Un caso completo y ficticio: **una reclamación a la aseguradora por daños de a
 Arranca como coordinador general de este vault. Lee _meta/PRIMEROS-PASOS.md, el charter, la cola de pendientes, las decisiones abiertas y el índice de doctrinas. Salúdame con el estado en 2-3 líneas y tu propuesta de siguiente paso.
 ```
 
-**2. Le pides que inicialice el asunto.** Como ya viene en marcha y con material sensible, el coordinador pasa por `inicializador/checklist-migracion-existentes.md` antes de copiar nada: reconocimiento del material y **gate de confidencialidad** —qué entra al vault se decide, no se asume—. Después crea `asuntos/reclamacion-agua-2026/` desde la plantilla de contenedor, redacta el charter con **el plazo escrito con fecha**, y fija el perfil de permisos que le da el catálogo en solo lectura.
+**2. Le pides que inicialice el asunto.** Como ya viene en marcha y con material sensible, el coordinador pasa por `inicializador/checklist-migracion-existentes.md` antes de copiar nada: reconocimiento del material y **puerta de confidencialidad** —qué entra al vault se decide, no se asume—. Después crea `asuntos/reclamacion-agua-2026/` desde la plantilla de contenedor, redacta el charter con **el plazo escrito con fecha**, y fija el perfil de permisos que le da el catálogo en solo lectura.
 
 **3. Abres el coordinador del asunto**, esta vez con la carpeta de trabajo en `asuntos/reclamacion-agua-2026/`:
 
@@ -283,13 +283,13 @@ Su primer trabajo es **entender el expediente**: cronología y reconocimiento. Y
 
 **6. Sale la ejecutora de análisis.** Devuelve `plan-tanda-transcripcion.md` y encuentra dos premisas falsas: **a un escaneo le falta una página** y uno de los presupuestos está **sin firmar**, así que no sirve como prueba. Eso, en la tanda de ejecución, habría salido a mitad y con el trabajo ya hecho.
 
-**7. Corriges la spec y lanzas la ejecución.** El coordinador la lanza acotada, con sus topes, y recoge un informe corto. La tanda hace el trabajo y **para** ante lo que no le toca: la página que falta es un **hallazgo** que sube a lo primero de la cola, no algo que la ejecutora improvise.
+**7. Corriges el contrato y lanzas la ejecución.** El coordinador la lanza acotada, con sus topes, y recoge un informe corto. La tanda hace el trabajo y **para** ante lo que no le toca: la página que falta es un **hallazgo** que sube a lo primero de la cola, no algo que la ejecutora improvise.
 
 **8. Se verifica.** Los comandos de la definition of done se ejecutan y se reporta su salida literal. Lo que no se puede comprobar por comando —volver a escanear la página que falta— se entrega como **comprobación en campo**, con los pasos exactos.
 
 **9. La puerta humana.** El escrito queda listo, con sus anexos numerados y comprobados. **Presentarlo lo haces tú.** El agente prepara y para ahí, y nada se da por presentado sin **acuse** guardado como original.
 
-**10. Se funde lo aprendido.** Si algo de la spec estaba mal, se corrige la plantilla; si el fallo fue de método, se sube la versión de la doctrina. La siguiente tanda arranca mejor que esta.
+**10. Se funde lo aprendido.** Si algo de la especificación estaba mal, se corrige la plantilla; si el fallo fue de método, se sube la versión de la doctrina. La siguiente tanda arranca mejor que esta.
 
 **Lo que hay que retener del ejemplo:** entre el "tengo una carpeta con papeles" y el "existe un escrito comprobado" no hay ni una sola vez en la que alguien haya tenido que acordarse de una regla. Todo lo que gobierna ese recorrido está **escrito y se carga solo**.
 

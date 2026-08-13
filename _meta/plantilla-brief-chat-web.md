@@ -23,9 +23,9 @@
 - **Sin rutas absolutas de máquina** en nada de lo que se proponga versionar.
 - **Cita con fecha y versión.** Lo que cambia rápido (modelos, límites de uso, precios, nombres de opciones de configuración) caduca: un hallazgo sin fecha no es un hallazgo ([[verificacion_fuente_primaria]]).
 
-## El gate: investigar ≠ adoptar
+## El filtro: investigar ≠ adoptar
 
-**Que algo exista, funcione y esté bien no es razón para meterlo en el vault.** Todo candidato pasa el gate de adopción antes de entrar ([[adopcion_tooling_externo_caso_uso_concreto]]):
+**Que algo exista, funcione y esté bien no es razón para meterlo en el vault.** Todo candidato pasa el filtro de adopción antes de entrar ([[adopcion_tooling_externo_caso_uso_concreto]]):
 
 1. **Caso de uso concreto YA** — un trabajo real que hoy duele, no uno hipotético para dentro de un año. Sin esto, se descarta sin más análisis.
 2. **Qué sustituye o simplifica** — si se suma a lo que ya hay sin quitar nada, el coste de mantenimiento sube y la ganancia es dudosa.

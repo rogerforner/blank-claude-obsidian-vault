@@ -32,7 +32,7 @@ Mientras diga `false`, **ninguna sesión de este vault lanza el CLI de un segund
 
 No es un gesto, son cuatro, y **el director da el último**:
 
-1. **Cuenta contratada.** Sin ella no hay caso de uso presente, y el gate de adopción exige presente, no futuro → [[adopcion_tooling_externo_caso_uso_concreto]].
+1. **Cuenta contratada.** Sin ella no hay caso de uso presente, y el filtro de adopción exige presente, no futuro → [[adopcion_tooling_externo_caso_uso_concreto]].
 2. **Verificar cómo se autentica**, en la propia máquina y no en un informe. Si pide clave de API o proyecto facturable, **se para**: factura aparte en silencio. Si automatiza una sesión de navegador, **se descarta** por condiciones de uso.
 3. **Piloto medido como lector**, lanzado por consola igual que una ejecutora, con el criterio de éxito escrito **antes** de empezar.
 4. **El director gira la llave**: se cambia esta línea a `true` y se retira el `deny` de los perfiles, **en el mismo commit**. Los dos gestos o ninguno.

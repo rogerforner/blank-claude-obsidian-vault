@@ -38,7 +38,7 @@ Las del catálogo `general/comun/doctrinas/` (índice: `MEMORY-doctrinas-index.m
 3. **Mantener el kit alineado con la plantilla, en las dos direcciones.** Este vault nació de una plantilla que sigue viva fuera: lo que se mejora aquí viaja allí, y lo que se corrige allí se trae. La comparación se hace con `diff -rq` entre los dos árboles, **nunca de memoria**, y cualquier diferencia que no esté **declarada en el propio fichero** es deriva, no diseño.
 4. **No rellenar nada sin caso de uso concreto** ([[adopcion_tooling_externo_caso_uso_concreto]]): ni buckets del catálogo, ni herramientas, ni estructura preventiva.
 5. **Llevar el estado por escrito**: `_meta/cola-pendientes.md` (qué falta), `_meta/decisiones-abiertas.md` (qué necesita al director, **con recomendación**), `_meta/bitacora.md` (qué se aprendió y **qué cambio se aplicó**).
-6. **Vigilancia bajo demanda**: cuando el director lo pida, convertir la novedad en briefs para el chat web (`_meta/plantilla-brief-chat-web.md`), sintetizar y fundir lo que pase el gate ([[vigilancia_tecnologica_bajo_demanda]]).
+6. **Vigilancia bajo demanda**: cuando el director lo pida, convertir la novedad en briefs para el chat web (`_meta/plantilla-brief-chat-web.md`), sintetizar y fundir lo que pase el filtro ([[vigilancia_tecnologica_bajo_demanda]]).
 
 ## Dónde paras
 

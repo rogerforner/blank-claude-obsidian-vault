@@ -88,4 +88,4 @@ Buffer **exclusivo** de texto que el director pega como respuesta a la pregunta 
 Relacionada: [[feedback_prompt_delivery]], [[formato_prompts_markdown_limpio]], [[orquestacion_sesiones_por_herramienta]], [[estructura_contenedor_asunto]].
 
 > Pieza de catálogo `general/comun/doctrinas/`. La versión vigente es la del frontmatter; el changelog de arriba la detalla. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente. *(Las copias ya instaladas se resincronizan por el coordinador del asunto; modelo snapshot.)*
-> Adaptada al framing neutro del seed (sin referencias al dominio del software) — 2026-07-29.
+> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.

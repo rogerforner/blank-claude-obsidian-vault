@@ -17,7 +17,7 @@
 - **Nada de datos del asunto en el chat web** (ver el aviso de arriba). Esta restricción **gana sobre la utilidad** del resultado.
 - **Solo cuenta la suscripción; NUNCA API** (ni de pago, ni claves, ni cuentas de terceros).
 - **Herramientas locales preferentes**: lo que resuelve algo sin salir de la máquina gana a lo que obliga a subir un documento a un servicio ajeno.
-- **Toda herramienta candidata pasa el gate de adopción** ([[adopcion_tooling_externo_caso_uso_concreto]]). Investigar ≠ adoptar.
+- **Toda herramienta candidata pasa el filtro de adopción** ([[adopcion_tooling_externo_caso_uso_concreto]]). Investigar ≠ adoptar.
 - **Los recursos de terceros se verifican**: disponibilidad, **condiciones de uso verbatim** (sin aviso de licencia = todos los derechos reservados) y **versión con fecha** — un modelo de impreso caducado invalida una presentación.
 
 *(Los criterios de licencia de software, de proveedor de alojamiento y de región de tratamiento viven en el pack `codigo/` y solo aplican si el asunto incluye software propio.)*
@@ -47,4 +47,4 @@ Busca **cómo encaja dentro de las restricciones** (pasos concretos, métodos re
 
 Informe en `asuntos/<asunto>/estudios/<tema>/informe.md`: **resumen ejecutivo**, **hallazgos por pregunta con cita**, **recomendaciones accionables**, **banderas rojas**, y un **veredicto adelante / no / prueba piloto** por opción evaluada, con la condición que lo decide. Síntesis del coordinador en `sintesis-decisiones.md`.
 
-*(La remisión a la carpeta de estudios del propio kit se ha retirado: los estudios del kit no viajan en el seed. Un brief sobre la forma de trabajar se guarda en `_meta/` del vault temático, donde su coordinador decida.)*
+*(La remisión a la carpeta de estudios del propio kit se ha retirado: los estudios del kit no viajan en la plantilla. Un brief sobre la forma de trabajar se guarda en `_meta/` del vault temático, donde su coordinador decida.)*

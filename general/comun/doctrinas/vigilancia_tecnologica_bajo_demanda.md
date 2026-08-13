@@ -1,6 +1,6 @@
 ---
 name: Vigilancia tecnológica bajo demanda
-description: La investigación de novedades externas (modelos, herramientas, métodos) no sigue calendario fijo: la dispara el director cuando detecta algo a evaluar. El coordinador la convierte en uno o varios briefs FOCALIZADOS de deep research (Chat Web), sintetiza y funde los hallazgos en doctrinas/decisiones. Investigar ≠ adoptar: toda adopción pasa el gate (caso de uso, condiciones de uso, soberanía del dato, madurez + piloto).
+description: La investigación de novedades externas (modelos, herramientas, métodos) no sigue calendario fijo: la dispara el director cuando detecta algo a evaluar. El coordinador la convierte en uno o varios briefs FOCALIZADOS de deep research (Chat Web), sintetiza y funde los hallazgos en doctrinas/decisiones. Investigar ≠ adoptar: toda adopción pasa el filtro (caso de uso, condiciones de uso, soberanía del dato, madurez + piloto).
 type: convention
 version: 1.0
 ---
@@ -21,11 +21,11 @@ Lo activa el **director** (o el coordinador, al detectar algo) **cuando quiera**
 
 ## Enfoque (cómo SÍ)
 
-Los briefs se redactan para **encontrar cómo encaja algo dentro de las restricciones** (pasos, métodos reproducibles, evidencia real), **no** para concluir "imposible". Si algo no encaja, se dice con la **condición exacta** que lo bloquea. *(Aprendido de un caso real: un framing escéptico descartó una herramienta que sí servía; la red mostraba métodos concretos que la pregunta, mal planteada, no dejó ver.)*
+Los briefs se redactan para **encontrar cómo encaja algo dentro de las restricciones** (pasos, métodos reproducibles, evidencia real), **no** para concluir "imposible". Si algo no encaja, se dice con la **condición exacta** que lo bloquea. *(Aprendido de un caso real: un enfoque escéptico descartó una herramienta que sí servía; la red mostraba métodos concretos que la pregunta, mal planteada, no dejó ver.)*
 
-## Gate de adopción (investigar ≠ adoptar)
+## Filtro de adopción (investigar ≠ adoptar)
 
-Toda herramienta candidata pasa, en orden: **caso de uso concreto** ([[adopcion_tooling_externo_caso_uso_concreto]]) · **condiciones de uso y licencia** verificadas en la fuente ([[verificacion_fuente_primaria]]) · **soberanía del dato** (¿sale de la máquina lo que se le da? Si hay datos personales del director o de terceros, el servicio en la nube no pasa el gate) · **madurez + piloto**. La adopción es **decisión del director**, no automática por un informe favorable.
+Toda herramienta candidata pasa, en orden: **caso de uso concreto** ([[adopcion_tooling_externo_caso_uso_concreto]]) · **condiciones de uso y licencia** verificadas en la fuente ([[verificacion_fuente_primaria]]) · **soberanía del dato** (¿sale de la máquina lo que se le da? Si hay datos personales del director o de terceros, el servicio en la nube no pasa el filtro) · **madurez + piloto**. La adopción es **decisión del director**, no automática por un informe favorable.
 
 *(Los criterios equivalentes para proyectos de software —licencias permisivas, infraestructura EU/RGPD, servicios externos de la cadena de construcción— viven en el pack `codigo/`: [[licencias_permisivas_estrictas]], [[infra_europa_rgpd]], [[prohibido_uso_herramientas_github_excepto_commits_push]].)*
 
@@ -36,4 +36,4 @@ Estudios de **kit** en `_meta/estudios/<tema>/`; de **asunto** en `asuntos/<asun
 Relacionada: [[revision_periodica_forma_de_trabajo]], [[cuestionar_premisas_arquitectonicas_antes_deep_research]], [[adopcion_tooling_externo_caso_uso_concreto]], [[orquestacion_sesiones_por_herramienta]].
 
 > Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-10). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al framing neutro del seed (sin referencias al dominio del software) — 2026-07-29.
+> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.

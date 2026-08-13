@@ -32,7 +32,7 @@ Si este `.json` solo añadiera `git push` a un perfil vacío, la sesión quedar�
 
 ## Lo que esta plantilla asume que YA pasó
 
-Esta sesión no es donde se corren los gates de calidad ni donde se decide si el código está listo — eso ya lo hizo la sesión ejecutora de código (con `plantilla-settings-ejecutora-codigo.json`, que sí tiene el gestor de paquetes, pruebas, formateador y comprobador estático) antes de lanzar esta sesión. El único trabajo de esta sesión es: comprobar el estado (`git status`, `git log`, `git diff`), y si todo está en orden, `git push`. Si además hace falta re-ejecutar el definition-of-done aquí como última comprobación, el script se lanza igual (no está en `deny`) y, al no estar en `allow`, pedirá confirmación — que es el comportamiento correcto para algo que no es rutina en esta sesión.
+Esta sesión no es donde se corren las puertas de calidad ni donde se decide si el código está listo — eso ya lo hizo la sesión ejecutora de código (con `plantilla-settings-ejecutora-codigo.json`, que sí tiene el gestor de paquetes, pruebas, formateador y comprobador estático) antes de lanzar esta sesión. El único trabajo de esta sesión es: comprobar el estado (`git status`, `git log`, `git diff`), y si todo está en orden, `git push`. Si además hace falta re-ejecutar el definition-of-done aquí como última comprobación, el script se lanza igual (no está en `deny`) y, al no estar en `allow`, pedirá confirmación — que es el comportamiento correcto para algo que no es rutina en esta sesión.
 
 ## Una lista de permitidos CONCEDE, no restringe
 

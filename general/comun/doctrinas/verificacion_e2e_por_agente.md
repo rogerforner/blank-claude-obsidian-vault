@@ -36,4 +36,4 @@ Comprobaciones en campo legítimas: medir algo físicamente (una obra, un metro 
 Relacionada: [[modelo_por_tarea]], [[minimizar_askuserquestion_agente_operativo]], [[verificacion_fuente_primaria]], [[scripts_adhoc_tareas_repetitivas]].
 
 > Pieza de catálogo `general/comun/doctrinas/`. **v1.1 (2026-07-28):** lo no automatizable pasa a **comprobación en campo** con procedimiento escrito, en vez de quedar fuera del criterio de cierre. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al framing neutro del seed (sin referencias al dominio del software) — 2026-07-29.
+> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.

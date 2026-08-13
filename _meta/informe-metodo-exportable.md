@@ -51,13 +51,13 @@ Y el matiz que casi nadie tiene en cuenta: **lo que devuelve un subagente entra 
 
 ### 1.4 Toda tanda no trivial va en dos fases
 
-Primero una sesión de **análisis de solo lectura** cuyo único producto es un fichero de plan que enumera **las premisas falsas de la especificación**. Ese plan lo lee quien escribió la spec, y con él la corrige. Después se ejecuta contra la spec ya corregida.
+Primero una sesión de **análisis de solo lectura** cuyo único producto es un fichero de plan que enumera **las premisas falsas de la especificación**. Ese plan lo lee quien escribió la especificación, y con él la corrige. Después se ejecuta contra la especificación ya corregida.
 
-**El dato que lo justifica:** en una tanda preparada con cuidado, con el inventario medido comando a comando, la fase de análisis encontró **ocho premisas falsas y nueve decisiones que la spec dejaba abiertas sin darse cuenta**. Las ocho eran de quien escribió la spec.
+**El dato que lo justifica:** en una tanda preparada con cuidado, con el inventario medido comando a comando, la fase de análisis encontró **ocho premisas falsas y nueve decisiones que la especificación dejaba abiertas sin darse cuenta**. Las ocho eran de quien escribió la especificación.
 
 **Los cinco tipos que se repiten**, útiles para revisar cualquier encargo antes de lanzarlo:
 
-1. **Premisas que envejecen mientras escribes** — la spec fijaba un estado en un número; al lanzarse, el estado había avanzado. Cita el estado, no lo claves.
+1. **Premisas que envejecen mientras escribes** — la especificación fijaba un estado en un número; al lanzarse, el estado había avanzado. Cita el estado, no lo claves.
 2. **Premisas de simetría** — "copia X y su entrada de índice" solo funciona si la entrada existe. No existía.
 3. **Datos que ya estaban mal antes** — una copia hereda los errores del origen si nadie los mira.
 4. **Texto que habla de dónde vive** y se contradice al moverlo.

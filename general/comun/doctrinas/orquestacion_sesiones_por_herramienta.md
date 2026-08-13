@@ -1,6 +1,6 @@
 ---
 name: Orquestación de sesiones por herramienta — el coordinador divide, no lo ejecuta todo
-description: El cwd con el que se LANZA la sesión hija es parte del contrato (decide reglas, hooks y raíz de búsqueda), y toda tanda no trivial va en dos ejecutoras: análisis read-only con fichero de plan y luego ejecución contra la spec corregida. El coordinador coordina; divide el trabajo en sesiones independientes asignadas a la mejor herramienta (Claude Code CLI, Desktop, cowork, chat) y en subagentes read-only, redacta los prompts y verifica. No ejecuta el trabajo voluminoso en su propia sesión, para no agotar su contexto. Dividir y vencer.
+description: El cwd con el que se LANZA la sesión hija es parte del contrato (decide reglas, hooks y raíz de búsqueda), y toda tanda no trivial va en dos ejecutoras: análisis read-only con fichero de plan y luego ejecución contra la especificación corregida. El coordinador coordina; divide el trabajo en sesiones independientes asignadas a la mejor herramienta (Claude Code CLI, Desktop, cowork, chat) y en subagentes read-only, redacta los prompts y verifica. No ejecuta el trabajo voluminoso en su propia sesión, para no agotar su contexto. Dividir y vencer.
 type: doctrine
 version: 1.10
 ---
@@ -42,21 +42,21 @@ Una hija enraizada en el sitio equivocado sufre varias cosas a la vez, y ninguna
 
 ## Dos ejecutoras: análisis read-only primero, ejecución después
 
-**Toda tanda no trivial se lanza en DOS ejecutoras.** Primero una de **análisis estrictamente read-only** cuyo único entregable de escritura es un fichero `plan-tanda-<nombre>.md`; después la de **ejecución**, lanzada contra la spec **ya corregida** con lo que el plan haya destapado.
+**Toda tanda no trivial se lanza en DOS ejecutoras.** Primero una de **análisis estrictamente read-only** cuyo único entregable de escritura es un fichero `plan-tanda-<nombre>.md`; después la de **ejecución**, lanzada contra la especificación **ya corregida** con lo que el plan haya destapado.
 
-**El mecanismo, que es lo que hay que entender o el requisito se degrada:** el valor **no** está en que la ejecutora tenga un plan. Está en que **el coordinador LEA ese plan y corrija su propia spec antes de que se produzca nada**. Lo que se instala no es "que la ejecutora planifique", es **un punto de corrección barato entre la spec y el trabajo**. Un plan que se escribe y nadie lee no aporta nada y solo suma coste — quien lo entienda como burocracia lo cumplirá en la forma y perderá el efecto entero.
+**El mecanismo, que es lo que hay que entender o el requisito se degrada:** el valor **no** está en que la ejecutora tenga un plan. Está en que **el coordinador LEA ese plan y corrija su propia especificación antes de que se produzca nada**. Lo que se instala no es "que la ejecutora planifique", es **un punto de corrección barato entre la especificación y el trabajo**. Un plan que se escribe y nadie lee no aporta nada y solo suma coste — quien lo entienda como burocracia lo cumplirá en la forma y perderá el efecto entero.
 
 ### Qué lleva el fichero de plan, obligatoriamente
 
-1. **Verificación en fuente primaria de CADA premisa de la spec, con el comando ejecutado y su salida.** No *"se ha comprobado que"*: el comando y lo que devolvió. → [[verificacion_fuente_primaria]]
-2. **Lista explícita de las premisas de la spec que resultan FALSAS.** Es el apartado que convierte el plan en instrumento de corrección y no en resumen. **Si sale vacía, que lo diga vacía.**
+1. **Verificación en fuente primaria de CADA premisa de la especificación, con el comando ejecutado y su salida.** No *"se ha comprobado que"*: el comando y lo que devolvió. → [[verificacion_fuente_primaria]]
+2. **Lista explícita de las premisas de la especificación que resultan FALSAS.** Es el apartado que convierte el plan en instrumento de corrección y no en resumen. **Si sale vacía, que lo diga vacía.**
 3. **Inventario de lo que va a tocar**, con el perímetro pactado.
-4. **Decisiones que la spec dejó abiertas sin darse cuenta** y hay que cerrar antes de empezar.
+4. **Decisiones que la especificación dejó abiertas sin darse cuenta** y hay que cerrar antes de empezar.
 5. **Orden de pasos y riesgos**, incluido qué se hace si un paso falla a mitad.
 
 ### El read-only se COMPRUEBA, no se impide
 
-`--allowedTools` **concede y no restringe** (ver abajo), así que la lectura-sola **no es imponible por flags** y **no se instala un guard** para forzarla. Se **declara** en la spec —no modifica material, no registra cambios, deja el historial intacto— y se **mide después**, que es barato y determinista: `git status --short` muestra **solo** el fichero de plan, y `HEAD` no se ha movido. Y **lleva la cuenta** de las fases limpias: el día que una ejecutora de análisis se ponga a producir, el contador lo delata.
+`--allowedTools` **concede y no restringe** (ver abajo), así que la lectura-sola **no es imponible por flags** y **no se instala un guard** para forzarla. Se **declara** en la especificación —no modifica material, no registra cambios, deja el historial intacto— y se **mide después**, que es barato y determinista: `git status --short` muestra **solo** el fichero de plan, y `HEAD` no se ha movido. Y **lleva la cuenta** de las fases limpias: el día que una ejecutora de análisis se ponga a producir, el contador lo delata.
 
 ### Cuándo SÍ y cuándo NO (esto es lo que evita que se vuelva un impuesto)
 
@@ -64,7 +64,7 @@ Una hija enraizada en el sitio equivocado sufre varias cosas a la vez, y ninguna
 
 **NO** en tandas mecánicas y pequeñas: **arrancar una hija cuesta ~42.000 tokens fijos de caché aunque no haga nada** (medido en una tanda cuyo único trabajo era responder "PONG"), y ese coste se paga **por lanzamiento, no por trabajo hecho** → trocear de más lo multiplica.
 
-**La excepción se DECLARA.** Saltarse el análisis es legítimo; saltárselo **en silencio**, no: la spec dice *"tanda de fase única declarada"* y por qué.
+**La excepción se DECLARA.** Saltarse el análisis es legítimo; saltárselo **en silencio**, no: la especificación dice *"tanda de fase única declarada"* y por qué.
 
 ### Dimensionar los techos
 
@@ -72,7 +72,7 @@ Los cortacircuitos se ponen con **margen del 100% sobre tu propia línea base me
 
 ### Qué evidencia lo sostiene (y qué NO)
 
-**No hubo A/B controlado y no se presenta como tal.** Hay tres casos con contrafactual: un análisis destapó un **bloqueante que la spec no veía** y que habría hecho fallar el resultado desde el primer minuto; otro encontró un **límite de permisos** que iba a quemar tres intentos, y la tanda se **aparcó con razón escrita** en vez de construirse y tirarse; y la **única** tanda lanzada sin análisis es aquella en la que **cuatro decisiones se le cayeron encima a la ejecutora** por huecos de la spec.
+**No hubo A/B controlado y no se presenta como tal.** Hay tres casos con contrafactual: un análisis destapó un **bloqueante que la especificación no veía** y que habría hecho fallar el resultado desde el primer minuto; otro encontró un **límite de permisos** que iba a quemar tres intentos, y la tanda se **aparcó con razón escrita** en vez de construirse y tirarse; y la **única** tanda lanzada sin análisis es aquella en la que **cuatro decisiones se le cayeron encima a la ejecutora** por huecos de la especificación.
 
 **Y el delimitador:** varias tandas posteriores de **fase única declarada** salieron bien, con las ejecutoras cazando premisas falsas sobre la marcha. No refuta el método —se habrían cazado antes y más barato— pero lo acota: **es para la tanda grande o con forma nueva, no para todas.**
 - **Protege tu contexto, en este orden:** (a) **artefacto `.md` como contrato** (la hija escribe el informe, tú lees un extracto) · (b) `--output-format json` (+`--json-schema`) para una salida corta · (c) subagente Explore (Haiku) que resume · (d) ficheros en disco (Bash trunca a 30.000 chars).
@@ -135,7 +135,7 @@ Los cortacircuitos se ponen con **margen del 100% sobre tu propia línea base me
 | Rol | Valor | Por qué |
 |---|---|---|
 | Coordinadores (general y de asunto) | **`accept`** | El canal es para **coordinar**, y es lo que ellos hacen |
-| Ejecutoras y consultor | **`refuse`** | Trabajan contra un **contrato cerrado**: si aceptan mensajes a mitad, su encargo deja de ser el que se les dio y el resultado ya no es verificable contra la spec. *(Los perfiles del pack opcional siguen el mismo criterio: todo lo que no coordina, rechaza.)* |
+| Ejecutoras y consultor | **`refuse`** | Trabajan contra un **contrato cerrado**: si aceptan mensajes a mitad, su encargo deja de ser el que se les dio y el resultado ya no es verificable contra la especificación. *(Los perfiles del pack opcional siguen el mismo criterio: todo lo que no coordina, rechaza.)* |
 | Todos | `isolatePeerMachines: true` | Un mensaje **no sale de la máquina sin aprobación**. Entre sesiones locales viaja por un socket sin pasar por servidores de nadie → [[soberania_datos_local]] |
 
 **`accept` y no "retenido", y el motivo no es comodidad.** El modo retenido abre un diálogo de aprobación por cada mensaje: **deja a la persona de cuello de botella, solo que aprobando en vez de copiando**. Si lo que se quiere es que las sesiones dejen de necesitar un cartero, retener no lo consigue.
@@ -152,7 +152,7 @@ Los cortacircuitos se ponen con **margen del 100% sobre tu propia línea base me
 
 ## Tres trampas de las sesiones hijas, todas medidas
 
-**1. Una ejecutora enraizada en un contenedor HEREDA su `CLAUDE.md` y se cree coordinadora.** Es la más cara y la menos obvia, porque **nace de dos reglas correctas que se pisan**: "el directorio de trabajo es el contrato" manda enraizarla ahí, y "los ficheros de contexto se acumulan hasta tu carpeta" hace que ahí se cargue un fichero que dice *"eres el coordinador… delega el trabajo voluminoso"*. Una ejecutora real lo leyó, concluyó que su tanda era voluminosa e **intentó lanzar otra ejecutora**; no hizo nada y devolvió éxito. **Coste medido: 1,11 USD y una pasada en vacío.** **No basta con llamarla "ejecutora" en la spec: el fichero de contexto pesa más que un rótulo**, porque llega antes y con más autoridad. **Un rol solo se anula anulándolo explícitamente**, en la spec **y** en el prompt de lanzamiento → bloque literal en [`plantilla-tanda-ejecutora.md`](../../../inicializador/plantilla-tanda-ejecutora.md).
+**1. Una ejecutora enraizada en un contenedor HEREDA su `CLAUDE.md` y se cree coordinadora.** Es la más cara y la menos obvia, porque **nace de dos reglas correctas que se pisan**: "el directorio de trabajo es el contrato" manda enraizarla ahí, y "los ficheros de contexto se acumulan hasta tu carpeta" hace que ahí se cargue un fichero que dice *"eres el coordinador… delega el trabajo voluminoso"*. Una ejecutora real lo leyó, concluyó que su tanda era voluminosa e **intentó lanzar otra ejecutora**; no hizo nada y devolvió éxito. **Coste medido: 1,11 USD y una pasada en vacío.** **No basta con llamarla "ejecutora" en la especificación: el fichero de contexto pesa más que un rótulo**, porque llega antes y con más autoridad. **Un rol solo se anula anulándolo explícitamente**, en la especificación **y** en el prompt de lanzamiento → bloque literal en [`plantilla-tanda-ejecutora.md`](../../../inicializador/plantilla-tanda-ejecutora.md).
 
 **2. Un `success` del runner no significa trabajo hecho.** Es el veredicto de la **tubería**, no del modelo. El caso anterior devolvió `success` sin haber tocado nada. **El verde falso puede venir de la herramienta y no del trabajo**, así que **se comprueba el efecto en el disco, no el código de salida** — lo destapó un `wc -c` desde fuera, no el informe de la hija, que ni existió.
 
@@ -178,7 +178,7 @@ Está documentado como **sesgo de automatización** y **síndrome de fuera-del-b
 
 **Consecuencia operativa, y es la que importa:** al automatizar un relevo, **el modo de fallo cambia de "trabajo duplicado visible" a "trabajo duplicado invisible"**, y una premisa corrupta se propaga por la cadena a velocidad que impide corregirla. **Si se quita la puerta de revisión de un sitio, hay que ponerla en otro** —una verificación ejecutable, un criterio de aceptación, una puerta declarada—, no confiar en que el siguiente agente lo note.
 
-**Y el respaldo de por qué el contrato escrito no se debilita nunca:** en el análisis de más de 1.600 trazas de fallo de sistemas multiagente reales (MAST, arXiv:2503.13657, NeurIPS 2025), **el 41,8 % de los fallos son de especificación y el 36,9 % de coordinación entre agentes** — casi cuatro de cada cinco. Solo el 21,3 % son de verificación. La conclusión de los autores es literal: los fallos vienen del **diseño del sistema**, y *"mejoras en la capacidad del modelo base serán insuficientes"* para resolverlos. **No esperes que un modelo mejor arregle una spec ambigua.**
+**Y el respaldo de por qué el contrato escrito no se debilita nunca:** en el análisis de más de 1.600 trazas de fallo de sistemas multiagente reales (MAST, arXiv:2503.13657, NeurIPS 2025), **el 41,8 % de los fallos son de especificación y el 36,9 % de coordinación entre agentes** — casi cuatro de cada cinco. Solo el 21,3 % son de verificación. La conclusión de los autores es literal: los fallos vienen del **diseño del sistema**, y *"mejoras en la capacidad del modelo base serán insuficientes"* para resolverlos. **No esperes que un modelo mejor arregle una especificación ambigua.**
 
 ## Lo que NO se automatiza
 
@@ -210,7 +210,7 @@ Está documentado como **sesgo de automatización** y **síndrome de fuera-del-b
 2. **Asigna** cada pieza a la herramienta óptima.
 3. **Redacta el prompt `.md`** de cada pieza ([[formato_prompts_markdown_limpio]], [[feedback_prompt_delivery]]).
 4. **Lanza él mismo** la sesión (headless, con su `cd`) — o la relaya el director si la herramienta lo exige. **El director no es el transporte por defecto.**
-5. Si la pieza es **no trivial**, ese lanzamiento es primero el de **análisis read-only**: el coordinador **lee el plan**, **corrige su spec** con las premisas falsas que aparezcan, y **solo entonces** lanza la ejecución.
+5. Si la pieza es **no trivial**, ese lanzamiento es primero el de **análisis read-only**: el coordinador **lee el plan**, **corrige su especificación** con las premisas falsas que aparezcan, y **solo entonces** lanza la ejecución.
 6. El coordinador **verifica y reconcilia** (*trust-but-verify*) y prepara el siguiente paso.
 
 ## Ritmo de entrega al director
@@ -230,4 +230,4 @@ Relacionada: [[modelo_por_tarea]] (modelo por tarea + evitar workflows multiagen
 > **v1.6 (2026-08-10):** cuatro banderas rojas añadidas a "Seguridad al subir la autonomía" — montar el socket de control del gestor de contenedores dentro del contenedor del agente equivale a darle la máquina; el sandbox no cubre todo (lectura de sistema de ficheros amplia por defecto, hay que denegar secretos explícitamente); permisos amplios sin preguntas solo en entorno aislado **y** sin red, las dos condiciones a la vez; nunca credenciales de producción en una verificación — destilado del mismo estudio que trajo la ficha de emplazamiento y el pack de código (tanda `brief-runtime`).
 > **v1.5 (2026-08-01):** dos ejecutoras — análisis read-only con entregable `plan-tanda-<nombre>.md` y luego ejecución contra la spec ya corregida; lo que se instala no es que la ejecutora planifique, sino un punto de corrección barato entre la spec y el trabajo. Con los cinco apartados obligatorios (el de premisas FALSAS es el que lo hace instrumento y no resumen), el cuándo NO anclado en los ~42.000 tokens fijos por lanzamiento, la excepción declarada y el read-only comprobado a posteriori en vez de impuesto por flags. **v1.4 (2026-08-01):** el `cwd` de la hija ES el working dir y se fija con el `cd` del lanzamiento: decide reglas auto-cargadas, hooks, permisos y raíz de búsqueda; una línea "Working dir" en el prompt no lo mueve, y los subagentes intra-sesión no se pueden re-enraizar.
 >
-> Adaptada al framing neutro del seed (sin referencias al dominio del software) — 2026-08-01.
+> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-08-01.

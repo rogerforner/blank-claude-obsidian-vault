@@ -64,7 +64,7 @@ Las tres corren **en local** → el documento **no sale de la máquina**. Es la 
 
 ## Opcional + adopción
 
-No son obligatorias ni son dependencia del vault: **instalación per-máquina y a demanda** (no se versiona). Pasan el gate de [[adopcion_tooling_externo_caso_uso_concreto]] cuando hay **caso de uso presente** (hay papeles escaneados que transcribir, o un entregable que presentar en PDF/Word). El coordinador **coordina, no ejecuta**: si la tarea es pesada (transcribir un lote, generar muchos PDF), la **delega a una sesión CLI** vía prompt ([[orquestacion_sesiones_por_herramienta]]).
+No son obligatorias ni son dependencia del vault: **instalación per-máquina y a demanda** (no se versiona). Pasan el filtro de [[adopcion_tooling_externo_caso_uso_concreto]] cuando hay **caso de uso presente** (hay papeles escaneados que transcribir, o un entregable que presentar en PDF/Word). El coordinador **coordina, no ejecuta**: si la tarea es pesada (transcribir un lote, generar muchos PDF), la **delega a una sesión CLI** vía prompt ([[orquestacion_sesiones_por_herramienta]]).
 
 > Pieza de catálogo `general/comun/`. v1.0 (2026-06-15). Tooling LOCAL **opcional** para tareas de documentos (transcripción/conversión/PDF). Se **consulta read-only**; NO se instala por copia en `memoria/` (no es doctrina, es conocimiento de catálogo). La instalación de las herramientas es per-máquina, a demanda.
-> Adaptada al framing neutro del seed (sin referencias a repositorios de software) — 2026-07-29. Lo específico de software vive en el pack `codigo/`.
+> Adaptada al enfoque neutro de la plantilla (sin referencias a repositorios de software) — 2026-07-29. Lo específico de software vive en el pack `codigo/`.

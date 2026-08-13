@@ -1,6 +1,6 @@
 # Pack `codigo/` — doctrinas para asuntos que incluyen software propio
 
-Este es un **pack**: un paquete **opcional** de doctrinas para un dominio concreto, que se suma al catálogo transversal (`general/comun/doctrinas/`) **solo si el vault lo necesita**. Hoy es el único pack del seed.
+Este es un **pack**: un paquete **opcional** de doctrinas para un dominio concreto, que se suma al catálogo transversal (`general/comun/doctrinas/`) **solo si el vault lo necesita**. Hoy es el único pack de la plantilla.
 
 ## Qué es un pack (y qué no es)
 
@@ -36,7 +36,7 @@ Un vault puede tener asuntos de los dos tipos. El pack se instala **por asunto**
 ## Qué NO hace este pack
 
 - **No sustituye al core.** Un asunto de software necesita **todas** las doctrinas transversales del core igual que cualquier otro: el pack solo añade las 10 que el core no puede tener.
-- **No cambia el framing del resto del vault.** El seed usa vocabulario neutro de dominio (**asunto**, **producto**, **verificaciones**, **entregar fuera**); aquí dentro se conserva el vocabulario técnico a propósito, porque el valor del pack es ser concreto. Esa excepción **empieza y acaba en `packs/codigo/`**.
+- **No cambia el enfoque del resto del vault.** La plantilla usa vocabulario neutro de dominio (**asunto**, **producto**, **verificaciones**, **entregar fuera**); aquí dentro se conserva el vocabulario técnico a propósito, porque el valor del pack es ser concreto. Esa excepción **empieza y acaba en `packs/codigo/`**.
 - **No convierte el vault en un repositorio de código.** El vault de coordinación sigue siendo **git local, sin remoto y sin ramas de entorno**. Las doctrinas de rama, push y proveedor de hosting aplican al **repositorio de código, que vive fuera del vault** (excepcionalmente dentro de `repo/`, solo si el asunto declaró esa excepción en `docs/emplazamiento-runtime.md`), y cada una lo dice en su cabecera.
 - **No documenta stacks.** Las notas de una tecnología concreta se escriben en el propio asunto, no aquí. La única pieza atada a un stack es `pnpm_supply_chain`, y está porque la cadena de suministro de paquetes es un riesgo de seguridad, no una preferencia de tooling.
 
@@ -54,7 +54,7 @@ Las doctrinas de este pack —sobre todo [`gates_de_calidad_locales`](doctrinas/
 
 | Necesidad del pack | Claude Code |
 |---|---|
-| Dónde se declaran los hooks del gate | `.claude/settings.<rol>.json` **en el repositorio de código** (fuera del vault) (`PreToolUse` por edición, `Stop`/`SubagentStop` al cerrar turno) |
+| Dónde se declaran los hooks de la puerta | `.claude/settings.<rol>.json` **en el repositorio de código** (fuera del vault) (`PreToolUse` por edición, `Stop`/`SubagentStop` al cerrar turno) |
 | Cómo se expresa una barrera inviolable (push a producción, `rm -rf`, `.env`) | regla `deny` de permisos — gana incluso a `bypassPermissions` |
 | Precedencia entre decisiones | `deny > defer > ask > allow` |
 | Impedir cerrar el turno con el DoD en rojo (patrón sello + huella, [[gates_de_calidad_locales]]) | hook `Stop`/`SubagentStop` con `exit 2` |

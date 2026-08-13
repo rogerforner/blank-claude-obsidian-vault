@@ -13,7 +13,7 @@ Pasos para inicializar la coordinación de un asunto nuevo. Lo hace el director 
 
 - Trae a `asuntos/<asunto>/docs/` el material que ya existe: escaneos, resoluciones, contratos, facturas, presupuestos, correos relevantes convertidos a texto, la hoja de cálculo donde llevabas las cuentas.
 - **Los originales son intocables**: se guardan tal como llegaron y no se editan, no se regeneran, no se "mejoran". Si hay que trabajar sobre uno, se trabaja sobre copia.
-- Si el asunto ya venía en marcha con material voluminoso o sensible, **no lo copies a ciegas**: pasa antes por [checklist-migracion-existentes.md](checklist-migracion-existentes.md), que trae el reconocimiento previo y el **gate de confidencialidad**.
+- Si el asunto ya venía en marcha con material voluminoso o sensible, **no lo copies a ciegas**: pasa antes por [checklist-migracion-existentes.md](checklist-migracion-existentes.md), que trae el reconocimiento previo y la **puerta de confidencialidad**.
 - Si el material está en papel o en PDF escaneado, la transcripción va con **tooling local** ([tooling-documentos](../general/comun/tooling-documentos.md)): nada de conversores web, porque estos papeles llevan datos personales.
 
 - **¿El papel sirve a más de un asunto?** Los documentos transversales —los identificativos de una persona, los de un inmueble, los de un bien— **no van al contenedor**: van al archivo documental del vault, y el asunto los **enlaza por ruta relativa**. Si el vault aún no lo tiene, este es el momento de crearlo ([archivo_documental_compartido](../general/comun/doctrinas/archivo_documental_compartido.md)); si el papel solo sirve a este asunto, su sitio es `docs/` y no hay que montar nada.
@@ -87,5 +87,5 @@ Anota en `_meta/bitacora.md` lo que falló o mejoró en estos pasos y **fúndelo
 Para que la próxima regeneración no lo reintroduzca por descuido:
 
 - **La alineación del repositorio de código** (su README, sus reglas, su `CLAUDE.md`) y el ciclo de ramas y promoción **no están en este checklist**: solo aplican al perfil `asunto con software` y viven en el pack `codigo/`.
-- **La referencia a un estudio interno del kit** que sostenía el paso de las puertas de calidad se ha retirado: los estudios no viajan en el seed. El argumento se conserva aquí en el cuerpo (poner las comprobaciones el día 1 sale más barato que añadirlas después); lo que no viaja es el anexo.
+- **La referencia a un estudio interno del kit** que sostenía el paso de las puertas de calidad se ha retirado: los estudios no viajan en la plantilla. El argumento se conserva aquí en el cuerpo (poner las comprobaciones el día 1 sale más barato que añadirlas después); lo que no viaja es el anexo.
 - **Un enlace a una nota de un stack concreto** (paridad de empaquetado en extensiones de navegador) se ha retirado: era específico de un producto de software y no tiene equivalente doméstico.

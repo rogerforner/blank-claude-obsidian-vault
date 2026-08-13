@@ -49,7 +49,7 @@ charters, handoffs, briefs y estudios no se guardan aquí.
 
 - **Pointer breve**, no duplicar doctrina: el `CLAUDE.md`/`AGENTS.md` del repositorio resume las convenciones operativas vivas y **apunta** a las doctrinas instaladas (`asuntos/<asunto>/memoria/` del vault) y a `docs/`.
 - **Sin referencias a fases ni identificadores históricos** en el contenido ([[docs_sin_fases]]): describe el estado actual del sistema, sus contratos y convenciones.
-- **Refleja las doctrinas operativas** que afectan al agente: push verificado por la sesión principal; subagentes no pushean ([[no_push_por_subagentes]]), commits sin `Co-Authored-By` ([[sin_coautor_commits]]), Haiku para mecánica ([[modelo_por_tarea]]), verificación E2E por el agente ([[verificacion_e2e_por_agente]]), y los gates que impiden cerrar la tarea en rojo ([[gates_de_calidad_locales]]).
+- **Refleja las doctrinas operativas** que afectan al agente: push verificado por la sesión principal; subagentes no pushean ([[no_push_por_subagentes]]), commits sin `Co-Authored-By` ([[sin_coautor_commits]]), Haiku para mecánica ([[modelo_por_tarea]]), verificación E2E por el agente ([[verificacion_e2e_por_agente]]), y las puertas que impiden cerrar la tarea en rojo ([[gates_de_calidad_locales]]).
 
 ## `.claude/rules/` del repo
 

@@ -19,4 +19,4 @@ Documentación de consulta, **sin narrativa histórica ni identificadores de blo
 
 ## Al arrancar
 
-Aquí se trae el material que ya existe (checklist paso 2). Si el asunto venía en marcha, pasa antes por el **gate de confidencialidad** de `../../../inicializador/checklist-migracion-existentes.md`: qué entra lo decide el director.
+Aquí se trae el material que ya existe (checklist paso 2). Si el asunto venía en marcha, pasa antes por la **puerta de confidencialidad** de `../../../inicializador/checklist-migracion-existentes.md`: qué entra lo decide el director.

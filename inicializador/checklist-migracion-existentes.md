@@ -28,12 +28,12 @@ Lanza un **subagente de solo lectura** (preserva tu contexto) que **no toque nad
   - **[SE-QUEDA-FUERA]** — voluminoso o ajeno al asunto: volcados de correo completos, carpetas de fotos, copias de seguridad, duplicados.
   - **[NUNCA-VERSIONAR]** — credenciales, claves de firma, contraseñas apuntadas en un `.txt`, rutas de máquina, ficheros de configuración con valores reales.
 
-### Gate de confidencialidad — **la decisión de qué entra es del director, no tuya**
+### Puerta de confidencialidad — **la decisión de qué entra es del director, no tuya**
 
 El material de un asunto doméstico trae, por definición, **datos personales y sensibles**: DNI y números de cuenta, nóminas y declaraciones, informes médicos, escrituras, y **datos de terceros** que no han decidido nada al respecto (el vecino, el arrendatario, el perito, un familiar). El vault es su sitio y no hay que anonimizarlo para trabajarlo ([[sensitive_file_guard]]) — pero **qué entra se decide, no se asume**:
 
-- Márcalo **[CONFIDENCIAL → GATE DIRECTOR]** y **no lo copies** hasta su OK explícito. Ante duda, **en pausa**: deja solo un puntero (p. ej. `docs/medico/README.md` diciendo qué hay y dónde, sin el contenido).
-- **Categorías que siempre pasan por el gate:** salud, antecedentes, situación laboral o económica de un tercero, material de un procedimiento con abogado, y cualquier documento cuyo titular no sea el director.
+- Márcalo **[CONFIDENCIAL → PUERTA DIRECTOR]** y **no lo copies** hasta su OK explícito. Ante duda, **en pausa**: deja solo un puntero (p. ej. `docs/medico/README.md` diciendo qué hay y dónde, sin el contenido).
+- **Categorías que siempre pasan por la puerta:** salud, antecedentes, situación laboral o económica de un tercero, material de un procedimiento con abogado, y cualquier documento cuyo titular no sea el director.
 - **"El git es local" NO autoriza por sí solo.** Reduce el riesgo de exposición, no lo elimina: el histórico viaja en la copia de seguridad, en el disco externo que se presta y en el portátil que se lleva de viaje. Y lo que entra al histórico **se queda** aunque después borres el fichero.
 - **Datos de terceros:** entran porque hacen falta para el asunto, no para otra cosa; y al cerrar el asunto se conserva lo que la ley obliga y poco más ([[revision_periodica_forma_de_trabajo]]).
 - Registra en `coordinacion/referencia/` **qué quedó fuera y por qué**. Un "esto no está porque el director decidió que no entra" ahorra que la siguiente sesión lo vuelva a proponer.
@@ -81,7 +81,7 @@ Redacta el prompt (coordinar ≠ ejecutar) que: (1) deja en la carpeta de origen
 
 - Búsqueda de ficheros por nombre y extensión: `*.key`, `*.pem`, `*credenciales*`, `*contraseñas*`, `*.kdbx`, ficheros de configuración con valores reales.
 - Búsqueda por contenido de los patrones que no deben quedar en el histórico: claves privadas (`BEGIN PRIVATE KEY`), tokens de servicios, y las contraseñas apuntadas a mano en un `.txt` o en la última página de un escaneo.
-- Cotejo contra la lista **[NUNCA-VERSIONAR]** del paso 1 y contra los **[CONFIDENCIAL → GATE DIRECTOR]** sin OK.
+- Cotejo contra la lista **[NUNCA-VERSIONAR]** del paso 1 y contra los **[CONFIDENCIAL → PUERTA DIRECTOR]** sin OK.
 
 Limpio = adelante. **Un hallazgo = te detienes** y lo sacas *antes* del primer commit; sacarlo después obliga a reescribir el histórico. Que el git sea local **no** elimina este paso.
 
