@@ -41,7 +41,7 @@ Pasos para inicializar la coordinación de un asunto nuevo. Lo hace el director 
 
 ## 5. Evaluar herramientas y fijar la baseline de doctrinas
 
-- Sigue [guia-eleccion-tooling.md](guia-eleccion-tooling.md): inventaría lo disponible y las piezas del catálogo `general/` aplicables a este asunto; aplica los cinco criterios de adopción; instala solo lo aplicable.
+- Sigue [guia-eleccion-tooling.md](guia-eleccion-tooling.md): haz inventario de lo disponible y de las piezas del catálogo `general/` aplicables a este asunto; aplica los cinco criterios de adopción; instala solo lo aplicable.
 - **Las doctrinas NO se instalan: el catálogo se LEE.** El `settings.json` del paso 4 ya le da `../../general` en solo lectura, y un `[[wikilink]]` sin copia local **resuelve al catálogo, que es lo correcto**. `memoria/` queda para las doctrinas **propias** del asunto. Se copia solo para **fijar** una versión a propósito (diciendo por qué) o si el contenedor va a **salir** del vault; quien copia asume el resync ([`general/comun/README.md`](../general/comun/README.md), [[estructura_contenedor_asunto]]).
 - **Baseline que el charter debe citar** para que el coordinador la lea desde el primer día: perfil de modelos ([[modelo_por_tarea]]), higiene de contexto ([[higiene_contexto_y_tokens]]), estructura del contenedor ([[estructura_contenedor_asunto]]) y verificación por el agente ([[verificacion_e2e_por_agente]]). Si el asunto lleva tablero, con el plugin **Bases** de Obsidian (nota-por-tarjeta), no con una aplicación de base de datos propietaria.
 

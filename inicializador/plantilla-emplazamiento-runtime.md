@@ -10,7 +10,7 @@
 
 ## 0. Lo ESTABLE se registra una vez; lo VOLÁTIL se reconfirma cada sesión
 
-Esta ficha mezcla dos tipos de dato con vida útil muy distinta, y no distinguirlos es la trampa más barata de cometer — asumir del registro algo que ya cambió:
+Esta ficha mezcla dos tipos de dato con vida útil muy distinta, y no distinguirlos es la trampa más barata de cometer — suponer del registro algo que ya cambió:
 
 - **ESTABLE** (se escribe una vez y solo cambia si cambia el propio despliegue): la ruta del árbol servido, cómo se ejecuta un comando dentro del runtime, la dirección base de la aplicación. Va en esta ficha, tal cual, y una sesión nueva lo lee en vez de volver a preguntarlo.
 - **VOLÁTIL** (caduca entre sesiones): si el runtime está corriendo o parado, los puertos (cambian entre arranques y colisionan entre proyectos) y la versión exacta del runtime (cambia con cada actualización). **No se copia el valor a esta ficha**: se deja escrito el comando barato que lo comprueba, y cada sesión lo ejecuta antes de fiarse de él.
@@ -61,7 +61,7 @@ Si alguna corre en el host y otra dentro del runtime, dilo explícitamente por f
 
 ## 7. El `.claude/` del repositorio: ¿es tuyo? *(parametrizar)*
 
-El repositorio externo puede **ya tener** su propia configuración `.claude/` (convenciones de otro proyecto, o compartida con gente que no usa este vault) — no se puede asumir que está vacío ni que es tuyo para pisar.
+El repositorio externo puede **ya tener** su propia configuración `.claude/` (convenciones de otro proyecto, o compartida con gente que no usa este vault) — no se puede suponer que está vacío ni que es tuyo para pisar.
 
 - **¿El repositorio ya trae `.claude/settings.json` propio?** *(sí/no)*. Si sí: *(qué contiene, en dos líneas, y si hay algo con lo que un perfil de este vault podría chocar)*.
 - **Mecanismo para añadir sin pisar:** los perfiles de este vault para sesiones de código (`plantilla-settings-repo-codigo.json`, `plantilla-settings-ejecutora-codigo.json`) se instalan como **ficheros de settings con nombre** (`.claude/settings.repo-codigo.json`, `.claude/settings.ejecutora-codigo.json`) — nunca sobrescriben `.claude/settings.json` del repositorio — y se activan explícitamente al lanzar la sesión con `--settings <ruta>`, el mismo mecanismo ya en uso para el perfil consultor (`inicializador/plantilla-consultor.md`). El `settings.json` del repositorio, si existe, sigue cargándose solo como siempre y no se toca.

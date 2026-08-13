@@ -29,7 +29,7 @@ consultor-paralelo/
 
 ## Implicación para el coordinador
 
-Mantener la memoria/doctrinas **actualizadas con disciplina**: registrar promptamente toda decisión significativa, para que el consultor no responda "no consta" por desfase.
+Mantener la memoria/doctrinas **actualizadas con disciplina**: registrar prontamente toda decisión significativa, para que el consultor no responda "no consta" por desfase.
 
 Relacionada: [[modelo_por_tarea]], [[paralelismo_subagent_opus_principal]], [[orquestacion_sesiones_por_herramienta]].
 

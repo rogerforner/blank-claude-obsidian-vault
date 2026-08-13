@@ -1,4 +1,4 @@
-# Troubleshooting — Claude Code (CLI / app de escritorio)
+# Resolución de problemas — Claude Code (CLI / app de escritorio)
 
 Resolución de problemas concretos de Claude Code en Windows. Catálogo transversal, se consulta read-only. Añade una entrada por problema resuelto: **síntoma + causa + solución verificada**. No es doctrina: son hechos de plataforma, y como tales caducan — comprueba la versión antes de aplicar una receta vieja.
 

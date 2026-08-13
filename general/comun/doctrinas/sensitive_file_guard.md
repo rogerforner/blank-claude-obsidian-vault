@@ -1,6 +1,6 @@
 ---
 name: Guarda de ficheros sensibles y flags de lanzamiento
-description: La config local del asunto la lee y edita la IA sin restricción; la deny-list solo bloquea las credenciales de máquina/usuario (~/.ssh, ~/.aws, …). Los datos personales SÍ viven en el vault —es su sitio—; lo que no sale NUNCA son los secretos (contraseñas, claves, tokens), y desde 2026-08-14 el material de trabajo sí puede ir a un cuaderno cerrado que no entrene con el. Las tandas que tocan masivamente .claude/ o hooks se lanzan con el flag de permisos amplios desde el inicio.
+description: La config local del asunto la lee y edita la IA sin restricción; la deny-list solo bloquea las credenciales de máquina/usuario (~/.ssh, ~/.aws, …). Los datos personales SÍ viven en el vault —es su sitio—; lo que no sale NUNCA son los secretos (contraseñas, claves, tokens), y desde 2026-08-14 el material de trabajo sí puede ir a un cuaderno cerrado que no entrene con él. Las tandas que tocan masivamente .claude/ o hooks se lanzan con el flag de permisos amplios desde el inicio.
 type: convention
 version: 2.2
 ---

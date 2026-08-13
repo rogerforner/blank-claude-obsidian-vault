@@ -213,6 +213,6 @@ cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "No eres el coordinador de est
 
 ## Nota de trazabilidad
 
-La conclusión de la que sale esta plantilla —que cerrar mejor la especificación rinde más que automatizar el transporte— venía de un estudio interno del kit. **El estudio no viaja en el seed** (es evidencia de las rondas del vault de origen); el argumento y el dato se conservan aquí, en el cuerpo. Lo que se ha retirado es el anexo, no el razonamiento.
+La conclusión de la que sale este documento —que cerrar mejor la especificación rinde más que automatizar el transporte— venía de un estudio interno del kit. **Ese estudio no viaja con la plantilla** (es evidencia de las rondas del vault de origen); el argumento y el dato se conservan aquí, en el cuerpo. Lo que se ha retirado es el anexo, no el razonamiento.
 
 *(También se ha retirado del `## Setup` la línea de rama de trabajo y promoción entre entornos: el vault es **git local sin ramas de entorno**, así que no tiene equivalente. Si el asunto incluye software propio, eso vive en el pack `codigo/`.)*

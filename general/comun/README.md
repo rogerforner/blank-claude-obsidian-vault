@@ -4,7 +4,7 @@ Piezas de catálogo **transversales a cualquier asunto** (una reclamación, una 
 
 ## La regla de oro
 
-**Se **lee** desde el catálogo; **no** se copia salvo motivo declarado y **no se hereda** automáticamente.**
+Se **lee** desde el catálogo; **no** se copia salvo motivo declarado y **no se hereda** automáticamente.
 
 Un coordinador de asunto **ve este catálogo en solo lectura** —lo tiene en `additionalDirectories`— y **trabaja contra él**. Un `[[wikilink]]` sin copia local **resuelve aquí, y es lo correcto**: no es un olvido. `asuntos/<asunto>/memoria/` es para las doctrinas **propias** de ese asunto.
 
