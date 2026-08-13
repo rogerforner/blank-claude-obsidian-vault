@@ -6,7 +6,10 @@
 >
 > **Complementa, no sustituye, al informe del método** (`informe-metodo-exportable.md`), que explica las reglas de fondo. Esto es la capa de **configuración y superficies agénticas**.
 >
-> **[LEER ANTES DE APLICAR NADA] Este método se pulió bajo dos condiciones que en una empresa pueden NO cumplirse**, y de ellas cuelga buena parte de lo que sigue: **(a) suscripción de consumidor sin claves de programador** —si allí hay cuenta empresarial con clave o proyecto facturable, decae el razonamiento sobre cuotas y sobre qué integraciones son viables— y **(b) repositorio local sin nube**. Antes de copiar una regla, comprueba cuál de las dos la sostiene.
+> **[COMPRUEBA ESTO ANTES DE APLICAR NADA] Dos condiciones del entorno sostienen buena parte de lo que sigue.** No son advertencias: son **casillas que marcar** antes de copiar una regla, para saber cuál de las dos la sostiene.
+>
+> 1. **Cómo se paga el uso.** Lo que aquí se razona sobre cuotas, paralelismo y sesiones lanzadas por el propio coordinador da por hecho que **el consumo sale de un plan por asiento** —una suscripción personal o un plan de empresa— **y no de facturación por consumo con clave de programador**. **Un plan de empresa por asiento cumple esta condición igual que uno personal**, y es el caso más habitual en una organización: no hay claves que gestionar ni sobrecoste por tanda. Lo que **sí** cambia el razonamiento es que el acceso vaya por **clave o proyecto facturable**: entonces cada sesión lanzada es gasto directo, los topes dejan de ser cortacircuitos nominales y hay que revisar qué integraciones siguen siendo viables. → **Cómo comprobarlo, y hazlo en el propio agente, no en tu terminal:** el comando de estado de autenticación debe decir que la sesión va **por cuenta**. Y asegúrate de que **no hay ninguna variable de clave definida** en el entorno ni en un fichero de entorno del proyecto: si la hay, se prioriza sobre el plan y **se factura aparte en silencio**.
+> 2. **Dónde vive el histórico.** Aquí es un **repositorio local sin nube**. Si en el destino hay servidor remoto, revisa todo lo que en esta guía se apoya en *"nada sale de la máquina"*.
 
 ---
 
@@ -263,7 +266,85 @@
 
 ---
 
-## 9. Orden de adopción sugerido
+## 9. Los prompts de arranque, por rol
+
+Esto es lo que se usa **cada día**, y es la pieza que más se agradece tener escrita: para abrir una sesión no hay que redactar nada, se copia el bloque de su rol. Los `<…>` son lo único que hay que sustituir por los nombres reales de los ficheros del vault destino; **los prompts en sí no se tocan.**
+
+### 9.1 Las tres reglas que hacen que esto funcione
+
+1. **La carpeta desde la que se abre la sesión es lo que le da identidad al agente.** De ella carga su fichero de reglas, su configuración, sus permisos y sus hooks, y de ella depende dónde busca por defecto. **Es lo único que hay que hacer bien, y no se corrige después:** una frase en el prompt del tipo *"trabaja en tal carpeta"* **no mueve nada**.
+2. **No le expliques su rol ni le enumeres las reglas.** Todo eso lo carga de la carpeta. Un prompt largo explicando quién es no añade nada y **compite** con lo que ya ha leído.
+3. **El modelo y el esfuerzo no se eligen al arrancar:** van escritos en el perfil de cada rol (§1.1). Una regla que depende de que alguien acierte en un desplegable no es una regla. El reparto, en abstracto y sin nombres que caduquen:
+
+| Sesión | Modelo | Esfuerzo |
+|---|---|---|
+| Coordinadores | El **capaz** | Alto |
+| Sesiones de consulta y ejecutoras | El de **volumen** | Medio |
+| Subagentes | El **barato** | — |
+
+**La única excepción son los briefs de investigación**, que se ejecutan en el chat web donde no hay fichero de configuración: ahí se elige a mano el modelo capaz con esfuerzo por encima del habitual, que es el punto recomendado para investigación con búsqueda.
+
+### 9.2 Coordinador general — carpeta: **la raíz del vault**
+
+**Arrancar de cero:**
+
+```
+Arranca como coordinador general de este vault. Lee <fichero de primeros pasos>, el charter, la cola de pendientes, las decisiones abiertas y el índice de doctrinas. Salúdame con el estado en 2-3 líneas y tu propuesta de siguiente paso.
+```
+
+**Retomar tras un relevo** (misma carpeta que la sesión que releva):
+
+```
+Retomas como coordinador general de este vault desde un handoff. Lee <fichero de primeros pasos> y el handoff más reciente de <carpeta de coordinación del vault>, y continúa desde ahí; confírmame el estado antes de seguir.
+```
+
+**Pedirle el relevo antes de que se quede sin contexto:**
+
+```
+Estamos cerca del límite de contexto. Crea un handoff en <carpeta de coordinación>/handoff-coordinador-general-<fecha de hoy>.md con: (1) estado del vault, qué se cerró y qué está vivo en cada asunto, (2) pendiente y pipeline, (3) lo que está en vuelo ahora mismo, (4) qué leer primero para continuar sin perder nada. Escríbelo dando por hecho que quien lo lea arranca de cero y no tiene tu contexto.
+```
+
+*(La fecha la pone el agente: sabe la de hoy. No hay que escribirla.)*
+
+### 9.3 Coordinador de un asunto — carpeta: **la del contenedor de ese asunto**
+
+**Estos prompts no nombran el asunto a propósito:** la carpeta desde la que se abre ya lo determina, así que **el mismo texto sirve para cualquier asunto** sin cambiar una palabra. Es lo que evita tener una variante por asunto.
+
+```
+Arranca como coordinador de este asunto. Lee tu charter, la cola de pendientes, las doctrinas propias de <carpeta de memoria del asunto> y, si existe, el material de referencia de <carpeta de referencia>. Salúdame con el estado del asunto y tu plan de arranque.
+```
+
+**Retomar tras un relevo** y **pedir el relevo**: los mismos dos bloques de §9.2, cambiando *"coordinador general de este vault"* por *"coordinador de este asunto"* y la carpeta de destino del handoff por la de coordinación del contenedor. En el de relevo, **el primer punto pasa a ser el plazo más próximo**, no el estado general: en un asunto con terceros enfrente, esa es la información que no puede perderse.
+
+### 9.4 Sesión de consulta — carpeta: la del asunto, o la raíz si la duda es del método
+
+Para una duda factual sobre los documentos o sobre el estado, **sin gastar el contexto del coordinador**. Es el **único prompt donde se escribe algo**: la pregunta.
+
+```
+<tu pregunta>. Responde citando fichero:línea de donde lo has sacado, y si no está escrito en el vault, dilo en vez de deducirlo.
+```
+
+**La condición del final es la que hace útil la respuesta.** Sin ella, una sesión de consulta deduce con buena letra algo que no está escrito en ninguna parte, y eso vuelve como si fuera un dato.
+
+### 9.5 Trabajo voluminoso: no lo lanza el titular
+
+Transcribir un lote de escaneos, tabular cientos de filas, redactar un documento largo: eso va a una **sesión ejecutora con contexto limpio**, y **la lanza el coordinador** (§4), no la persona. Esta se limita a pedirlo:
+
+```
+Esto es voluminoso: prepáralo como tanda ejecutora con su contrato y lánzala tú, acotada, y luego dime la conclusión y qué has verificado. No me traigas el resultado completo.
+```
+
+Lo que el coordinador debe respetar al lanzarla —topes, baja concurrencia, comprobar antes que la sesión está autenticada por cuenta— vive en su fichero de reglas y en el contrato de tanda. **No es cosa del titular acordarse.**
+
+### 9.6 Cuándo pedir el relevo, y la señal que llega antes que el indicador
+
+El indicador de contexto es la señal obvia. Pero hay una **segunda, y llega antes**: si el agente empieza a **ignorar reglas que sí están escritas, a repetirse o a perder el hilo**, hay que relevarlo **ya**, aunque parezca que queda sitio. **La fiabilidad cae antes de que la ventana se llene** (§6).
+
+Y el handoff que genera es **local y no se versiona**: sirve hasta que la sesión nueva está al día y entonces sobra. Que se borre solo es trabajo del hook de higiene, no de una persona.
+
+---
+
+## 10. Orden de adopción sugerido
 
 **Por relación esfuerzo/beneficio, de mayor a menor:**
 
@@ -275,4 +356,4 @@
 6. **La fase de análisis previa** en tandas no triviales. *(La que más rinde de todas, y la que más parece burocracia hasta que salva una tanda.)*
 7. **Las superficies agénticas de fondo**, solo con caso de uso presente y piloto acotado.
 
-**Y una regla que atraviesa las nueve secciones:** *una medición en la propia máquina gana a un informe con cita.* Aquí, dos informes de investigación seguidos recomendaron mecanismos **ya retirados**, y uno se delató solo porque anunciaba en futuro una fecha ya pasada. **Un hallazgo sin fecha y sin versión no es un hallazgo.**
+**Y una regla que atraviesa todas las secciones:** *una medición en la propia máquina gana a un informe con cita.* Aquí, dos informes de investigación seguidos recomendaron mecanismos **ya retirados**, y uno se delató solo porque anunciaba en futuro una fecha ya pasada. **Un hallazgo sin fecha y sin versión no es un hallazgo.**
