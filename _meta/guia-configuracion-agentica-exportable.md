@@ -161,9 +161,15 @@
 
 ### 3.1 Los dos avisos de la vista de agentes, que deciden si sirve
 
-**Es la superficie que más se parece a "autonomía real"** —las sesiones siguen corriendo con el terminal cerrado— y por eso hay que leer esto antes de adoptarla:
+**Es la superficie que más se parece a "autonomía real"** —las sesiones siguen corriendo con el terminal cerrado— y por eso hay que leer esto antes de adoptarla.
 
-1. **Mueve cada sesión de fondo a un árbol de trabajo aislado automáticamente antes de editar.** Para código es una bendición; **para un vault documental con un solo escritor cambia el modelo entero**: lo que la sesión escribe **no está en el árbol principal** hasta que alguien lo integre. Y la documentación avisa literal de que **los árboles creados por el agente se borran junto con la sesión**, así que **hay que consolidar los cambios antes de eliminarla** o el trabajo se pierde. *(Se puede desactivar ese aislamiento por configuración, pero entonces vuelven los conflictos que existe para evitar.)*
+**Empezando por lo que más sorprende, y que ninguna documentación dice con esta claridad: DESPACHAR NO ES DELEGAR.** Una sesión de fondo **arranca en modo plan y se bloquea esperando aprobación humana antes de escribir nada**. Aparece en el listado como *esperando · bloqueada · petición de permiso*. **Si esperabas que trabajara sola, no lo hace por defecto**: hay que lanzarla con un modo de permisos que no pregunte. **Para tareas de solo lectura es perfecta tal cual; para que escriba, hay que decidirlo explícitamente.**
+
+**Y una barrera comprobada, no leída:** un mensaje de otra sesión **NO desbloquea** esa aprobación pendiente. Se le dijo *"adelante, procede"* por el canal y **siguió bloqueada**. La puerta humana aguanta también aquí.
+
+1. **Mueve cada sesión de fondo a un árbol de trabajo aislado antes de editar** — **y solo cuando edita**. Para código es una ventaja; **para un vault documental con un solo escritor cambia el modelo**: lo que la sesión escribe acaba en un árbol aparte, **en su propia rama**, y no en el principal. Integrarlo es un **gesto manual**.
+   - **[COMPROBADO, y desmiente a la documentación] El trabajo NO se pierde solo.** La documentación avisa de que esos árboles *"se borran junto con la sesión"*. **En la máquina no ocurre así:** detener la sesión **retiene** el árbol y **dice dónde quedó y cómo borrarlo**, y el comando de borrado **se niega mientras haya cambios sin consolidar** (*"kept — worktree has uncommitted changes"*). **Hay salvaguarda real y la documentación no la menciona.** *(Es el mejor ejemplo de la regla que cierra esta guía: medir en la propia máquina gana incluso a la documentación oficial.)*
+   - **El directorio de árboles aparece como no rastreado en el estado del árbol principal.** Añádelo al fichero de exclusiones: son copias de trabajo y **no se versionan nunca**.
 2. **La cuota se multiplica linealmente.** Diez sesiones en paralelo consumen **unas diez veces más**. Bajo una sola suscripción, **el paralelismo no es arriesgado: es destructivo** — todas comparten la misma ventana, y superarla **para todo a la vez**, no solo lo último que lanzaste.
 
 **De ahí la regla operativa:** la orquestación desatendida se hace **secuencial, con cola y bloqueo** — un proceso pesado a la vez. No es prudencia: es la única forma de que el conjunto no se detenga.

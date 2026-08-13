@@ -65,3 +65,8 @@ asuntos/*/repo/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Arboles de trabajo que crea una sesion de fondo antes de editar. Medido: aparecen como
+# untracked en el arbol principal y contaminan `git status`. No se versionan NUNCA: son
+# copias de trabajo, y lo que valga de ahi se integra a mano en el arbol principal.
+/.claude/worktrees/
