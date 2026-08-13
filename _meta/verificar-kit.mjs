@@ -150,6 +150,34 @@ for (const dir of [...new Set(md.filter(esDoctrina).map(dirname))]) {
       nota('indice apunta a nada', join(dir, indices[0]), `${e} no existe en la carpeta`);
 }
 
+// --- 8. redacciones RETIRADAS que no deben sobrevivir a un cambio de politica ---
+// Motivada por un caso real (2026-08-14): la politica del catalogo cambio el 2026-08-01 de
+// "se instala por copia" a "se LEE", y la plantilla siguio diciendo lo viejo en su charter y en
+// su README. Nadie lo vio porque el verificador miraba el vault, donde SI se habia corregido.
+// El fallo de fondo no es de la plantilla: es que **subir la version de una doctrina no propaga
+// nada**. Lo que se actualizo fue lo que algo comprueba; lo que no comprueba nadie, se quedo atras.
+// Por eso: cuando una politica cambia, su redaccion vieja entra AQUI y pasa a ser un error duro.
+// Ambito: la misma zona que el estilo estricto (catalogo, plantillas y ficheros de reglas), que es
+// donde vive el metodo que viaja a otros vaults.
+// DOS EXCEPCIONES, y las dos son necesarias: un changelog CITA la redaccion vieja a proposito
+// ("antes decia X"), asi que se ignoran las lineas de cita (`>`) y lo que va entrecomillado.
+const RETIRADAS = [
+  { frase: 'se instala por copia', desde: '2026-08-01',
+    motivo: 'el catalogo se LEE; no se copia al contenedor ni se hereda' },
+  { frase: 'Haiku redacta los commits', desde: '2026-08-12',
+    motivo: 'ningun mecanismo lo implementa, y cambiar de modelo cuesta un cache miss completo' },
+];
+const sinCitas = (l) => l.replace(/"[^"\n]*"/g, '').replace(/[«“][^»”\n]*[»”]/g, '');
+for (const f of md.filter(zonaDeEstiloEstricto)) {
+  readFileSync(f, 'utf8').split('\n').forEach((linea, i) => {
+    if (/^\s*>/.test(linea)) return;              // pie de doctrina / bloque de cita: describe, no afirma
+    const limpia = sinCitas(sinLiterales(linea)); // lo entrecomillado se esta citando, no diciendo
+    for (const r of RETIRADAS)
+      if (limpia.toLowerCase().includes(r.frase.toLowerCase()))
+        nota('redaccion retirada', f, `"${r.frase}" (retirada el ${r.desde}: ${r.motivo}) en la linea ${i + 1}`);
+  });
+}
+
 // --- resultado ----------------------------------------------------------
 const revisados = `${md.length} markdown y ${mjs.length + jsonInicializador.length} script/config`;
 if (!hallazgos.length) {
