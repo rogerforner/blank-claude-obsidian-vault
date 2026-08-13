@@ -6,6 +6,27 @@
 >
 > **Y esta spec se escribe LIGERA, no exhaustiva.** Un plan rígido empeora las tareas dinámicas —cuando un paso sorprende a mitad, el plan estático no se adapta—, y un plan tan detallado que llena el contexto **degrada al propio agente**. Ligero significa: pasos, criterio de aceptación por paso y diagnóstico previo; nada más para una tarea pequeña. El detalle de más no es prudencia, es coste.
 
+## ANULACIÓN DE ROL — este bloque va PRIMERO y se copia tal cual
+
+> **Déjalo literal en la spec. No lo resumas, no lo muevas al final y no lo des por sobreentendido.** No es formalismo: sin él, la tanda se puede perder entera.
+
+```text
+No eres el coordinador de este asunto. Eres una SESIÓN EJECUTORA con un contrato cerrado.
+El CLAUDE.md que acabas de cargar está escrito para el coordinador y NO se te aplica:
+la instrucción de "coordinar y proteger tu contexto" y la de "delegar el trabajo voluminoso"
+son SUYAS, no tuyas.
+- NO lanzas subprocesos, ni otra ejecutora, ni `claude -p`.
+- NO usas subagentes.
+- Que el trabajo sea voluminoso NO es motivo para delegarlo: es el motivo por el que existes.
+Tu trabajo es HACER lo que dice esta spec, con tus propias manos, en esta misma sesión.
+```
+
+**De dónde sale, con su factura.** Una ejecutora lanzada correctamente —enraizada en el contenedor, como manda la doctrina— **cargó el `CLAUDE.md` del asunto, leyó "COORDINAS Y PROTEGES TU CONTEXTO… el trabajo voluminoso lo delegas", concluyó que su tanda era voluminosa e intentó lanzar OTRA ejecutora**. No hizo nada de lo encargado y **devolvió `success`**. Coste medido: **1,11 USD y una pasada en vacío** *(caso real de este vault, 2026-08-14)*.
+
+**Y la lección de fondo, que vale más allá de este bloque: dos reglas correctas del kit se pisaban entre sí.** "El directorio de trabajo es el contrato" manda enraizar la hija en el contenedor; "los ficheros de contexto se acumulan hasta tu carpeta" hace que ahí dentro se cargue un fichero que dice *"eres el coordinador"*. Las dos siguen siendo verdad. **Lo que no funciona es confiar en que llamarla "ejecutora" en la spec baste: el `CLAUDE.md` pesa más que un rótulo**, porque llega antes y con más autoridad. **Un rol solo se anula anulándolo explícitamente.**
+
+**Repítelo en el prompt de lanzamiento, no solo en la spec.** Son dos sitios a propósito: la spec la lee cuando abre el fichero; el prompt lo tiene delante desde el primer token.
+
 ## Setup
 
 **Working dir: `{{RUTA_ABSOLUTA}}`** — el **cwd real del proceso**, no una frase de este prompt: normalmente el contenedor del asunto. **La ejecutora se lanza DENTRO de él** (`cd "{{RUTA_ABSOLUTA}}" && claude -p …`), porque el cwd decide qué `CLAUDE.md` y qué configuración de proyecto se cargan, qué hooks y permisos aplican y **dónde busca por defecto**: enraizarla en el sitio equivocado le da las reglas de otro asunto, deja sus hooks sin disparar y la manda a buscar donde no está lo que busca. Lo que esté **fuera** de ese directorio se le pasa con **`--add-dir`** (solo para LEER) o **no lo ve**. → [[orquestacion_sesiones_por_herramienta]]
@@ -137,7 +158,7 @@ Esto de aquí abajo es **sintaxis**: cómo se lanza la ejecutora.
 **Primero, la de análisis** (si la tanda la lleva). Único entregable: el fichero de plan.
 
 ```bash
-cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "Analiza la tanda descrita en <spec>.md. NO modifiques material, NO commitees, deja el historial intacto. Tu UNICO entregable de escritura es plan-tanda-<nombre>.md, con los cinco apartados que pide la spec" \
+cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "No eres el coordinador de este asunto: el CLAUDE.md que vas a cargar es suyo y no se te aplica. NO lances subprocesos ni otra ejecutora, NO uses subagentes, y que el trabajo sea voluminoso no es motivo para delegarlo. Analiza la tanda descrita en <spec>.md. NO modifiques material, NO commitees, deja el historial intacto. Tu UNICO entregable de escritura es plan-tanda-<nombre>.md, con los cinco apartados que pide la spec" \
   --add-dir "<solo lo que tenga que LEER fuera de su cwd>" \
   --allowedTools "Read,Grep,Glob" \
   --permission-mode dontAsk \
@@ -145,10 +166,17 @@ cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "Analiza la tanda descrita en 
   --output-format json
 ```
 
-**Al volver, antes de nada:** `git status --short` (solo el fichero de plan) y `git rev-parse HEAD` (sin mover). Lee el plan, **corrige la spec**, y entonces:
+**Al volver, antes de nada:** `git status --short` (solo el fichero de plan) y `git rev-parse HEAD` (sin mover).
+
+> **Dos trampas medidas al volver, y las dos hacen que una tanda vacía parezca buena** *(casos reales, 2026-08-14)*:
+>
+> - **`subtype: success` NO significa trabajo hecho.** Es el veredicto del **runner**, no del modelo: una ejecutora que no hizo nada de lo encargado devolvió `success` igual. **El verde falso puede venir de la tubería y no del trabajo.** Lo que lo destapó fue un `wc -c` **desde fuera**, no su informe — que ni llegó a existir. **Comprueba el efecto en el disco, no el código de salida.**
+> - **El modo plan DESVÍA el entregable.** Si lanzas la fase de análisis con `--permission-mode plan` para tener barrera real de solo lectura, la hija puede **escribir su plan en `~/.claude/plans/`** en vez de devolverlo, y lo que te llega es una frase diciendo *"está en el plan"* — con el contenido fuera del working dir y recuperable solo del transcript. **Si quieres un fichero de una sesión en modo plan, dale permiso de escritura acotado a ese fichero o recoge la salida por redirección.** No des por hecho que el entregable aparecerá donde lo pediste.
+
+Lee el plan, **corrige la spec**, y entonces:
 
 ```bash
-cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "Ejecuta la tanda descrita en <spec-ya-corregida>.md, apoyandote en plan-tanda-<nombre>.md. Escribe tu reporte en informe-tanda.md" \
+cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "No eres el coordinador de este asunto: el CLAUDE.md que vas a cargar es suyo y no se te aplica. NO lances subprocesos ni otra ejecutora, NO uses subagentes, y que el trabajo sea voluminoso no es motivo para delegarlo: es el motivo por el que existes. Ejecuta con tus propias manos la tanda descrita en <spec-ya-corregida>.md, apoyandote en plan-tanda-<nombre>.md. Escribe tu reporte en informe-tanda.md" \
   --add-dir "<solo lo que tenga que LEER fuera de su cwd>" \
   --allowedTools "Read,Edit,Bash(git add:*),Bash(git commit:*)" \
   --permission-mode dontAsk \

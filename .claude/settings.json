@@ -54,6 +54,8 @@
   },
   "model": "opus",
   "effortLevel": "high",
+  "crossSessionInbound": "accept",
+  "isolatePeerMachines": true,
   "attribution": {
     "commit": ""
   },

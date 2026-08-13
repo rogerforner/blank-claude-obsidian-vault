@@ -43,6 +43,8 @@
   },
   "model": "sonnet",
   "effortLevel": "medium",
+  "crossSessionInbound": "refuse",
+  "isolatePeerMachines": true,
   "attribution": {
     "commit": "",
     "pr": ""
