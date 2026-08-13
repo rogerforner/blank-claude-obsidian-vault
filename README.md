@@ -54,7 +54,7 @@ La respuesta de esta plantilla a cada uno. Como aparece aquí por primera vez el
 
 ## 2. Quién lo escribe
 
-Soy **Roger Forner Fabre**, de Roquetes (Cataluña). Soy desarrollador: trabajo en soluciones tecnológicas para el sector de la salud, y llevo la responsabilidad de sistemas dentro del comité de seguridad de mi organización. Me paso el día pensando dónde viven los datos y quién puede tocarlos, así que esa deformación profesional se nota en las reglas que hay aquí.
+Soy **Roger Forner Fabre**, de Roquetes (Cataluña). Soy desarrollador y trabajo en Privacy Driver; antes estuve en el sector de la salud. Me paso el día pensando dónde viven los datos y quién puede tocarlos, así que esa deformación profesional se nota en las reglas que hay aquí.
 
 Fuera del trabajo hago cosas con las manos: domótica, reformas, proyectos de sostenibilidad, la instalación eléctrica de casa. Estoy casado y tengo un niño pequeño, o sea que todo eso avanza en ratos sueltos.
 
