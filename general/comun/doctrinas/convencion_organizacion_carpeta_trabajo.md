@@ -1,8 +1,8 @@
 ---
 name: Convención de organización de la carpeta de trabajo
-description: La carpeta de coordinación mantiene en su raíz solo lo activo y lo vivo. Handoffs y buffers son LOCALES (gitignored, nunca se versionan); los prompts ejecutados y los briefs con informe se versionan en vuelo y se BORRAN al cumplir (git rm; git conserva el histórico). No se acumulan ficheros obsoletos. Y lo que se lee entero en cada arranque —cola, bitácora— tiene TECHO escrito, igual que el CLAUDE.md.
+description: La carpeta de coordinación mantiene en su raíz solo lo activo y lo vivo. Handoffs y buffers son LOCALES (gitignored, nunca se versionan); los prompts ejecutados y los briefs con informe se versionan en vuelo y se BORRAN al cumplir (git rm; git conserva el histórico). No se acumulan ficheros obsoletos. Y lo que se lee entero en cada arranque —cola, bitácora— tiene TECHO escrito, igual que el CLAUDE.md: 40.960 y 30.720 bytes de `wc -c`, comparados sin convertir.
 type: convention
-version: 2.4
+version: 2.5
 ---
 
 La carpeta de coordinación de un asunto (`asuntos/<asunto>/coordinacion/`) se mantiene **limpia**: solo lo **activo** y lo **vivo**. Los insumos efímeros ya usados **se borran** — git conserva el histórico y el resultado perdura en otro sitio. Así nunca hay ficheros obsoletos que confundan ni que obliguen a leer de más.
@@ -27,11 +27,13 @@ La carpeta de coordinación de un asunto (`asuntos/<asunto>/coordinacion/`) se m
 
 La cola de pendientes, el charter y la bitácora **no son efímeros**: se conservan. Pero son lo que **cada sesión nueva lee entero antes de hacer nada**, así que su tamaño se paga en **todos** los arranques, para siempre. Un fichero de estado sin techo se convierte en un archivo histórico que nadie decidió crear.
 
-- **Techo de la cola de un asunto: 40 KB.** Al superarlo, lo **cerrado** baja a `coordinacion/referencia/historico-<asunto>.md` y la cola se queda con lo **vivo**: plazos, bloque activo, próximos bloques, decisiones pendientes. El histórico no se lee al arrancar; se abre cuando alguien pregunta por algo cerrado.
-- **Techo de la bitácora del kit: 30 KB.** Al superarlo, las entradas cuyo aprendizaje **ya está fundido** en una doctrina, un checklist o una plantilla se resumen a una línea con el puntero a donde vive ahora. La bitácora registra la traza; lo vigente son las reglas.
+- **Techo de la cola de un asunto: 40 KB = 40.960 bytes.** Al superarlo, lo **cerrado** baja a `coordinacion/referencia/historico-<asunto>.md` y la cola se queda con lo **vivo**: plazos, bloque activo, próximos bloques, decisiones pendientes. El histórico no se lee al arrancar; se abre cuando alguien pregunta por algo cerrado.
+- **Techo de la bitácora del kit: 30 KB = 30.720 bytes.** Al superarlo, las entradas cuyo aprendizaje **ya está fundido** en una doctrina, un checklist o una plantilla se resumen a una línea con el puntero a donde vive ahora. La bitácora registra la traza; lo vigente son las reglas.
 - **El `CLAUDE.md` ya tenía su techo** (por debajo de 200 líneas) y se respeta. **La asimetría era el fallo:** el fichero de reglas tenía límite escrito y los ficheros de estado no, cuando son los tres los que se leen en cada arranque.
 
 **El techo va en KB, no en líneas, y eso no es un detalle.** Al fijarlo por primera vez se puso en líneas y la primera medición lo tumbó: la cola que había reventado el presupuesto tenía **620 líneas y 197 KB** — párrafos de trescientos caracteres, de modo que por líneas parecía mediana y por peso era cinco veces el techo. **Se mide lo que se paga**, y lo que se paga es el texto: `wc -c` al cerrar tanda.
+
+**Y la unidad del techo es EL BYTE QUE DEVUELVE `wc -c`, en binario.** No es pedantería: "40 KB" se lee de dos maneras que se llevan un 2,4 % —40.000 o 40.960 bytes—, y esta misma doctrina llegó a citar **la misma medición** como 197 KB en el cuerpo y 192 KB en el changelog (197.319 bytes decimales, 192,7 KiB binarios). No mentía ninguna de las dos, pero un techo que cada cual convierte a ojo deja de ser un techo. **Se compara el número de `wc -c` contra 40.960 y 30.720, y se acabó la conversión.**
 
 **Medido el 2026-08-12, que es de donde sale la regla:** la cola de un asunto de este vault había llegado a **197 KB, unos 54.800 tokens estimados**, de modo que su coordinador gastaba del orden de **60.000 tokens en abrir la sesión antes de hacer nada**. La del otro asunto iba por 38 KB (dentro del techo, pero rozándolo) y la bitácora del kit por 25,6 KB. Ningún fichero avisa de que ha crecido: **el techo se comprueba, no se nota.**
 
@@ -70,6 +72,8 @@ Buffer **exclusivo** de texto que el director pega como respuesta a la pregunta 
 > v2.2 (2026-07-14): enforcement por **hook `SessionStart`** (auto-borra handoffs gitignored superados + avisa de prompts/briefs trackeados) → la limpieza es **ritual de arranque además de cierre**. Motivado por acumulación real observada (las sesiones morían antes de limpiar al cerrar).
 > v2.4 (2026-08-12): **techo escrito para lo que se lee entero en cada arranque** — 40 KB la cola de un asunto, 30 KB la bitácora del kit, con el criterio de qué baja al histórico. El techo va **en KB y no en líneas** porque la primera versión de esta misma regla, escrita en líneas, no habría marcado el fichero que la motivó: 620 líneas de párrafo denso son 197 KB. Sale de medir: una cola había llegado a 192 KB (~53.400 tokens), y su coordinador gastaba ~60.000 tokens en abrir la sesión antes de trabajar. La asimetría estaba a la vista desde el principio: el `CLAUDE.md` tenía límite y los ficheros de estado no, siendo los tres lo que se lee en cada arranque.
 > v2.3 (2026-08-12): el hook añade **caducidad a los 14 días**, porque "superado por otro de su serie" dejaba fuera las series de **un solo elemento** — medidos seis handoffs de julio vivos en dos contenedores, cada uno con nombre propio y por tanto sin sucesor posible. Corregido además un fallo del propio hook que hacía que **solo informase las veces que no borraba nada**: listaba los ficheros antes de borrar y luego consultaba los ya borrados, con lo que la excepción se tragaba el informe entero.
+
+> v2.5 (2026-08-14): **el techo se expresa en bytes exactos** — 40.960 la cola de un asunto, 30.720 la bitácora, comparados directamente contra `wc -c` y sin convertir. La v2.4 decía "40 KB" y esa etiqueta admite dos lecturas que se llevan un 2,4 %; la prueba de que estorba está en esta misma doctrina, que citaba **una sola medición** como 197 KB en el cuerpo y 192 KB en el changelog. Un techo que cada cual convierte a ojo se aplica a ojo.
 
 Relacionada: [[feedback_prompt_delivery]], [[formato_prompts_markdown_limpio]], [[orquestacion_sesiones_por_herramienta]], [[estructura_contenedor_asunto]].
 
