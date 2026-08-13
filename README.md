@@ -54,13 +54,11 @@ La respuesta de esta plantilla a cada uno. Como aparece aquí por primera vez el
 
 ## 2. Quién lo escribe
 
-**Roger Forner Fabre** — Roquetes, Cataluña. Desarrollador técnico especializado en **soluciones tecnológicas para el sector de la salud y seguridad de datos**, y responsable de sistemas dentro del Comité de Seguridad de su organización.
+Soy **Roger Forner Fabre**, de Roquetes (Cataluña). Soy desarrollador: trabajo en soluciones tecnológicas para el sector de la salud, y llevo la responsabilidad de sistemas dentro del comité de seguridad de mi organización. Me paso el día pensando dónde viven los datos y quién puede tocarlos, así que esa deformación profesional se nota en las reglas que hay aquí.
 
-Full-stack: PHP (Laravel, Lumen, CodeIgniter), JavaScript (Vue, AdonisJS), HTML/CSS. CMS (WordPress, Alfresco, Moodle, Jekyll, Nuxt), Electron, Active Directory, MySQL/MariaDB. git/svn, SCRUM, TDD. Usa a diario ChatGPT, Claude, Gemini, NotebookLM, Cursor y Copilot.
+Fuera del trabajo hago cosas con las manos: domótica, reformas, proyectos de sostenibilidad, la instalación eléctrica de casa. Estoy casado y tengo un niño pequeño, o sea que todo eso avanza en ratos sueltos.
 
-Padre de un niño pequeño y felizmente casado. Hace proyectos DIY de domótica, sostenibilidad y reformas — que es de donde salen la mitad de los asuntos que este método acabó llevando.
-
-**Esto explica el kit entero, y por eso vale la pena decirlo:** alguien que trabaja en seguridad de datos es exactamente quien escribe reglas de soberanía del dato, denegaciones explícitas y puerta humana. Las reglas de este vault no son cautela genérica de "ten cuidado con la IA": son la práctica profesional de alguien que responde de la seguridad de los datos de otros, aplicada a los papeles de su propia casa.
+**Y de ahí salió esto.** Cada una de esas cosas arrastra papeles, presupuestos, plazos, cálculos y decisiones que hay que recordar meses después. La IA me ayudaba con cada trozo, pero cada conversación empezaba de cero: volvía a explicar el contexto, volvía a pactar cómo quería trabajar, y lo decidido la semana anterior no existía. Así que fui montando lo que me faltaba —el sitio donde vive el estado, las reglas que no hay que repetir, la forma de encargar trabajo— hasta que dejó de ser un apaño y se convirtió en un método.
 
 ---
 
@@ -83,7 +81,7 @@ Por eso las doctrinas del catálogo llevan un pie con su historial de versiones,
 
 **Consecuencia práctica para quien se lo descargue:** las reglas que parecen exageradas suelen ser las que más caro salieron. Si vas a quitar una, quita la que entiendas del todo.
 
-*(Este README también lo ha redactado Claude Code, trabajando como coordinador general del vault, y lo ha revisado y aprobado el autor. Sería raro esconderlo en un repositorio que va justamente de eso.)*
+*(Este README también lo ha redactado Claude Code, trabajando como coordinador general del vault, y lo he revisado y aprobado yo. Sería raro esconderlo en un repositorio que va justamente de eso.)*
 
 ---
 
@@ -91,7 +89,7 @@ Por eso las doctrinas del catálogo llevan un pie con su historial de versiones,
 
 Honestamente: **por el límite de contexto, no por fidelidad a una marca.**
 
-El primer intento serio de este método fue con GPT. El autor se pasó **un día entero** montando la configuración equivalente —el fichero `AGENTS.md`, las reglas, la estructura— y **tuvo que desistir**: los modelos no aguantaban el contexto que un vault así necesita para arrancar una sesión sabiendo quién es, qué reglas cumple y en qué estado está el asunto. No era un problema de calidad de las respuestas; era que no cabía.
+Mi primer intento serio de este método fue con GPT. Me pasé **un día entero** montando la configuración equivalente —el fichero `AGENTS.md`, las reglas, la estructura— y **tuve que desistir**: los modelos no aguantaban el contexto que un vault así necesita para arrancar una sesión sabiendo quién es, qué reglas cumple y en qué estado está el asunto. No era un problema de calidad de las respuestas; era que no cabía.
 
 Con Claude Code sí funciona, así que el método se quedó aquí. **Toda la configuración de aquel intento se eliminó**, y no queda ningún resto en este repositorio.
 
@@ -101,7 +99,7 @@ Dicho esto, el método **no es propiedad de ninguna herramienta**. Lo que es esp
 
 ## 5. Cómo está organizado el trabajo
 
-**Un vault por ámbito de la vida, no uno gigante para todo.** El autor lleva dos:
+**Un vault por ámbito de la vida, no uno gigante para todo.** Yo llevo dos:
 
 - **Uno técnico y doméstico** — electricidad DIY, reformas, el diseño del jardín, la domótica, el mantenimiento de la casa.
 - **Uno personal** — lo que no tiene nada que ver con lo anterior y no debe compartir contexto con ello.
@@ -360,7 +358,7 @@ Para que nadie pierda una tarde averiguándolo:
 - **No es un producto.** No hay soporte, ni versiones, ni compatibilidad garantizada hacia atrás. Es el método de trabajo de una persona, publicado tal como está.
 - **No es un asistente autónomo.** Está diseñado justamente al revés: para que lo irreversible pase por una persona.
 - **No es multiusuario.** Un vault, una máquina, un titular. El histórico es local y no se sincroniza con nadie.
-- **No trae datos de ningún asunto.** Ni los del autor ni los de nadie. Es andamiaje vacío a propósito.
+- **No trae datos de ningún asunto.** Ni míos ni de nadie. Es andamiaje vacío a propósito.
 - **No es consejo jurídico, fiscal ni financiero.** Ayuda a organizar el trabajo alrededor de esas decisiones; no las toma.
 - **Los datos de plataforma que cita caducan.** Nombres de modelo, límites de uso y opciones de configuración cambian rápido: están concentrados en las piezas marcadas como volátiles, y se verifican antes de fiarse de ellos.
 
