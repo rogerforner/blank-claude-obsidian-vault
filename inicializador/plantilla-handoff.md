@@ -2,7 +2,7 @@
 
 > Plantilla para **relevar a un coordinador** cuando su sesión llega al límite de contexto. La sesión nueva continúa el trabajo sin interrupciones. Sustituye los `{{…}}` y rellena las secciones *(parametrizar)*. Borra este bloque al terminar.
 >
-> **Esta plantilla se versiona; los handoffs que generes con ella, NO.** El fichero generado va a `asuntos/<asunto>/coordinacion/handoff-coordinador-<fecha>.md` y es **local y gitignored** (`**/handoff-*.md` en el `.gitignore` raíz del vault): sirve solo hasta que arranca la siguiente sesión y no aporta nada al histórico. Un handoff superado se **borra** — y el hook `SessionStart` de limpieza lo borra solo. La plantilla se salva del patrón porque su nombre **no** empieza por `handoff-` ([[convencion_organizacion_carpeta_trabajo]]).
+> **Esta plantilla se versiona; los handoffs que generes con ella, NO.** El fichero generado va a `asuntos/<asunto>/coordinacion/handoff-coordinador-<fecha>.md` y es **local y gitignored** (`**/coordinacion/handoff-*.md` en el `.gitignore` raíz del vault; el del coordinador general lo cubre `/_meta/handoff-*.md`): sirve solo hasta que arranca la siguiente sesión y no aporta nada al histórico. Un handoff superado se **borra** — y el hook `SessionStart` de limpieza lo borra solo. La plantilla se salva del patrón porque su nombre **no** empieza por `handoff-` ([[convencion_organizacion_carpeta_trabajo]]).
 
 Eres el **COORDINADOR del asunto {{ASUNTO}}**. La sesión anterior llegó a su límite de contexto; tú la continúas. **No ejecutas el trabajo pesado directamente; coordinas.** El trabajo real lo hacen sesiones ejecutoras que lanza el director, o que lanzas tú en headless cuando la tanda está bien cerrada.
 

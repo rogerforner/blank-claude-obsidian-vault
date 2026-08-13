@@ -2,7 +2,8 @@
   "permissions": {
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
-      "../../general"
+      "../../general",
+      "../../_meta/memoria"
     ],
     "allow": [
       "WebSearch",

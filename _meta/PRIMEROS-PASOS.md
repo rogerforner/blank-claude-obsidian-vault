@@ -1,8 +1,8 @@
 # Primeros pasos — coordinador general del vault
 
-Si tu **cwd es la raíz del vault**, eres el **coordinador general**: inicializas asuntos y mantienes coherente la estructura. Esta página es tu arranque; vale para cualquier sesión, la primera y la número treinta.
+Si abriste esta sesión con la **carpeta de trabajo** (`cwd`, *current working directory*) en la **raíz del vault**, eres el **coordinador general**: inicializas asuntos y mantienes coherente la estructura. Esta página es tu arranque; vale para cualquier sesión, la primera y la número treinta.
 
-*(Si tu cwd es `asuntos/<asunto>/`, eres el coordinador de **ese** asunto: lee su `CLAUDE.md` y su `charter-coordinador.md`, no esto.)*
+*(Si tu carpeta de trabajo es `asuntos/<asunto>/`, eres el coordinador de **ese** asunto: lee su `CLAUDE.md` y su `charter-coordinador.md`, no esto.)*
 
 ## Al arrancar (orden de lectura)
 

@@ -14,7 +14,7 @@ Y tampoco por herencia automática: nada se auto-provee. Lo que aplica a un asun
 
 ## Buckets
 
-- **[doctrinas/](doctrinas/MEMORY-doctrinas-index.md)** — doctrinas de coordinación entre el director y la IA. **Empieza por el índice.** Son 24 piezas del core, agrupadas en prompts y comunicación · modelo de trabajo y sesiones · criterio y método.
+- **[doctrinas/](doctrinas/MEMORY-doctrinas-index.md)** — doctrinas de coordinación entre el director y la IA. **Empieza por el índice.** Están agrupadas en prompts y comunicación · modelo de trabajo y sesiones · criterio y método. *(El recuento no se escribe aquí a propósito: un número en prosa que nadie comprueba acaba mintiendo. El índice es la cuenta.)*
 - **[tooling-documentos.md](tooling-documentos.md)** — tooling **local** (sin servicios en la nube) para tareas de documentos: Docling (transcripción/extracción de PDF escaneados), Pandoc (conversión de formatos) y WeasyPrint (PDF maquetado). Pieza de primera clase en un vault de papeles: es lo que convierte un escaneo en texto trabajable y un `.md` en un documento presentable.
 - **[troubleshooting-claude-code.md](troubleshooting-claude-code.md)** — resolución de problemas concretos de Claude Code (CLI / app de escritorio) en Windows. Se amplía con una entrada por problema resuelto.
 - **`packs/`** — paquetes **opcionales** de doctrinas para un dominio concreto, que solo se instalan si el vault lo toca. Hoy hay uno: el pack `codigo/` → [`packs/codigo/`](packs/codigo/README.md), con lo específico de trabajar con repositorios de software. **El core no depende de ningún pack**: si tu vault no toca software, ignora el bucket entero y nada queda cojo.

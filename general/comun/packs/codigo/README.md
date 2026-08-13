@@ -64,7 +64,12 @@ Las doctrinas de este pack —sobre todo [`gates_de_calidad_locales`](doctrinas/
 
 ## Plan antes de tocar código: sin excepción, ni siquiera "fase única"
 
-**Ninguna edición de código ocurre sin un fichero de plan previo.** El resto del vault permite declarar una tanda no trivial como "fase única" y saltarse la ejecutora de análisis si se dice explícitamente por qué ([`../../../../inicializador/plantilla-tanda-ejecutora.md`](../../../../inicializador/plantilla-tanda-ejecutora.md)). **Para código esa salida no existe: siempre hay plan, sin excepción declarable.** El motivo es doble: el plan **fija el orden** en que se ejecutan los pasos (qué depende de qué, qué rompe qué si se hace en el orden equivocado) y **permite afinar el resultado** antes de que cueste trabajo deshacerlo — y **hace barato abortar**: un plan mal orientado se descarta sin haber tocado una línea de código; una ejecución mal orientada hay que revertirla, con el riesgo de dejar el repositorio a medias. La sesión que ejecuta el plan puede llevar permisos amplios sobre el repositorio (`../../../../inicializador/plantilla-settings-ejecutora-codigo.json`); esa amplitud acelera la ejecución del plan, no lo sustituye.
+**Ninguna edición de código ocurre sin un fichero de plan previo.** El resto del vault permite declarar una tanda no trivial como "fase única" y saltarse la ejecutora de análisis si se dice explícitamente por qué ([`../../../../inicializador/plantilla-tanda-ejecutora.md`](../../../../inicializador/plantilla-tanda-ejecutora.md)). **Para código esa salida no existe: siempre hay plan, sin excepción declarable.** Por dos motivos:
+
+- **Fija el orden.** Deja escrito qué paso depende de cuál, y qué se rompe si se ejecutan en el orden equivocado — y permite afinar el resultado antes de que cueste trabajo deshacerlo.
+- **Hace barato abortar.** Un plan mal orientado se descarta sin haber tocado una línea de código; una ejecución mal orientada hay que revertirla, con el riesgo de dejar el repositorio a medias.
+
+La sesión que ejecuta el plan puede llevar permisos amplios sobre el repositorio (`../../../../inicializador/plantilla-settings-ejecutora-codigo.json`); esa amplitud **acelera** la ejecución del plan, no la sustituye.
 
 ## Verificación honesta de frontend: la lista de falsos verdes
 
