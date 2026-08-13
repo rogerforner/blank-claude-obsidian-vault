@@ -63,7 +63,7 @@ Lo de arriba es **método** y no cambia. Esto es **sintaxis**: cómo se lanza un
 | Informe a fichero | `--output-format json` |
 | Directorio adicional | `--add-dir` (para lo que solo hay que leer) |
 | Tope de turnos y gasto | `--max-turns`, `--max-budget-usd` |
-| Modelo por rol | Opus 5 coordina · Sonnet 5 ejecuta · Haiku redacta los commits |
+| Modelo por rol | Opus 5 coordina · Sonnet 5 volumen · Haiku 4.5 subagentes y mecánica · Fable 5 escalada medida. **El reparto lo fija [[modelo_por_tarea]]; esta fila no lo repite** |
 | Sesión de solo lectura | perfil de `settings.json` con modo plan |
 | Cuota | `/usage` |
 | Modo que factura aparte | `/fast` **vetado por configuración** |

@@ -37,6 +37,8 @@
       "Read(//**/id_ed25519)"
     ]
   },
+  "model": "sonnet",
+  "effortLevel": "medium",
   "attribution": {
     "commit": "",
     "pr": ""

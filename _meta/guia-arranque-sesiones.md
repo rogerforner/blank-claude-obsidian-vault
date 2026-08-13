@@ -10,6 +10,21 @@ Todo lo necesario para **abrir, relevar y cerrar** sesiones sobre este vault: la
 
 **3. Solo hay que escribir algo donde aparece `<…>`**, y eso pasa únicamente en el consultor, donde el hueco es tu pregunta. **Todos los demás prompts son copiar y pegar sin tocar nada**: ni fechas, ni nombres de asunto, ni rutas. Los que antes pedían una fecha ahora dicen "la de hoy" o "el más reciente", que es algo que el agente resuelve solo.
 
+**4. El modelo y el esfuerzo ya NO los eliges tú al arrancar.** Desde el **2026-08-12** van escritos en el `settings.json` de cada perfil, porque una regla que depende de que alguien se acuerde de tocar un desplegable no es una regla. Cada sesión arranca sola con lo que le toca:
+
+| Sesión | Modelo | Esfuerzo |
+|---|---|---|
+| Coordinador general y de asunto | Opus 5 | `high` |
+| Consultor | Sonnet 5 | `medium` |
+| Ejecutora | Sonnet 5 | `medium` |
+| Sus subagentes | Haiku 4.5 | — |
+
+**Tres cosas que conviene que sepas:**
+
+- **`high` ya es el valor por defecto**, así que "ponerlo" es no tocar nada. **Ya no se arranca en `max` ni en `ultracode`**: el fabricante dice que añaden coste significativo con ganancias pequeñas y que a veces sobrepiensan, y entre los extremos de la escalera hay del orden de **2,7× de coste**. Subir un rol a `xhigh` exige antes una prueba propia que demuestre que ahí gana algo.
+- **Si eliges otra cosa a mano, gana tu elección** — pero solo esa sesión, y **elígela antes de empezar**: cambiar de modelo o de esfuerzo a mitad reprocesa el contexto entero.
+- **La única excepción son los briefs**, porque se ejecutan en el chat web y allí no hay `settings.json`: esos van con **el modelo capaz a `xhigh`**, que es el punto que el fabricante recomienda para investigación con búsqueda. `max` tampoco ahí.
+
 **Y lo que no hace falta escribir:** no le expliques al agente su rol, ni le enumeres las reglas, ni le digas dónde está. Todo eso lo carga de la carpeta. Un prompt largo explicando el rol no añade nada y se contradice con lo que ya lee.
 
 ## Índice
@@ -101,7 +116,7 @@ Estamos cerca del límite de contexto. Crea un handoff en coordinacion/handoff-c
 
 ## 3. Consultor — preguntar sin gastar el contexto del coordinador
 
-Para una duda factual sobre los documentos o el estado ("¿qué fecha consta en la resolución?", "¿dónde quedó escrito el criterio de X?"). **No edita ni decide nada**: se abre en modo de solo lectura y con el modelo barato.
+Para una duda factual sobre los documentos o el estado ("¿qué fecha consta en la resolución?", "¿dónde quedó escrito el criterio de X?"). **No edita ni decide nada**: se abre en modo de solo lectura, y su perfil ya trae el modelo y el esfuerzo que le tocan.
 
 **Carpeta: la del asunto** — o la raíz, si la duda es del kit.
 

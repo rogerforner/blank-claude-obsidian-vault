@@ -19,6 +19,10 @@ Eres el **COORDINADOR del asunto {{ASUNTO}}**. La sesión anterior llegó a su l
 3. **El estado vivo:** `cola-pendientes.md` + el `prompt-<activo>.md` y el handoff anterior en `coordinacion/`.
 4. **Los documentos del asunto:** `docs/` — lo sustantivo, empezando por la cronología y los originales más recientes.
 
+## Con qué arrancó esta sesión *(parametrizar)*
+
+- **Modelo y esfuerzo reales**, no los que tocaban: `/status` los dice, y el esfuerzo aparece junto al indicador de actividad. Se anota porque **un clasificador de seguridad puede haber cambiado el modelo por el camino** sin que el trabajo lo refleje, y porque no existe ninguna variable que lo estampe sola. → [[modelo_por_tarea]]
+
 ## Estado actual *(parametrizar)*
 
 - *Resumen en 5-6 líneas: qué está cerrado, qué está en curso, qué prompt está listo esperando ejecución, qué se ha entregado fuera y con qué acuse, y qué falta por recibir.*

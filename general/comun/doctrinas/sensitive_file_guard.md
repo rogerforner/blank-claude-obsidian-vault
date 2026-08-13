@@ -1,8 +1,8 @@
 ---
 name: Guarda de ficheros sensibles y flags de lanzamiento
-description: La config local del asunto la lee y edita la IA sin restricción; la deny-list solo bloquea las credenciales de máquina/usuario (~/.ssh, ~/.aws, …). Los datos personales SÍ viven en el vault —es su sitio— pero no salen de la máquina ni se llevan a un servicio externo. Las tandas que tocan masivamente .claude/ o hooks se lanzan con el flag de permisos amplios desde el inicio.
+description: La config local del asunto la lee y edita la IA sin restricción; la deny-list solo bloquea las credenciales de máquina/usuario (~/.ssh, ~/.aws, …). Los datos personales SÍ viven en el vault —es su sitio—; lo que no sale NUNCA son los secretos (contraseñas, claves, tokens), y desde 2026-08-14 el material de trabajo sí puede ir a un cuaderno cerrado que no entrene con el. Las tandas que tocan masivamente .claude/ o hooks se lanzan con el flag de permisos amplios desde el inicio.
 type: convention
-version: 2.1
+version: 2.2
 ---
 
 ## Ámbito ESTRICTO: secretos y credenciales reales, nada más
@@ -24,13 +24,13 @@ Los ficheros de configuración local de un asunto —`settings.local.json` con l
 
 **Dónde viven estos denies:** el hogar natural es el `~/.claude/settings.json` **global** (per-máquina, no versionado) — un único suelo que cubre **toda** sesión en **cualquier** directorio, incluidos los contenedores sin `settings.json` propio. `deny` gana sobre `allow`, así que el suelo global se impone aunque el `allow` global sea amplio (`Read(*)`). Los settings versionados del vault repiten el deny para portabilidad entre máquinas.
 
-## Los datos personales sí viven en el vault — pero no salen de la máquina
+## Los datos personales sí viven en el vault — y lo que no sale nunca son los secretos
 
 Un vault doméstico contiene, por definición, material sensible: DNI, escrituras, nóminas, informes médicos, números de cuenta, datos de terceros (el vecino, el perito, el arrendatario). **Ese es su sitio**: el vault es local y su git no tiene destino fuera. No hay que anonimizarlo para trabajarlo.
 
 Las tres reglas duras, en capas distintas:
 
-1. **No sale de la máquina.** Nada de eso se pega en un chat web, ni se sube a una herramienta que corra en la nube, ni se pasa a un servicio de conversión online. Las herramientas de documentos son **locales** por esta razón (ver [tooling de documentos](../tooling-documentos.md)); Cowork y los conectores quedan fuera ([[orquestacion_sesiones_por_herramienta]]).
+1. **Lo que no sale nunca son los SECRETOS** — contraseñas, claves de API, tokens, certificados, semillas de recuperación —, a ningún servicio y por ningún canal: **eso compromete sistemas**, y es distinto de la privacidad. *(Actualizado el 2026-08-14 por decisión del director: antes esta capa decía "nada de esto sale" para todo el material sensible a la vez. La frontera ahora distingue por servicio y por tipo → [[soberania_datos_local]] v1.2.)* **El material de trabajo puede subirse a un cuaderno cerrado** que no entrene con él; **el chat web abierto conserva la cautela** porque entrena por defecto; y las **categorías especialmente sensibles de esta lista** —identificativos, salud, financieros completos— las decide el director **caso a caso, no por defecto**. Las herramientas de documentos siguen siendo **locales** (ver [tooling de documentos](../tooling-documentos.md)).
 2. **No se versionan valores que no son del asunto.** Contraseñas, claves de firma y rutas de la máquina van a ficheros **gitignored**; al vault solo van **nombres** y plantillas de ejemplo. Trabajar un documento en local **no** es meter una credencial en el histórico.
 3. **Los datos de terceros son de terceros.** Aparecen en el asunto porque hacen falta para el asunto; no se reutilizan para otra cosa, y al cerrar el asunto se conserva lo que la ley obliga y poco más ([[revision_periodica_forma_de_trabajo]]).
 
@@ -48,5 +48,5 @@ El coordinador indica en el `## Setup` del prompt si la tanda lo requiere. **Cri
 
 Relacionada: [[minimizar_askuserquestion_agente_operativo]], [[verificacion_fuente_primaria]], [[estructura_contenedor_asunto]], [[orquestacion_sesiones_por_herramienta]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v2.1 (2026-08-01):** ámbito acotado a secretos y credenciales reales — **no ampara** proteger el trabajo ni la configuración de calidad, y el flag de permisos amplios pasa a ser **lo normal** en local (lo que protege son las deny rules, que aguantan bajo él). **v2.0 (2026-06-18):** config local editable sin restricción; la deny-list se reduce a credenciales de máquina (la v1.0 bloqueaba también la config del asunto). v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
+> Pieza de catálogo `general/comun/doctrinas/`. **v2.2 (2026-08-14):** la primera de las tres reglas duras se reescribe por decisión del director. Decía "nada de esto sale de la máquina" metiendo en el mismo saco una contraseña y el plano de una casa; ahora la línea intocable son los **secretos** —lo que compromete un sistema— y el **material de trabajo puede ir a un cuaderno cerrado** que no entrene con él. Las categorías especialmente sensibles de la lista las decide él caso a caso. → [[soberania_datos_local]] v1.2. **v2.1 (2026-08-01):** ámbito acotado a secretos y credenciales reales — **no ampara** proteger el trabajo ni la configuración de calidad, y el flag de permisos amplios pasa a ser **lo normal** en local (lo que protege son las deny rules, que aguantan bajo él). **v2.0 (2026-06-18):** config local editable sin restricción; la deny-list se reduce a credenciales de máquina (la v1.0 bloqueaba también la config del asunto). v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
 > Adaptada al framing neutro del seed (sin referencias al dominio del software) — 2026-07-29.

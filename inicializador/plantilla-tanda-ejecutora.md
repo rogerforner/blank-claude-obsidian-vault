@@ -14,7 +14,7 @@
 
 **Fase: `{{análisis | ejecución}}`** — si es ejecución y la tanda lleva análisis, **Plan de referencia:** `plan-tanda-{{NOMBRE}}.md`. *(Ojo: el `Plan mode` de abajo es el modo del CLI y **no** es esto; la fase de análisis es una **ejecutora aparte con entregable escrito**.)*
 
-Modelo: `{{MODELO}}` (Opus 5 para lo difícil —un escrito con consecuencias, un cálculo que sostiene un importe—; Sonnet 5 para volumen; **fija modelo y `effort` al arrancar y no los cambies**: el cambio provoca cache-miss). Effort: `{{EFFORT}}`. Plan mode: `{{SÍ/NO}}`. Git: local, un commit por hito, por pathspec.
+Modelo: `{{MODELO}}`. Effort: `{{EFFORT}}`. **Los dos salen de la tabla rol → modelo → esfuerzo de [[modelo_por_tarea]]; aquí solo se copian, no se decide de nuevo.** **Fíjalos al arrancar y no los cambies**: el cambio provoca cache-miss completo. Plan mode: `{{SÍ/NO}}`. Git: local, un commit por hito, por pathspec.
 
 *(Si el material que hay que manejar roza el vocabulario de la seguridad informática —contraseñas, cifrado, credenciales, control de accesos— usa **Opus 5**: los clasificadores de seguridad pueden enrutar la petición a otro modelo, y el cambio de modelo rompe el hilo de trabajo. → [[modelo_por_tarea]])*
 
@@ -109,7 +109,11 @@ La ejecutora **ejecuta estos comandos y reporta el output literal** antes de cer
 
 ## Reporta al cerrar
 
-Qué has hecho y **dónde** (ficheros y commits). El **output literal** de los comandos de la definition of done. Los criterios de aceptación, **uno por uno**, con la evidencia de que se cumplen. Lo que **NO** has hecho y por qué. Hallazgos y decisiones que tomaste tú. Y si algo de la spec estaba mal o faltaba, **dilo explícitamente**: es lo que mejora la siguiente tanda.
+**Límite del informe: `{{N}}` líneas.** *(Campo obligatorio, no adorno.)* Lo que devuelve una sesión hija **entra íntegro en el contexto de quien la lanzó**: el aislamiento protege del ruido intermedio —tus lecturas, tus descartes— pero no de un informe verboso. Un informe sin límite no es un ahorro, es un rodeo. Si no cabe en el límite, **el detalle va a un fichero** y el informe lo referencia. → [[orquestacion_sesiones_por_herramienta]]
+
+Dentro de ese límite: qué has hecho y **dónde** (ficheros y commits). El **output literal** de los comandos de la definition of done. Los criterios de aceptación, **uno por uno**, con la evidencia de que se cumplen. Lo que **NO** has hecho y por qué. Hallazgos y decisiones que tomaste tú. Y si algo de la spec estaba mal o faltaba, **dilo explícitamente**: es lo que mejora la siguiente tanda.
+
+**Y una línea de constancia al arrancar:** con qué **modelo y esfuerzo** estás corriendo de verdad (`/status` lo dice, y el esfuerzo aparece junto al indicador de actividad). No existe ninguna variable que lo estampe sola: es convención, y sirve para saber después con qué se hizo un trabajo — sobre todo si un clasificador te cambió el modelo por el camino.
 
 ---
 

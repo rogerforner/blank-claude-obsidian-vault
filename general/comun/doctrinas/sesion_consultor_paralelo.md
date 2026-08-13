@@ -2,7 +2,7 @@
 name: Sesión consultor paralelo (read-only)
 description: Una sesión Claude Code paralela read-only resuelve dudas factuales del director sin consumir el contexto del coordinador; no decide ni redacta prompts, solo consulta y cita fuentes.
 type: convention
-version: 1.0
+version: 1.1
 ---
 
 El director dispone de una **sesión Claude Code paralela "consultor"**, con permisos **read-only**, para resolver dudas factuales y concretas (qué dice la doctrina X, dónde está el justificante Y, qué plazo tenía el asunto Z, por qué se decidió lo otro) **sin consumir el contexto del coordinador**.
@@ -19,7 +19,7 @@ consultor-paralelo/
 - Tiene **read-only** sobre las fuentes del asunto (memoria/doctrinas, `docs/`, originales escaneados, copias de seguridad), ordenadas por prioridad en su `system-prompt.md`.
 - **No decide, no redacta prompts operativos, no edita.** Si el director plantea una decisión, **redirige al coordinador**.
 - Cita siempre la fuente (`fichero:línea`, o documento y página). Si la info no consta, lo dice explícitamente.
-- **Modelo recomendado:** barato, esfuerzo bajo ([[modelo_por_tarea]]). Coste por sesión bajo; ahorro de contexto del coordinador alto.
+- **Modelo y esfuerzo:** los fija la tabla de [[modelo_por_tarea]] y **su perfil de settings ya los trae escritos** — aquí no se repiten, para que no deriven. Coste por sesión bajo; ahorro de contexto del coordinador alto.
 
 ## Limitaciones que el consultor debe declarar
 
@@ -33,5 +33,5 @@ Mantener la memoria/doctrinas **actualizadas con disciplina**: registrar prompta
 
 Relacionada: [[modelo_por_tarea]], [[paralelismo_subagent_opus_principal]], [[orquestacion_sesiones_por_herramienta]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
+> Pieza de catálogo `general/comun/doctrinas/`. **v1.1 (2026-08-12):** el modelo y el esfuerzo del consultor **dejan de escribirse aquí** y pasan a la tabla de [[modelo_por_tarea]], que es su fuente única; su perfil de settings ya los trae fijados. Antes esta ficha decía "barato, esfuerzo bajo" y la tabla decía otra cosa: dos sitios con el mismo dato derivan siempre. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
 > Adaptada al framing neutro del seed (sin referencias al dominio del software) — 2026-07-29.

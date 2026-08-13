@@ -43,7 +43,7 @@ Dos o tres líneas de estado, no un informe. Y **una propuesta concreta**, no un
 - **Verificado, no asumido:** lo comprobable por comando se ejecuta y se reporta el **output literal**; lo demás pasa a **comprobación en campo** con procedimiento escrito ([[verificacion_e2e_por_agente]]). Nunca se ajusta el criterio para que pase.
 - **Fuente primaria antes de propagar** y **fuente única dentro del documento** ([[verificacion_fuente_primaria]]).
 - **Portabilidad:** cero rutas absolutas de máquina en lo versionado; lo local va a `.claude/settings.local.json`, gitignored.
-- **Los datos no salen de la máquina:** nada de pegar documentos del vault en un chat web ni de subirlos a un conversor en línea. El tooling de documentos es **local** por eso ([[sensitive_file_guard]]).
+- **Los SECRETOS no salen de la máquina:** contraseñas, claves de API, tokens y certificados, a ningún servicio y por ningún canal — eso es **seguridad de sistemas**. Los **documentos de trabajo** sí pueden ir a un **cuaderno cerrado** que no entrene con ellos (decisión del director, 2026-08-14); lo que conserva su cautela es el **chat web abierto**, que entrena por defecto. El tooling de documentos sigue siendo **local** ([[soberania_datos_local]], [[sensitive_file_guard]]).
 - **Modelo y esfuerzo fijos por sesión**; **`/fast` vetado** por configuración ([[modelo_por_tarea]]).
 
 ## Mapa del vault

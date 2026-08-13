@@ -57,11 +57,14 @@
       }
     ]
   },
+  "model": "opus",
+  "effortLevel": "high",
   "attribution": {
     "commit": "",
     "pr": ""
   },
   "env": {
-    "CLAUDE_CODE_DISABLE_FAST_MODE": "1"
+    "CLAUDE_CODE_DISABLE_FAST_MODE": "1",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "haiku"
   }
 }
