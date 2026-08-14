@@ -20,10 +20,11 @@ Se publica por si le sirve a alguien en la misma situación. Es un trabajo domé
 8. [Ejemplo de uso, de principio a fin](#8-ejemplo-de-uso-de-principio-a-fin)
 9. [Puesta en marcha](#9-puesta-en-marcha)
 10. [Con qué trabajo](#10-con-qué-trabajo)
-11. [Mapa de carpetas](#11-mapa-de-carpetas)
-12. [Las reglas que no se negocian](#12-las-reglas-que-no-se-negocian)
-13. [Qué NO es esto](#13-qué-no-es-esto)
-14. [Licencia](#14-licencia)
+11. [Trabajar con lo que vive fuera del vault](#11-trabajar-con-lo-que-vive-fuera-del-vault)
+12. [Mapa de carpetas](#12-mapa-de-carpetas)
+13. [Las reglas que no se negocian](#13-las-reglas-que-no-se-negocian)
+14. [Qué NO es esto](#14-qué-no-es-esto)
+15. [Licencia](#15-licencia)
 
 ---
 
@@ -423,11 +424,61 @@ Con dos límites que ya están escritos en el kit aunque el interruptor siga apa
 
 **Y NotebookLM, con un matiz que es justo lo que quiero intentar.** Por internet circulan muchas formas de "conectarlo", y casi todas consisten en **automatizar la sesión del navegador**. Eso lo he descartado: **incumple las condiciones de uso del servicio y pone en riesgo la cuenta**, y no lo hace aceptable que funcione. Lo que quiero probar es lo contrario: tratarlo **como una sesión más**, igual que se trata al chat web en este método — se le prepara un encargo escrito, se ejecuta aparte, y lo que vuelve es un informe que revisa el coordinador antes de que entre en el vault.
 
+> **Esto es justo lo que estoy probando ahora.** Lo de tratar la segunda IA y el cuaderno de fuentes **como una sesión más** —con su encargo escrito, ejecutada aparte y devolviendo un informe— **es una idea, y no sé todavía si funcionará de verdad**. Lo escribo aquí porque es el siguiente experimento, no porque esté resuelto: si sale bien, se contará cómo; si sale mal, se contará por qué.
+
 **Estado honesto: esto es exploración, no una función.** Cuando pase el filtro de adopción de arriba —o no lo pase— quedará escrito con su motivo, como todo lo demás.
 
 ---
 
-## 11. Mapa de carpetas
+## 11. Trabajar con lo que vive fuera del vault
+
+Casi todo asunto acaba tocando algo que **no está dentro del vault**: un repositorio de código, un router, un servidor de domótica, un disco de copias, la carpeta donde el escáner deja los PDF. El vault no los absorbe. Los **describe** y aprende a llegar a ellos.
+
+### El código no vive en el vault, y es a propósito
+
+**Un repositorio de código vive donde se sirve** — donde puedes levantarlo, probarlo en local y desplegarlo—, no dentro de la carpeta de coordinación. Meterlo dentro obligaría a que dos historiales de git convivieran en el mismo árbol y a que el sitio donde escribes la documentación fuera también el sitio desde el que arranca la aplicación. Son dos ciclos de vida distintos y conviene que sigan separados.
+
+**Lo que sí queda en el vault es una ficha que dice dónde está todo**, `docs/emplazamiento-runtime.md` dentro del asunto, con siete puntos: dónde vive el repositorio, qué lo sirve, cómo se entra a ejecutar un comando ahí dentro, dónde corren las pruebas y las comprobaciones, si hay interfaz y cómo se verifica, cuál es su git, y **qué no se toca**.
+
+Dos detalles de cómo está montada esa ficha, porque son los que la hacen útil:
+
+- **La ficha se versiona; las rutas de tu máquina, no.** El fichero versionado describe **qué hay y cómo se hace**, sin una sola ruta absoluta. Las rutas reales —dónde está el repositorio en este disco, el nombre del contenedor, el host de la máquina virtual— van a un fichero compañero **local y excluido del control de versiones**. Así el vault se puede copiar a otro ordenador sin arrastrar la topografía del anterior.
+- **La sesión que coordina el asunto no es la que edita el código.** Esa se abre directamente en el repositorio, con su propio perfil de permisos; y la que publica es una tercera, aparte. Por qué tres y no una: cada una necesita permisos distintos, y **la que publica es la única que debería poder hacerlo**.
+
+**Y este patrón se traslada a cualquier otra cosa que viva fuera:** el disco de copias, la carpeta compartida, el servidor de casa. Si un asunto necesita llegar a algo externo, se describe igual — qué es, cómo se llega, qué no se toca— y las rutas concretas de esta máquina se quedan en el fichero local.
+
+### Las llaves: darle acceso sin darle el secreto
+
+Este es el apartado que conviene leer dos veces, porque es donde más fácil se mete uno en un lío. La idea que lo ordena todo:
+
+> **Al agente se le da el acceso, no la llave.** Puede usar una conexión sin llegar a ver nunca la contraseña que la abre, y así es como debe montarse.
+
+**Las cinco reglas, en orden de importancia:**
+
+1. **Un secreto no se escribe nunca dentro del vault.** Ni en un fichero versionado, ni en uno local, ni en una nota "temporal". Y **no se pega en el chat**: lo que entra en una conversación puede acabar en un registro, en un resumen o en una copia de seguridad.
+2. **Los secretos viven donde el sistema los guarda**: el llavero del sistema operativo o tu gestor de contraseñas, y las claves SSH en su carpeta de siempre, protegidas con contraseña y cargadas en el agente de claves. El vault apunta a que existen; no las contiene.
+3. **La sesión usa la conexión sin conocer el secreto.** Un `ssh mi-servidor` funciona porque la clave está cargada en el agente del sistema: el agente ejecuta el comando y **nunca ve la clave**. Lo mismo con un servicio que se consulta con un identificador de acceso: el identificador se le pasa al proceso desde el entorno, no se escribe en el prompt ni en un fichero del vault.
+4. **La barrera de verdad se pone en el recurso, no en la configuración del agente.** Un usuario del servicio **con los permisos mínimos**, un identificador de acceso **con alcance limitado y revocable**, un puerto cerrado desde fuera. Eso es real y ningún prompt lo sortea. Una regla escrita en la configuración de la herramienta es frágil y, además, estorba el uso legítimo.
+5. **Y el perfil de la sesión deniega leer los almacenes de credenciales** —la carpeta de claves SSH, la de credenciales de servicios en la nube, la del gestor de repositorios—. Viene puesto en la plantilla. **Compruébalo intentándolo**: pídele a la sesión que lea uno de esos ficheros y confirma que se le deniega.
+
+**En la práctica, con dos casos típicos de una casa:**
+
+- **Un router o un aparato de red al que se entra por SSH.** Crea una **clave propia para esto**, protegida con contraseña, y cárgala en el agente de claves. Si el firmware permite crear un usuario aparte del de administración, úsalo. El vault guarda **cómo se llega** (qué nombre de host, qué usuario, qué se puede hacer y qué no); la clave se queda en tu sistema.
+- **Un servidor de domótica o cualquier servicio con identificadores de acceso.** Crea uno **específico para el agente**, con un nombre que reconozcas para poder **revocarlo de un clic** si algo va mal, y con el mínimo alcance que le sirva. No reutilices el que usas tú, y no uses el usuario administrador si el servicio permite crear otro más acotado.
+
+**Si un secreto se expone alguna vez —lo pegaste sin pensar, apareció en un volcado, acabó en un fichero—: se revoca y se crea otro.** No se "tiene más cuidado la próxima vez". Rotarlo cuesta dos minutos; suponer que no pasará nada cuesta bastante más.
+
+### Y antes de todo esto: habla con el coordinador, no le des una orden
+
+Cuando vayas a montar algo así —conectar un aparato, arrancar un asunto con software, dar acceso a un servicio— **la tentación es ir al grano y pedir el primer paso**. Merece la pena hacer lo contrario:
+
+1. **Explícale largo qué quieres conseguir y por qué**, no qué comando quieres que ejecute. El propósito es lo que le permite avisarte de que lo que pides no es lo que te conviene.
+2. **Si hay dudas —y suele haberlas—, que lo primero no sea hacer, sino un brief de investigación**: que traiga de la red lo que se pueda contrastar, con fuentes y fechas, y **entonces** compares tu idea con lo que ha encontrado.
+3. **Muchas veces la idea inicial sobrevive; otras se deriva a algo mejor.** Las dos son un buen resultado, y las dos salen mucho más baratas antes de haber montado nada.
+
+---
+
+## 12. Mapa de carpetas
 
 | Ruta | Qué es |
 |---|---|
@@ -444,7 +495,7 @@ Con dos límites que ya están escritos en el kit aunque el interruptor siga apa
 
 ---
 
-## 12. Las reglas que no se negocian
+## 13. Las reglas que no se negocian
 
 El detalle vive en el catálogo de doctrinas; esto es el resumen.
 
@@ -461,7 +512,7 @@ El detalle vive en el catálogo de doctrinas; esto es el resumen.
 
 ---
 
-## 13. Qué NO es esto
+## 14. Qué NO es esto
 
 Para que nadie pierda una tarde averiguándolo:
 
@@ -474,7 +525,7 @@ Para que nadie pierda una tarde averiguándolo:
 
 ---
 
-## 14. Licencia
+## 15. Licencia
 
 **MIT.** Haz lo que quieras con esto: úsalo, modifícalo, redistribúyelo, quítale lo que no te sirva. Sin garantía de ningún tipo. El texto completo está en [`LICENSE`](LICENSE).
 
