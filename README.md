@@ -130,6 +130,24 @@ Y una pista para cuando dudes: **si tienes que ponerte a explicar por escrito d�
 
 *(Esto lo aprendí equivocándome. Tuve dos asuntos separados investigando **el mismo aparato** durante una semana, cada uno por su lado, llegando a conclusiones que se contradecían, y sin que ninguno de los dos supiera que el otro estaba en lo mismo.)*
 
+### Lo que comparten todos
+
+Si cada asunto va por su cuenta, ¿qué pasa con lo que necesitan varios? El DNI, las escrituras de la casa, la ficha técnica del coche, la póliza del seguro: papeles que hoy hacen falta para una reclamación y dentro de dos años para otra cosa.
+
+**No se copian en cada carpeta.** Van a un sitio común del vault, y cada asunto **enlaza** el que necesite. Hay dos carpetas comunes, con contenidos muy distintos:
+
+- **El catálogo** — las reglas del método. Sin datos de nadie.
+- **El archivo de documentos** — los papeles que sirven a varios asuntos a la vez.
+
+**Todas las sesiones las ven, y las ven a la vez.** Que dos estén trabajando en asuntos distintos no les impide consultar el mismo documento al mismo tiempo: nadie lo bloquea ni tiene que esperar.
+
+**Por qué no copiarlos**, que es lo que uno haría por instinto: el día que renuevas el DNI, lo cambias en un sitio y **todos los asuntos quedan al día de golpe**. Con copias repartidas tendrías que perseguirlas una a una, y la que se te escape seguirá enseñando el documento viejo con toda la naturalidad del mundo.
+
+Dos detalles de cómo está montado:
+
+- **Las sesiones pueden leer ese archivo, pero no escribir en él.** Si a un asunto le falta un papel, te lo pide y lo archivas tú. Así no hay ninguna sesión moviendo o renombrando documentos que otras están usando.
+- **Esa carpeta no existe hasta que hace falta.** Se crea con el primer asunto que necesite compartir un documento, no antes: una carpeta vacía "por si acaso" solo es una cosa más que mantener.
+
 ### Separados, pero se hablan
 
 Aquí hay algo que cambió hace poco y que quita bastante trabajo. Antes, si la sesión de un asunto descubría algo que le servía a otra, **el recadero era yo**: copiar el hallazgo de una ventana, pegarlo en la otra, y esperar no haberme dejado nada por el camino.
@@ -405,6 +423,7 @@ Así es como el vault ha ido pivotando: no de un diseño inicial, sino de una ca
 | [`inicializador/`](inicializador/README.md) | **Procedimiento y plantillas** para arrancar un asunto: los dos checklists, el charter, el contrato de tanda, el handoff, el consultor, los perfiles de permisos por rol y el árbol de contenedor a copiar. |
 | [`_meta/`](_meta/README.md) | **El kit tratado como un asunto más**: charter, cola, decisiones abiertas, bitácora, primeros pasos, guía de arranque de sesiones y el verificador. Aquí se gestiona la evolución del propio vault. |
 | `asuntos/<asunto>/` | Los asuntos, uno por carpeta, todos con la misma estructura. **No existe hasta que inicializas el primero.** |
+| *(el archivo de documentos)* | Los papeles que sirven a **varios** asuntos —identificativos, de la vivienda, de un vehículo—, en un sitio y enlazados desde cada asunto en lugar de copiados (sección 5). Las sesiones lo leen pero **no escriben en él**, y **no existe hasta que el primer asunto lo necesita**: el nombre se lo pones tú al crearlo. |
 
 ---
 
