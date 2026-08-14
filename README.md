@@ -80,13 +80,15 @@ Ese ciclo es explícito y tiene sitio propio en la estructura:
 3. **Se funde donde cambia el comportamiento**: la doctrina, el checklist o la plantilla que corresponda. La bitácora sola no cambia nada — anotar sin fundir es una forma cómoda de no arreglar el problema.
 4. **La doctrina sube de `version`** y se anota su changelog en el pie, con fecha y motivo.
 
-Por eso las doctrinas del catálogo llevan un pie con su historial de versiones, y por eso muchas frases del kit suenan a factura pagada. Lo son. Un par de ejemplos que verás citados dentro:
+Por eso las doctrinas del catálogo llevan un pie con su historial de versiones, y por eso muchas frases del kit vienen con una cifra al lado. Un par de ejemplos que verás citados dentro:
 
 - Una sesión ejecutora cargó el fichero de reglas del coordinador, se creyó coordinadora, decidió que su trabajo era voluminoso e **intentó delegarlo en otra sesión**. No hizo nada de lo encargado y **devolvió éxito**. Coste: 1,11 USD y una pasada en vacío. De ahí salió el bloque de **anulación de rol** que hoy encabeza todo contrato de tanda.
 - Una lista de herramientas permitidas resultó ser **aditiva**: una sesión lanzada sin permiso de shell ejecutó shell igualmente. De ahí salió la regla de que **lo que quieras impedir se expresa como denegación explícita**, nunca como ausencia de permiso.
 - Una comprobación de "no se ha perdido nada" comparaba un recuento sobre datos que otro proceso estaba usando en vivo: **cambiaron solos en 11 segundos** y frenaron una tanda sin que nada estuviera roto. De ahí salió la regla de comprobar la **identidad** de lo que quieres proteger, no su contenido volátil.
 
-**Consecuencia práctica para quien se lo descargue:** las reglas que parecen exageradas suelen ser las que más caro salieron. Si vas a quitar una, quita la que entiendas del todo.
+**Y una aclaración sobre esas cifras en dólares, porque se malinterpretan fácil: no son facturas. Aquí no se ha pagado ni un céntimo aparte.** Todo esto corre con **la suscripción de Claude Code y nada más** — sin clave de programador, sin API, sin consumo facturado por uso. Lo que la herramienta reporta como coste de una sesión es **una forma de medir cuánto trabajo se llevó**: sirve para comparar una tanda con otra, para detectar que algo se fue de madre y para decidir si merece la pena repetirlo. Es un cuentakilómetros, no un recibo. Los topes que verás en los contratos de tanda funcionan igual: **cortan la sesión al llegar al número, pero no cobran nada**.
+
+**Consecuencia práctica para quien se lo descargue:** las reglas que parecen exageradas suelen ser las que más costaron —en tiempo, en trabajo rehecho y en tardes perdidas—. Si vas a quitar una, quita la que entiendas del todo.
 
 *(Este README también lo ha redactado Claude Code, trabajando como coordinador general del vault, y lo he revisado y aprobado yo. Sería raro esconderlo en un repositorio que va justamente de eso.)*
 
@@ -304,7 +306,7 @@ Su primer trabajo es **entender el expediente**: cronología y reconocimiento. Y
 
 ### Lo que hace falta
 
-- **Claude Code**, con una suscripción de pago. **Sin claves de API**: el método está pensado para consumir suscripción, y una clave definida factura aparte y en silencio.
+- **Claude Code, con una suscripción normal de pago. No hace falta ninguna clave de API ni ninguna cuenta de programador**, ni aquí ni en las sesiones que el coordinador lanza por su cuenta: todo el método funciona con lo que da la suscripción y nada más. De hecho, tener una clave definida es **contraproducente** — se prioriza sobre la suscripción y empieza a **facturar por uso en silencio**, así que el kit comprueba que no la haya antes de lanzar una tanda.
 - **Node.js** — solo para dos cosas: el verificador del kit y el hook de higiene que corre al arrancar cada sesión.
 - **git**, que se usa **en local**: sin remoto, sin nube.
 - **Obsidian, opcional.** El vault es markdown con enlaces `[[wikilink]]`, así que Obsidian va muy bien para leerlo; nada del método depende de él, y la configuración de su interfaz está excluida del control de versiones a propósito.
