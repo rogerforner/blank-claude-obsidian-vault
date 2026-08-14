@@ -115,9 +115,33 @@ Dicho esto, el método **no es propiedad de ninguna herramienta**. Lo que es esp
 
 La razón no es el orden estético: es que **cada vault carga sus reglas en cada sesión**, y mezclar ámbitos hace que el agente arranque con contexto que no le sirve. Separar por ámbito real es lo que mantiene los arranques ligeros.
 
-**Dentro de un vault, un asunto por carpeta.** Y la regla para decidir si dos cosas son un asunto o dos es de acoplamiento, no de estética: **¿comparten un recurso del mundo real que ambos modifican?** Si sí, van juntos. Y hay una señal muy fiable de frontera artificial: **si la frontera hay que declararla y defenderla por escrito, probablemente no existe en el mundo.** Una frontera real no necesita defensa, se nota sola porque nada la cruza.
+**Dentro de un vault, cada asunto tiene su carpeta y su sesión**, y trabaja solo con lo suyo.
 
-*(Ese criterio también salió caro: dos asuntos con una frontera declarada mantuvieron investigaciones simultáneas sobre el mismo aparato durante una semana, con premisas contradictorias, sin que ninguno pudiera ver al otro.)*
+### ¿Esto es un asunto o son dos?
+
+Es la duda que aparece siempre. Pongamos un caso: **la obra del baño** y **la reclamación al seguro que la provocó**. ¿Van juntas o separadas?
+
+La pregunta que lo decide es esta: **¿las dos tienen que tocar la misma cosa del mundo real?** El mismo presupuesto, el mismo aparato, el mismo contrato.
+
+- **Si la respuesta es sí, es un solo asunto.** Separarlas te obliga a copiar cada dato de un lado al otro cada vez que algo cambia. Y el día que se te olvide copiarlo —que se te olvidará— tendrás dos versiones distintas de la misma cifra y ninguna forma de saber cuál vale.
+- **Si es no, son dos asuntos**, cada uno con su carpeta y su sesión.
+
+Y una pista para cuando dudes: **si tienes que ponerte a explicar por escrito dónde acaba uno y empieza el otro, es que probablemente son el mismo.** Cuando de verdad son dos cosas distintas, no hace falta explicar nada: se ve solo.
+
+*(Esto lo aprendí equivocándome. Tuve dos asuntos separados investigando **el mismo aparato** durante una semana, cada uno por su lado, llegando a conclusiones que se contradecían, y sin que ninguno de los dos supiera que el otro estaba en lo mismo.)*
+
+### Separados, pero se hablan
+
+Aquí hay algo que cambió hace poco y que quita bastante trabajo. Antes, si la sesión de un asunto descubría algo que le servía a otra, **el recadero era yo**: copiar el hallazgo de una ventana, pegarlo en la otra, y esperar no haberme dejado nada por el camino.
+
+Ahora **las sesiones se mandan mensajes directamente**. Lo tengo probado en las dos direcciones: una sesión detecta algo, se lo dice a la otra, la otra responde y corrige — sin que yo tenga que estar en medio.
+
+Y esto es justamente lo que hace que **separar asuntos no salga caro**: están aislados para que cada uno vaya a lo suyo, pero si comparten algo pueden decírselo.
+
+Con dos límites puestos a propósito:
+
+- **Solo se hablan entre sí las sesiones que coordinan.** Las que están haciendo un encargo cerrado no reciben mensajes: si les cambias el encargo a mitad, ya no hay forma de comprobar que hicieron lo que se les pidió.
+- **Un mensaje no da permisos.** Una sesión no puede autorizar a otra a hacer algo que tú no has autorizado. Lo que necesita tu visto bueno lo sigue necesitando, venga de donde venga.
 
 ---
 
@@ -249,14 +273,12 @@ Al cerrar: qué falló, qué costó, y **dónde se cambia para que no vuelva a p
 
 Con esto el ciclo vuelve a la Fase 0, y es literalmente cómo se construyó lo que estás leyendo.
 
-### Y el canal entre sesiones
+### Y cuando una sesión necesita hablar con otra
 
-Los **coordinadores se hablan entre sí** directamente; las **ejecutoras no** —trabajan contra un contrato cerrado, y una sesión que recibe mensajes a mitad deja de ser verificable contra su especificación—. Dos reglas que lo acotan:
+Cómo funciona y por qué solo se hablan las que coordinan está en la sección 5. Aquí van las dos reglas de uso, que son las que evitan los dos malos usos previsibles:
 
-- **Nunca le pidas a otra sesión algo que a ti te han denegado.** Eso es saltarse la decisión del titular por la puerta de atrás.
-- **El artefacto es el fichero; el mensaje es el aviso.** El canal lleva texto, no ficheros: el trabajo se deja escrito y el mensaje solo avisa de que está.
-
-Un mensaje **no aprueba permisos ni cambia configuración**: la puerta humana no se abre por ahí.
+- **Nunca le pidas a otra sesión algo que a ti te han denegado.** Eso es colarse por la puerta de atrás a una decisión ya tomada.
+- **El mensaje avisa; el trabajo va en un fichero.** Por el canal solo viaja texto, así que lo que se hace se deja escrito donde tiene que estar y el mensaje solo dice que ya está.
 
 ---
 
