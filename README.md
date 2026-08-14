@@ -55,15 +55,17 @@ La respuesta de esta plantilla a cada uno. Como aparece aquí por primera vez el
 
 ## 2. Quién lo escribe
 
-Soy **Roger Forner Fabre**, de Roquetes (Cataluña). Estoy felizmente casado y tengo un hijo pequeño. Soy desarrollador y trabajo en Privacy Driver, con la responsabilidad sobre datos de otros que eso conlleva.
+Soy **Roger Forner Fabre**, de Roquetes (Terres de l'Ebre, Cataluña). Estoy felizmente casado, tengo un hijo pequeñito y, a eso, hay que sumarle que soy desarrollador y trabajo en Privacy Driver.
 
-Fuera del trabajo hago cosas con las manos: domótica, reformas, la instalación eléctrica de casa, algún proyecto de sostenibilidad. Cosas que hago yo mismo, en los ratos que deja el resto.
+Tengo la necesidad de estar en movimiento, de sacar adelante proyectos que me ayuden a experimentar y a aprender: domótica, reformas, jardinería, instalaciones eléctricas, algún proyecto de sostenibilidad en la finca. Cosas que hago yo mismo, en los pocos ratos que consigo libres.
 
-Llevo años usando la IA para programar. En algún momento **empecé a usarla también para todo lo demás**, y ahí es donde se complicó.
+Llevo años usando la IA para programar. En algún momento **empecé a usarla también para todo lo demás**, y ahí es donde se complicó un poquitín.
 
-**Y de ahí salió esto.** Cada una de esas cosas arrastra papeles, presupuestos, plazos, cálculos y decisiones que hay que recordar meses después. La IA me ayudaba con cada trozo, pero cada conversación empezaba de cero: volvía a explicar el contexto, volvía a pactar cómo quería trabajar, y lo decidido la semana anterior no existía. Así que fui montando lo que me faltaba —el sitio donde vive el estado, las reglas que no hay que repetir, la forma de encargar trabajo— hasta que dejó de ser un apaño y se convirtió en un método.
+**Y de ahí salió esto.** Cada una de esas cosas arrastra papeles, presupuestos, plazos, cálculos y decisiones que hay que recordar meses después, además de la necesidad de intentar estar al día. La IA me ayudaba con cada trozo, pero cada conversación empezaba de cero: volvía a explicar el contexto, volvía a pactar cómo quería trabajar, y lo decidido la semana anterior no existía o estaba desfasado. Así que fui montando lo que me faltaba —el sitio donde vive el estado, las reglas que no hay que repetir, la forma de encargar trabajo— hasta que dejó de ser un apaño y se convirtió en un método.
 
-**Y no está terminado.** Sigue creciendo: cada semana algo enseña que una regla sobraba, que otra estaba mal escrita o que faltaba una tercera. Si a alguien le sirve, que lo coja y lo haga suyo — que experimente, que cambie lo que no le encaje y que lo adapte a su forma de trabajar, que seguramente no es la mía. Esto es lo que a mí me funciona hoy, no una receta.
+**Y no está terminado.** Sigue creciendo: cada semana algo enseña que una regla sobraba, que otra estaba mal escrita o que faltaba una tercera. Son cosas que van pivotando poco a poco, y eso pese a que la IA avanza más rápido que Han Solo por el _Corredor de Kessel_.
+
+Si a alguien le sirve, que lo coja y lo haga suyo — que experimente, que cambie lo que no le encaje y que lo adapte a su forma de trabajar, que seguramente no es la mía. Esto es lo que a mí me funciona hoy, no una receta.
 
 ---
 
