@@ -6,9 +6,9 @@ Piezas de catálogo **transversales a cualquier asunto** (una reclamación, una 
 
 Se **lee** desde el catálogo; **no** se copia salvo motivo declarado y **no se hereda** automáticamente.
 
-Un coordinador de asunto **ve este catálogo en solo lectura** —lo tiene en `additionalDirectories`— y **trabaja contra él**. Un `[[wikilink]]` sin copia local **resuelve aquí, y es lo correcto**: no es un olvido. `asuntos/<asunto>/memoria/` es para las doctrinas **propias** de ese asunto.
+Un coordinador de asunto **ve este catálogo pero no puede escribir en él** —su sesión se configura para que solo pueda leerlo— y **lo consulta como referencia**. Un `[[wikilink]]` sin copia local **resuelve aquí, y es lo correcto**: no es un olvido. `asuntos/<asunto>/memoria/` es para las doctrinas **propias** de ese asunto.
 
-Por qué no por copia: copiar no da autonomía, solo **deber de resync**. Una copia desfasada **miente** con la autoridad de estar instalada, y una copia idéntica no aporta nada mientras el asunto viva dentro del vault. Se copia solo para **fijar** a propósito una versión (diciendo por qué) o si el contenedor va a **salir** del vault; entonces es un **snapshot con su `version`** y **quien copia asume el resync**.
+Por qué no por copia: copiar no da autonomía, solo **la obligación de acordarse de traer las actualizaciones después**. Una copia desfasada **miente** con la autoridad de estar instalada, y una copia idéntica no aporta nada mientras el asunto viva dentro del vault. Se copia solo para **fijar** a propósito una versión (diciendo por qué) o si el contenedor va a **salir** del vault; entonces es una **copia congelada en ese momento**, con su número de `version` anotado, y **quien copió es quien tiene que traer los cambios posteriores** — el catálogo seguirá avanzando y esa copia no se entera sola.
 
 Y tampoco por herencia automática: nada se auto-provee. Lo que aplica a un asunto se decide al arrancarlo, con su commit y su motivo.
 

@@ -2,7 +2,7 @@
 
 ## Regla de oro: se LEE, no se copia
 
-`general/` es un **catálogo que se lee**, no un almacén del que haya que copiar ni un proveedor automático de tooling. Todo contenedor de asunto lo tiene declarado como **directorio adicional en modo lectura** (ruta relativa `../../general`): el coordinador de un asunto **trabaja contra el catálogo**.
+`general/` es un **catálogo que se lee**, no un almacén del que haya que copiar ni un proveedor automático de tooling. Todo contenedor de asunto lo tiene declarado como **directorio adicional en modo lectura** (ruta relativa `../../general`): el coordinador de un asunto **lo consulta y lo usa de referencia, pero no puede modificarlo**.
 
 - **Un `[[wikilink]]` sin copia local resuelve al catálogo, y eso es lo correcto** — no es un olvido.
 - **El default es NO copiar.** Una copia desfasada miente con la autoridad de estar instalada, y una copia idéntica no aporta nada mientras el asunto viva dentro del vault.

@@ -47,7 +47,7 @@ El script es **un único fichero compartido** en `general/comun/hooks/` (solo le
 
 Esta plantilla trae la **segunda** (es el settings de un contenedor de asunto). El `.claude/settings.json` de la **raíz** del vault trae la primera. Si alguna vez anidas un contenedor a otra profundidad, ajusta el número de `../` — y compruébalo, porque un hook con la ruta mal **no da error visible**: simplemente no limpia.
 
-**El hook NO se cablea en el perfil consultor.** El housekeeping de `coordinacion/` es del coordinador; un consultor de solo lectura no borra nada. Por eso `plantilla-settings-consultor.json` **no tiene bloque `hooks`**.
+**El hook NO se cablea en el perfil consultor.** La limpieza de `coordinacion/` es del coordinador; un consultor de solo lectura no borra nada. Por eso `plantilla-settings-consultor.json` **no tiene bloque `hooks`**.
 
 ## Los `deny` son la barrera — el `allow` no lo es
 

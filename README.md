@@ -271,9 +271,9 @@ Lo esencial de la sintaxis, en una línea: **la sesión se lanza dentro del dire
 **Cuatro trampas medidas, y las cuatro hacen que una tanda mala parezca buena:**
 
 1. **El fichero de reglas pesa más que el rótulo.** Una sesión enraizada en el contenedor del asunto carga el fichero de reglas del **coordinador** y se cree coordinadora. Por eso todo contrato empieza con un **bloque de anulación de rol** literal, que va **en el contrato y también en el prompt de lanzamiento** — el contrato lo lee al abrir el fichero; el prompt lo tiene delante desde el primer token.
-2. **`success` no significa trabajo hecho.** Es el veredicto del *runner*, no del modelo. **Se comprueba el efecto en el disco, no el código de salida.**
+2. **`success` no significa que el trabajo se haya hecho.** Ese aviso lo pone el programa que ha ejecutado la sesión, no el modelo que ha razonado sobre la tarea: solo informa de que el proceso terminó sin romperse, no de que hiciera lo que pediste. **Se comprueba mirando los ficheros que debían cambiar**, no ese aviso.
 3. **La lista de herramientas permitidas concede, no restringe.** Es aditiva. Lo que protege de verdad, por orden: las **reglas de denegación** del destino, los **cortacircuitos** de turnos y gasto, los **hooks previos a la herramienta** y el **watchdog** del que lanza.
-4. **El modo plan desvía el entregable.** Una sesión en modo plan puede escribir su plan en el directorio de planes del cliente en vez de devolverlo, y lo que te llega es una frase diciendo que está en el plan.
+4. **El modo plan desvía el entregable.** El modo plan es una forma de arrancar una sesión en la que solo propone lo que haría, sin llegar a hacerlo. Si lanzas la ejecutora así por descuido, en vez de dejar el resultado donde se lo pediste puede guardar su propuesta en una carpeta interna de la herramienta, y lo único que te llega es una frase diciendo que el plan está ahí.
 
 Y antes de lanzar nada, dos comprobaciones que no se saltan: que **la sesión del agente está autenticada por cuenta** (no por clave de programador), y que **no hay ninguna clave de API definida**, ni en el entorno ni en un fichero de entorno del proyecto — si la hay, se factura aparte y en silencio.
 
@@ -416,7 +416,7 @@ Así es como el vault ha ido pivotando: no de un diseño inicial, sino de una ca
 |---|---|
 | `README.md` | Esto. |
 | `CLAUDE.md` | Las reglas **siempre activas**, canónicas y auto-cargadas. Tu rol lo fija tu carpeta de trabajo: raíz → coordinador general; `asuntos/<asunto>/` → coordinador de ese asunto. Se mantiene por debajo de 200 líneas a propósito. |
-| `.claude/settings.json` | Perfil de la sesión coordinadora de la raíz: hook de higiene, modelo y esfuerzo fijados, y **reglas de denegación** (credenciales de la máquina, destinos externos para git). |
+| `.claude/settings.json` | Perfil de la sesión coordinadora de la raíz: hook de higiene (un script que se dispara solo al arrancar la sesión y limpia lo que sobra), modelo y esfuerzo fijados, y **reglas de denegación** (credenciales de la máquina, destinos externos para git). |
 | `.gitignore` | Qué no se versiona y **por qué**, comentado línea a línea. |
 | [`general/comun/`](general/comun/README.md) | **Catálogo** transversal: las doctrinas del core con su índice, el hook de higiene, el tooling **local** de documentos y la resolución de problemas de la herramienta. Se **LEE**: no se copia ni se hereda, y para un coordinador de asunto es **solo lectura con barrera técnica**. |
 | [`general/comun/packs/codigo/`](general/comun/packs/codigo/README.md) | Pack **opcional**, solo si un asunto incluye **software propio**. Si tu vault no toca software, ignóralo entero: el core no depende de él. |

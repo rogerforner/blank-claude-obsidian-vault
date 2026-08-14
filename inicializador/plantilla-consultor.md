@@ -14,7 +14,7 @@
 >
 > Doble capa de solo lectura: `--permission-mode plan` (no edita) **+** el `deny` de `Edit`/`Write` y de los comandos que mutan estado en `settings.consultor.json`. **La capa que de verdad aguanta es el `deny`** — el modo de permisos por sí solo no es barrera ([[orquestacion_sesiones_por_herramienta]]).
 >
-> **El hook de limpieza NO se cablea en el perfil consultor.** El housekeeping de `coordinacion/` es del coordinador: un consultor de solo lectura no borra nada, ni siquiera un handoff superado. Por eso su settings **no lleva `hooks`**.
+> **El hook de limpieza NO se cablea en el perfil consultor.** La limpieza de `coordinacion/` es del coordinador: un consultor de solo lectura no borra nada, ni siquiera un handoff superado. Por eso su settings **no lleva `hooks`**.
 
 ---
 

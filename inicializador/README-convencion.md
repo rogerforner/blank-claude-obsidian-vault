@@ -23,7 +23,7 @@ Los **resultados** (informes, síntesis, escritos) viven en `docs/`, `estudios/`
 
 ## Cómo
 
-Al cerrar una tanda, el coordinador hace el housekeeping **él mismo**, sin esperar al director: `git rm` del prompt o brief ya cumplido + commit local. La raíz vuelve a quedar limpia.
+Al cerrar una tanda, el coordinador hace la limpieza **él mismo**, sin esperar al director: borra con `git rm` el prompt o el brief ya cumplido y hace un commit local. La raíz vuelve a quedar limpia.
 
 Además, un **hook `SessionStart`** limpia también **al arrancar** (`general/comun/hooks/limpieza-coordinacion.mjs`): auto-borra los handoffs y buffers gitignored ya superados y avisa de los prompts trackeados que toca quitar. Hace falta porque las sesiones a menudo mueren por límite de contexto antes de cerrar la tanda.
 

@@ -14,7 +14,7 @@ La raíz solo contiene lo **activo** y lo **vivo**. Lo efímero ya usado **se bo
 - **Locales, nunca versionados** (gitignored): `handoff-*.md` y `tmp-otros-actual.md`. Sirven para una sesión y no aportan al histórico.
 - **Versionados en vuelo, borrados al cumplir:** `prompt-*.md` y los briefs. `git rm` + commit local al cerrar.
 
-El coordinador hace este housekeeping **al cerrar cada tanda**, sin esperar al director. Y un **hook `SessionStart`** limpia también **al arrancar**, porque las sesiones a menudo mueren por límite de contexto antes de cerrar.
+El coordinador hace esta limpieza **al cerrar cada tanda**, sin esperar al director. Y un **hook `SessionStart`** (un script que se dispara solo cada vez que arranca una sesión) limpia también **al arrancar**, porque las sesiones a menudo mueren por límite de contexto antes de cerrar.
 
 ## Lo que NO va aquí
 
