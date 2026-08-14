@@ -355,6 +355,8 @@ Su primer trabajo es **entender el expediente**: cronología y reconocimiento. Y
 
 1. **Copia la carpeta y renómbrala** por su ámbito (`casa`, `finanzas`, `reclamaciones`). Un vault por ámbito, no uno gigante para todo.
 2. **Decide el histórico.** La copia trae el git de la plantilla. Si prefieres empezar limpio, borra `.git` y haz `git init`. En cualquier caso **no configures ningún destino externo**: el `.claude/settings.json` ya lo refuerza con reglas de denegación.
+
+   > **Y aquí hay una aparente contradicción que conviene aclarar, porque salta a la vista:** este repositorio que estás leyendo **sí está en GitHub**, mientras que el kit repite que el vault es git local sin remoto. Las dos cosas son ciertas y no chocan. **Lo que se publica es la plantilla** —método y andamiaje, sin un solo dato de nadie—, igual que se publica cualquier repositorio de documentación. **El vault que montes con ella es otra cosa**: lleva tus escrituras, tus facturas y tus informes médicos, y ese **no sale de tu máquina**. De ahí que la plantilla venga con las denegaciones puestas: para que el vault que nazca de ella no acabe en ningún sitio por descuido.
 3. **Abre la primera sesión con la carpeta de trabajo en la raíz.** Serás el coordinador general. El `CLAUDE.md` se auto-carga; empieza por **[`_meta/PRIMEROS-PASOS.md`](_meta/PRIMEROS-PASOS.md)**, que es el arranque real. Los prompts listos para copiar, por rol, están en **[`_meta/guia-arranque-sesiones.md`](_meta/guia-arranque-sesiones.md)**.
 4. **Contesta las dos preguntas que el vault necesita de ti** y que no se pueden suponer:
    - **¿Dónde está tu frontera de libertad técnica?** Qué puede hacer el agente sin preguntar y qué no. **No hay respuesta universal**: la fija el titular del vault, y el `CLAUDE.md` la trae como pregunta, no como afirmación.
@@ -407,6 +409,21 @@ borrador.md  →  Pandoc  →  HTML  →  + hoja CSS  →  WeasyPrint  →  PDF 
 4. **Lo que entra, se funde** en la doctrina o la plantilla que toque; lo que no, se descarta **con el motivo escrito**, para no volver a evaluarlo dentro de seis meses.
 
 Así es como el vault ha ido pivotando: no de un diseño inicial, sino de una cadena de briefs, informes y decisiones pequeñas. **Por eso la plantilla trae las plantillas de brief**: son la herramienta con la que esto sigue creciendo.
+
+### En lo que ando ahora, que aún no está hecho
+
+Lo cuento porque es donde va esto, no porque esté resuelto. **Nada de este apartado está activo en la plantilla**: viene con el interruptor apagado a propósito.
+
+**Repartir el trabajo con una segunda IA (Gemini).** No por probar cosas, sino por dos motivos concretos:
+
+- **Cada proveedor tiene su propia ventana de uso.** Lo que se manda a la segunda IA **no consume la cuota de la que coordina**, que es el cuello de botella real cuando uno trabaja de verdad con esto. Un barrido de volumen o una lectura larga de manuales son exactamente el trabajo que conviene mover.
+- **Hay cosas que la otra hace y la primera no**, o hace mejor: imagen, audio, vídeo, o consultar un corpus de documentos citando la fuente.
+
+Con dos límites que ya están escritos en el kit aunque el interruptor siga apagado: **el vault lo escribe un único agente** —si la segunda IA propone un cambio, lo propone, y lo aplica el que coordina; dos escritores sin árbitro rompen lo que el vault garantiza—, y **lo que no sale nunca son los secretos**, que es distinto de los datos personales.
+
+**Y NotebookLM, con un matiz que es justo lo que quiero intentar.** Por internet circulan muchas formas de "conectarlo", y casi todas consisten en **automatizar la sesión del navegador**. Eso lo he descartado: **incumple las condiciones de uso del servicio y pone en riesgo la cuenta**, y no lo hace aceptable que funcione. Lo que quiero probar es lo contrario: tratarlo **como una sesión más**, igual que se trata al chat web en este método — se le prepara un encargo escrito, se ejecuta aparte, y lo que vuelve es un informe que revisa el coordinador antes de que entre en el vault.
+
+**Estado honesto: esto es exploración, no una función.** Cuando pase el filtro de adopción de arriba —o no lo pase— quedará escrito con su motivo, como todo lo demás.
 
 ---
 
