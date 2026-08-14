@@ -19,10 +19,11 @@ Se publica por si le sirve a alguien en la misma situación. Es un trabajo domé
 7. [El flujo de trabajo completo](#7-el-flujo-de-trabajo-completo)
 8. [Ejemplo de uso, de principio a fin](#8-ejemplo-de-uso-de-principio-a-fin)
 9. [Puesta en marcha](#9-puesta-en-marcha)
-10. [Mapa de carpetas](#10-mapa-de-carpetas)
-11. [Las reglas que no se negocian](#11-las-reglas-que-no-se-negocian)
-12. [Qué NO es esto](#12-qué-no-es-esto)
-13. [Licencia](#13-licencia)
+10. [Con qué trabajo](#10-con-qué-trabajo)
+11. [Mapa de carpetas](#11-mapa-de-carpetas)
+12. [Las reglas que no se negocian](#12-las-reglas-que-no-se-negocian)
+13. [Qué NO es esto](#13-qué-no-es-esto)
+14. [Licencia](#14-licencia)
 
 ---
 
@@ -54,11 +55,15 @@ La respuesta de esta plantilla a cada uno. Como aparece aquí por primera vez el
 
 ## 2. Quién lo escribe
 
-Soy **Roger Forner Fabre**, de Roquetes (Cataluña). Soy desarrollador y trabajo en Privacy Driver; antes estuve en el sector de la salud. Me paso el día pensando dónde viven los datos y quién puede tocarlos, así que esa deformación profesional se nota en las reglas que hay aquí.
+Soy **Roger Forner Fabre**, de Roquetes (Cataluña). Estoy felizmente casado y tengo un hijo pequeño. Soy desarrollador y trabajo en Privacy Driver, con la responsabilidad sobre datos de otros que eso conlleva.
 
-Fuera del trabajo hago cosas con las manos: domótica, reformas, proyectos de sostenibilidad, la instalación eléctrica de casa. Estoy casado y tengo un niño pequeño, o sea que todo eso avanza en ratos sueltos.
+Fuera del trabajo hago cosas con las manos: domótica, reformas, la instalación eléctrica de casa, algún proyecto de sostenibilidad. Cosas que hago yo mismo, en los ratos que deja el resto.
+
+Llevo años usando la IA para programar. En algún momento **empecé a usarla también para todo lo demás**, y ahí es donde se complicó.
 
 **Y de ahí salió esto.** Cada una de esas cosas arrastra papeles, presupuestos, plazos, cálculos y decisiones que hay que recordar meses después. La IA me ayudaba con cada trozo, pero cada conversación empezaba de cero: volvía a explicar el contexto, volvía a pactar cómo quería trabajar, y lo decidido la semana anterior no existía. Así que fui montando lo que me faltaba —el sitio donde vive el estado, las reglas que no hay que repetir, la forma de encargar trabajo— hasta que dejó de ser un apaño y se convirtió en un método.
+
+**Y no está terminado.** Sigue creciendo: cada semana algo enseña que una regla sobraba, que otra estaba mal escrita o que faltaba una tercera. Si a alguien le sirve, que lo coja y lo haga suyo — que experimente, que cambie lo que no le encaje y que lo adapte a su forma de trabajar, que seguramente no es la mía. Esto es lo que a mí me funciona hoy, no una receta.
 
 ---
 
@@ -318,7 +323,50 @@ Su primer trabajo es **entender el expediente**: cronología y reconocimiento. Y
 
 ---
 
-## 10. Mapa de carpetas
+## 10. Con qué trabajo
+
+**Nada de esto es obligatorio y el método no depende de ninguna de estas herramientas.** Lo cuento porque cuando alguien enseña un sistema y no dice con qué lo mueve, hay que reconstruirlo a base de prueba y error. Esto es de dónde partir; si tienes algo mejor o simplemente distinto, cámbialo.
+
+| Para qué | Qué uso | Por qué esa |
+|---|---|---|
+| Coordinar y ejecutar | **Claude Code** | Aguanta el contexto que el método necesita. La sección 4 cuenta el intento anterior |
+| Leer y escribir el vault | **Obsidian** | Cómodo para navegar enlaces, pero **opcional**: son ficheros markdown y se leen con cualquier cosa |
+| El histórico | **git**, en local | Sin remoto y sin nube |
+| Transcribir escaneos y extraer tablas | **Docling** | Convierte PDF escaneados, DOCX e imágenes a markdown **conservando la estructura**. En un expediente, lo que importa suele estar en una tabla |
+| Convertir entre formatos | **Pandoc** | Universal y sin dependencias: el borrador vive en `.md` y la gestoría lo quiere en `.docx` |
+| Generar el PDF que se presenta | **Pandoc + CSS + WeasyPrint** | Ver abajo |
+| Investigar antes de decidir | **El chat web** | Fuera de la sesión de trabajo, para no quemar su contexto |
+
+### El PDF, que es el caso que más se repite
+
+Cuando hay que entregar algo presentable —a una aseguradora, a un organismo, a un instalador— la cadena es:
+
+```
+borrador.md  →  Pandoc  →  HTML  →  + hoja CSS  →  WeasyPrint  →  PDF final
+```
+
+**Y el motivo de dar ese rodeo en vez de generar el PDF de una vez:** separa el **contenido** de la **presentación**. El `.md` se versiona en git y se compara línea a línea, así que se ve qué cambió entre dos versiones de un escrito; la hoja de CSS lleva los márgenes, la tipografía, los encabezados y la numeración, y **se reutiliza en todos los asuntos**. Pandoc solo genera un PDF básico; el maquetado lo pone WeasyPrint.
+
+### Lo que tienen en común, y es lo que las eligió
+
+**Las tres de documentos corren en local.** Un expediente doméstico lleva DNI, cuentas, informes médicos y datos de terceros que no han decidido nada al respecto: eso **no se sube a un conversor web**, por cómodo que sea. Esa es la razón de la lista, no que sean las más populares.
+
+*(La ficha completa —qué instala cada una, sus licencias y los flujos típicos— está en [`general/comun/tooling-documentos.md`](general/comun/tooling-documentos.md). Y hay un caso que ninguna cubre y que aprendí a base de intentos: **rellenar un modelo `.docx` ajeno sin romperlo**, que exige editar el XML del original en vez de convertirlo y reconstruirlo. También está ahí.)*
+
+### Cómo entró cada una: primero se investiga, después se decide
+
+**Ninguna de estas herramientas se adoptó porque sonara bien.** Cada vez que aparecía una necesidad —transcribir un lote de escaneos, entregar un PDF decente, repartir trabajo entre dos proveedores de IA— el procedimiento fue siempre el mismo:
+
+1. **Escribo un brief** con la plantilla del kit: qué decisión hay que fundamentar, qué doy ya por verificado, qué restricciones son inviolables y qué preguntas concretas quiero respondidas.
+2. **Lo lanzo en una sesión de investigación en el chat web**, fuera del vault y **en abstracto, sin un solo dato de casa**.
+3. **Vuelve como informe** y pasa el filtro de cinco puntos de la sección 7: caso de uso presente, qué sustituye, dónde viven los datos, condiciones y coste real, y piloto acotado con criterio de éxito escrito **antes** de empezar.
+4. **Lo que entra, se funde** en la doctrina o la plantilla que toque; lo que no, se descarta **con el motivo escrito**, para no volver a evaluarlo dentro de seis meses.
+
+Así es como el vault ha ido pivotando: no de un diseño inicial, sino de una cadena de briefs, informes y decisiones pequeñas. **Por eso la plantilla trae las plantillas de brief**: son la herramienta con la que esto sigue creciendo.
+
+---
+
+## 11. Mapa de carpetas
 
 | Ruta | Qué es |
 |---|---|
@@ -334,7 +382,7 @@ Su primer trabajo es **entender el expediente**: cronología y reconocimiento. Y
 
 ---
 
-## 11. Las reglas que no se negocian
+## 12. Las reglas que no se negocian
 
 El detalle vive en el catálogo de doctrinas; esto es el resumen.
 
@@ -351,7 +399,7 @@ El detalle vive en el catálogo de doctrinas; esto es el resumen.
 
 ---
 
-## 12. Qué NO es esto
+## 13. Qué NO es esto
 
 Para que nadie pierda una tarde averiguándolo:
 
@@ -364,7 +412,7 @@ Para que nadie pierda una tarde averiguándolo:
 
 ---
 
-## 13. Licencia
+## 14. Licencia
 
 **MIT.** Haz lo que quieras con esto: úsalo, modifícalo, redistribúyelo, quítale lo que no te sirva. Sin garantía de ningún tipo. El texto completo está en [`LICENSE`](LICENSE).
 
