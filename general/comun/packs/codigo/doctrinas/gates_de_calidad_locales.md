@@ -69,7 +69,7 @@ El fraude que importa **no es escribir tests: es ablandar la puerta** para que p
 
 Un segundo agente revisor es **red informativa**, no puerta bloqueante: alcanza ~80% de acuerdo con humanos pero arrastra sesgos (posición, verbosidad, *self-enhancement*), *overcorrection*, y su consistencia cae del ~95% (temperatura 0) a ~70% (temperatura 1). Además **consume cuota**. Lo que sí da garantía objetiva son las **fitness functions deterministas** (reglas de dependencia/arquitectura ejecutables). Evita la validación circular (LLM validando LLM).
 
-## Practicidad (Windows) y caveats
+## Practicidad (Windows) y salvedades
 
 - Preferir **binarios estáticos** (Go) que funcionan sin runtime: `gitleaks`, `hadolint`, `goss`. `jq` en el PATH si se usan los ejemplos oficiales.
 - **Trampa real en Windows:** un hook que invoque un script `.sh` puede resolver a `C:\Windows\System32\bash.exe` (**stub de WSL**) en vez de a Git Bash y **colgar la TUI ignorando el timeout** (issues #37634, #23556). → usa **ruta explícita** (`"C:/Program Files/Git/bin/bash.exe"`), declara `"shell": "powershell"`, o invoca directamente el intérprete (p. ej. `node script.mjs`), que es lo más portable.

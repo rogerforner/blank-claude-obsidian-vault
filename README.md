@@ -281,7 +281,7 @@ Y antes de lanzar nada, dos comprobaciones que no se saltan: que **la sesión de
 
 ### Fase 5 — Verificar
 
-**Verificado, no asumido.** Lo que se puede comprobar por comando se **ejecuta** y se reporta el **output literal**. Lo que no —medir una estancia, cotejar contra el papel original, entrar en una sede electrónica con certificado, confirmar que el envío llegó— **no desaparece del cierre**: se convierte en **comprobación en campo**, con los pasos exactos y qué resultado esperar. La hace el director y la reporta.
+**Verificado, no supuesto.** Lo que se puede comprobar por comando se **ejecuta** y se reporta el **output literal**. Lo que no —medir una estancia, cotejar contra el papel original, entrar en una sede electrónica con certificado, confirmar que el envío llegó— **no desaparece del cierre**: se convierte en **comprobación en campo**, con los pasos exactos y qué resultado esperar. La hace el director y la reporta.
 
 **Nunca se ajusta el criterio para que pase.** Es la frase más repetida del kit y la que más disciplina exige.
 

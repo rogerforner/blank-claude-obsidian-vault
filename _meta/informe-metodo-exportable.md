@@ -63,7 +63,7 @@ Primero una sesión de **análisis de solo lectura** cuyo único producto es un 
 4. **Texto que habla de dónde vive** y se contradice al moverlo.
 5. **El propio entregable como riesgo** — el verificador también escanea el informe que escribe la sesión hija.
 
-### 1.5 Verificado, no asumido
+### 1.5 Verificado, no supuesto
 
 Lo comprobable por comando **se ejecuta** y se reporta el **output literal**. Lo que no, se convierte en comprobación manual con los pasos exactos y el resultado esperado. **Nunca se ajusta el criterio para que pase.**
 
@@ -147,7 +147,7 @@ Descartar bien vale tanto como adoptar bien, y **ahorra la tentación de reinten
 - **Enjambres de agentes en paralelo.** Cada agente es un contexto completo: multiplica el consumo. Para una persona, el óptimo es **baja concurrencia** — quien coordina, más una o dos sesiones de trabajo.
 - **Aislar cada tanda en una copia separada del árbol.** Descartado **mientras no haya dos o más sesiones concurrentes de verdad**. El umbral está escrito para poder revisarlo.
 - **Registros telegráficos para ahorrar tokens.** No superan a pedir brevedad, y degradan la prosa. Inaceptable cuando el producto es un escrito que leerá un tercero.
-- **Partir el fichero de reglas en importaciones.** No aligera: los importados se cargan enteros. Lo que sí aligera son las reglas por ruta — con el caveat de que **una regla que debe cumplirse siempre no puede vivir ahí**.
+- **Partir el fichero de reglas en importaciones.** No aligera: los importados se cargan enteros. Lo que sí aligera son las reglas por ruta — con la salvedad de que **una regla que debe cumplirse siempre no puede vivir ahí**.
 - **Automatizar el acceso a un servicio controlando un navegador con la sesión iniciada.** Existen herramientas maduras que lo hacen y funcionan. **Chocan con las condiciones de uso** y el riesgo que declaran sus propios autores es la suspensión de la cuenta. De aquí sale un criterio general: **un mecanismo de integración se evalúa por tres cosas, y la tercera se olvida siempre — que funcione, que no exija credenciales de programador, y que esté permitido.**
 
 ---

@@ -60,7 +60,7 @@
 | `effortLevel` | Fija el esfuerzo por sesión | Depende de que alguien elija bien en un desplegable, y eso no es una regla |
 | `attribution` vacío | Commits sin coautoría de la IA | Ruido en el histórico |
 
-### 1.2 Caveats de portabilidad que cuestan caro
+### 1.2 Salvedades de portabilidad que cuestan caro
 
 - **Una denegación con ruta RELATIVA no funciona en todos los sistemas.** No resuelve contra la ruta absoluta y **se puede escribir igualmente**. Por eso las denegaciones de ruta se expresan como **glob absoluto** (`//**/<carpeta>/**`), igual que las de claves privadas. **No lo "limpies" a ruta relativa.**
 - **El glob asume el nombre de la carpeta.** Si renombras el catálogo, hay que actualizar la denegación.
@@ -91,7 +91,7 @@
 
 **Qué resuelve.** Que las sesiones se pasen hallazgos, decisiones y avisos **sin que una persona copie y pegue entre terminales**. En el vault de referencia, **uno de cada diez commits** tocaba un traspaso entre sesiones, y el canal de todos ellos era una persona.
 
-**No hay nada que instalar ni habilitar**: donde la versión lo soporta, viene activo. Lo que se configura es **qué hace cada rol con lo que le llega**.
+**No hay nada que instalar ni habilitar**: donde la versión lo admite, viene activo. Lo que se configura es **qué hace cada rol con lo que le llega**.
 
 > **Y no depende de la superficie: funciona igual en la aplicación de escritorio que en el terminal.** **Comprobado, no leído:** dos sesiones **de escritorio** intercambiaron mensajes en las dos direcciones, con contenido que ninguna de las dos tenía por separado. **El mecanismo es un socket local por sesión** (`/tmp/cc-socks/<identificador>.sock` en sistemas tipo Unix), y lo enlaza **toda sesión que tenga la función activa**, incluidas las **no interactivas** — la única que no lo hace es el arranque mínimo sin sesión.
 >
@@ -119,7 +119,7 @@
 | Rol | Valor | Por qué |
 |---|---|---|
 | **Coordinadores** | `accept` | El canal es para **coordinar**, y es lo que ellos hacen |
-| **Sesiones ejecutoras, de publicación y de consulta** | `refuse` | Trabajan contra un **contrato cerrado**. Si aceptan mensajes a mitad, **su encargo deja de ser el que se les dio** y el resultado ya no es verificable contra la especificación |
+| **Sesiones ejecutoras, de publicación y de consulta** | `refuse` | Se rigen por un **contrato cerrado**. Si aceptan mensajes a mitad, **su encargo deja de ser el que se les dio** y el resultado ya no es verificable contra la especificación |
 
 **Y `accept` en vez de `hold`, con motivo:** retener abre un diálogo de aprobación por cada mensaje, o sea que **deja a la persona de cuello de botella — solo que aprobando en vez de copiando**. Si el objetivo es que las sesiones dejen de necesitar un cartero, retener no lo consigue. *(En un entorno con obligaciones de auditoría, `hold` puede ser justo lo que se quiere. Decisión del titular.)*
 

@@ -119,7 +119,7 @@ Los cortacircuitos se ponen con **margen del 100% sobre tu propia línea base me
 ## Preguntas sin humano, y relevos
 
 - **Que la ejecutora resuelva sola en vez de preguntar:** un **MCP local stdio de "fuente de verdad"** que exponga doctrina/decisiones/contratos como herramienta consultable (regístralo con `claude mcp add`, **no** en `settings.json`, que lo ignora en silencio), y/o un hook `SessionStart` que inyecte la doctrina al arrancar.
-- **Límite duro:** los hooks **solo hablan por stdout/stderr/exit code**; **no pueden lanzar tool calls ni comandos `/`** → **una sesión no puede auto-arrancar su sucesora**. Hace falta un **orquestador externo** (cron / Programador de tareas / wrapper). `SessionEnd` no puede bloquear ni lanzar nada; `PreCompact` sí puede snapshotear y bloquear la compactación.
+- **Límite duro:** los hooks **solo hablan por stdout/stderr/exit code**; **no pueden lanzar tool calls ni comandos `/`** → **una sesión no puede auto-arrancar su sucesora**. Hace falta un **orquestador externo** (cron / Programador de tareas / script externo). `SessionEnd` no puede bloquear ni lanzar nada; `PreCompact` sí puede capturar una instantánea y bloquear la compactación.
 - **`/clear` + handoff `.md` sigue siendo mejor que la compactación** (determinista, auditable, barato). Automatiza el `.md` con `PreCompact`/`SessionEnd`; que el orquestador arranque la siguiente e inyecte el handoff por `SessionStart`.
 - **Cola de tandas:** ficheros `.md` en el vault consumidos por el orquestador (más simple y soberano que la task list experimental de *Agent Teams*, que cuesta ~3-4×). Añade un `PostToolUse` que escriba **audit log** JSON-lines.
 - **Cruce entre asuntos: el canal directo entre sesiones, no un buzón de ficheros.** *(Corrige la redacción anterior de esta misma línea, que proponía un buzón `_meta/buzon/` — nunca llegó a crearse y ha quedado superado.)* Ver la sección propia más abajo.
@@ -135,7 +135,7 @@ Los cortacircuitos se ponen con **margen del 100% sobre tu propia línea base me
 | Rol | Valor | Por qué |
 |---|---|---|
 | Coordinadores (general y de asunto) | **`accept`** | El canal es para **coordinar**, y es lo que ellos hacen |
-| Ejecutoras y consultor | **`refuse`** | Trabajan contra un **contrato cerrado**: si aceptan mensajes a mitad, su encargo deja de ser el que se les dio y el resultado ya no es verificable contra la especificación. *(Los perfiles del pack opcional siguen el mismo criterio: todo lo que no coordina, rechaza.)* |
+| Ejecutoras y consultor | **`refuse`** | Se rigen por un **contrato cerrado**: si aceptan mensajes a mitad, su encargo deja de ser el que se les dio y el resultado ya no es verificable contra la especificación. *(Los perfiles del pack opcional siguen el mismo criterio: todo lo que no coordina, rechaza.)* |
 | Todos | `isolatePeerMachines: true` | Un mensaje **no sale de la máquina sin aprobación**. Entre sesiones locales viaja por un socket sin pasar por servidores de nadie → [[soberania_datos_local]] |
 
 **`accept` y no "retenido", y el motivo no es comodidad.** El modo retenido abre un diálogo de aprobación por cada mensaje: **deja a la persona de cuello de botella, solo que aprobando en vez de copiando**. Si lo que se quiere es que las sesiones dejen de necesitar un cartero, retener no lo consigue.

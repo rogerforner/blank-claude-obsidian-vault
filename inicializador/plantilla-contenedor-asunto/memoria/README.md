@@ -2,7 +2,7 @@
 
 ## La regla de oro: el catálogo se LEE, no se copia
 
-La fuente de verdad es el **catálogo** (`../../../general/comun/doctrinas/`), que este contenedor tiene en `additionalDirectories` de su `.claude/settings.json`. El coordinador **trabaja contra el catálogo**, en solo lectura.
+La fuente de verdad es el **catálogo** (`../../../general/comun/doctrinas/`), que este contenedor tiene en `additionalDirectories` de su `.claude/settings.json`. El coordinador **lo consulta como referencia**, en solo lectura.
 
 - **Un `[[wikilink]]` sin copia local resuelve al catálogo, y eso es lo normal — no un olvido.** No hay que instalar una doctrina solo porque el `CLAUDE.md` o el charter la enlacen.
 - **Copiar no es gratis: quien copia se compromete a traer después los cambios del original.** Una copia **desfasada miente** con la autoridad de estar instalada, y una copia idéntica no aporta nada mientras el asunto viva dentro del vault. Por eso el default es **NO copiar**.

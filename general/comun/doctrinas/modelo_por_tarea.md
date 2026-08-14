@@ -32,7 +32,7 @@ Cada tarea se ejecuta con el modelo apropiado a su naturaleza, no siempre con el
 | Subagentes / mecánica / lectura voluminosa | **Haiku 4.5** (200K) | **`low`** | `CLAUDE_CODE_SUBAGENT_MODEL=haiku`; no toca el sub-límite alto y **su caché es independiente de la del padre** |
 | Consultor (sesión paralela de solo lectura) | **Sonnet 5** | `medium` | Sesión aparte: no toca la caché ni el contexto del coordinador |
 | **Tareas agénticas largas** (reelaborar un expediente entero, migrar un archivo documental) | **Opus 5** por defecto; **Fable 5 como escalada medida** | `high` | Fable: tope 50% del semanal, pesa ~2×, y **fuera de textos que rocen la seguridad informática** |
-| Plan + ejecución | **`opusplan`** (Opus 5 planifica → Sonnet 5 ejecuta) | `high` | ver caveat #49623 |
+| Plan + ejecución | **`opusplan`** (Opus 5 planifica → Sonnet 5 ejecuta) | `high` | ver advertencia #49623 |
 
 > **La fila de volumen es un PILOTO, no una regla asentada.** Bajar las ejecutoras a `low`–`medium` se apoya en un punto **no verificado**: no existe medición pública de que el modelo capaz reduzca los reintentos lo bastante como para salir más barato en tandas largas. **Criterio de éxito, escrito antes de empezar:** sobre un lote real, el resultado pasa los criterios de aceptación del contrato **con el mismo número de reintentos o menos** que hoy. Si suben los reintentos, se revierte un escalón.
 
@@ -58,7 +58,7 @@ Una regla que depende de que alguien se acuerde de elegir el modelo en el desple
 | Modelo | `model` | O los alias por familia `ANTHROPIC_DEFAULT_{OPUS,SONNET,HAIKU,FABLE}_MODEL`, que **sobreviven al cambio de generación** — preferibles a clavar el nombre exacto |
 | Esfuerzo | `effortLevel` | Acepta `low`, `medium`, `high`, `xhigh`. **NO acepta `max` ni `ultracode`**: esos son solo de sesión (`/effort`, `--effort`) |
 | Esfuerzo por sesión | `CLAUDE_CODE_EFFORT_LEVEL` | La vía fiable si alguna vez hace falta persistir un nivel que la clave no admite |
-| Modelo de los subagentes | `CLAUDE_CODE_SUBAGENT_MODEL` | Fuerza **todos** los subagentes a ese modelo: anula el parámetro por invocación y el frontmatter |
+| Modelo de los subagentes | `CLAUDE_CODE_SUBAGENT_MODEL` | Fuerza **todos** los subagentes a ese modelo: anula el parámetro por invocación y el frontmatter (el bloque de metadatos al inicio del fichero) |
 
 > **Bandera roja (fuente de comunidad con método, 19-abr-2026):** `effortLevel: "max"` escrito en `settings.json` **se degrada en silencio a `high`** tras interactuar con la interfaz. No nos afecta mientras ningún rol arranque en `max` — y ninguno debe.
 
@@ -68,7 +68,7 @@ Una regla que depende de que alguien se acuerde de elegir el modelo en el desple
 
 Los clasificadores de seguridad **enrutan por categoría** (v2.1.219+): request marcada **cyber → Opus 4.8**; **bio → Opus 5**. El clasificador inspecciona **todo lo que el modelo lee** (memoria, `CLAUDE.md`, conectores, resultados de búsqueda, `git status`), no solo tu último mensaje → puede dispararse en la **primera** request por el contexto del vault. Anthropic admite el *trade-off*: **más falsos positivos en "routine coding and debugging"**. Cada fallback **avisa en el transcript** y etiqueta la respuesta.
 
-**Consecuencia práctica:** un fallback a mitad de trabajo es un **cambio de modelo** → rompe el hilo agéntico y provoca **cache-miss** (reprocesar el prefijo puede costar ~10× ese turno). **Y volver con `/model` no lo arregla: suele re-disparar el clasificador**, porque el contenido que lo activó sigue en el contexto (issue #67246). El **esfuerzo se arrastra** al modelo nuevo. La salida es `/clear` + relevo, o desactivar el cambio automático antes de empezar. Si el material que manejas roza el vocabulario de la seguridad informática (credenciales, cifrado, control de accesos, contraseñas), **trabaja en Opus 5** (85% menos falsos positivos) y deja Fable para lo demás. Diagnóstico: `claude --safe-mode` (aísla si el trigger es tu `CLAUDE.md`/skills/MCP/hooks) y `/config` → desactivar *"switch models when a message is flagged"* para **pausar en vez de saltar de modelo**.
+**Consecuencia práctica:** un fallback a mitad de trabajo es un **cambio de modelo** → rompe el hilo agéntico y obliga a **reprocesar el contexto ya cacheado** (puede costar ~10× ese turno). **Y volver con `/model` no lo arregla: suele re-disparar el clasificador**, porque el contenido que lo activó sigue en el contexto (issue #67246). El **esfuerzo se arrastra** al modelo nuevo. La salida es `/clear` + relevo, o desactivar el cambio automático antes de empezar. Si el material que manejas roza el vocabulario de la seguridad informática (credenciales, cifrado, control de accesos, contraseñas), **trabaja en Opus 5** (85% menos falsos positivos) y deja Fable para lo demás. Diagnóstico: `claude --safe-mode` (aísla si el trigger es tu `CLAUDE.md`/skills/MCP/hooks) y `/config` → desactivar *"switch models when a message is flagged"* para **pausar en vez de saltar de modelo**.
 
 ## Ventana de uso y facturación
 

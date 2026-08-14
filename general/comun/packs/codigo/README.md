@@ -30,7 +30,7 @@ Un vault puede tener asuntos de los dos tipos. El pack se instala **por asunto**
 4. **Arranca el coordinador con el prompt de software**, no el genérico: `_meta/guia-arranque-sesiones.md` § "Arrancar un coordinador de asunto de software" — le hace comprobar rama, remoto y puertas de calidad **antes de tocar nada**.
 5. **El core va primero:** el pack lo presupone y enlaza a él con normalidad. Leer el pack sin el core deja piezas colgando.
 6. **No apliques todas por rutina.** `pnpm_supply_chain` solo si hay Node; `higiene_disco_podman` solo si hay contenedores; las de git del asunto solo si el repositorio tiene remoto y ramas de entorno. Lo que aplica se dice en el charter.
-7. **Si copias, es la excepción:** solo para **fijar** a propósito una versión (diciendo por qué) o si el contenedor va a **salir** del vault. Entonces es un **snapshot con su `version`** y **quien copia asume el resync**. Van al mismo `memoria/` que las del core, sin subcarpeta `codigo/`: la separación es del catálogo, no del asunto.
+7. **Si copias, es la excepción:** solo para **fijar** a propósito una versión (diciendo por qué) o si el contenedor va a **salir** del vault. Entonces es un **copia congelada con su `version`** y **quien copia asume traer los cambios posteriores**. Van al mismo `memoria/` que las del core, sin subcarpeta `codigo/`: la separación es del catálogo, no del asunto.
 8. Si el asunto tiene repositorio de código, usa además [`README-repo-codigo.md`](README-repo-codigo.md) para su `README.md`, su `CLAUDE.md`/`AGENTS.md` y sus reglas.
 
 ## Qué NO hace este pack

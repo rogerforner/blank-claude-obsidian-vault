@@ -7,7 +7,7 @@ version: 2.2
 
 ## Ámbito ESTRICTO: secretos y credenciales reales, nada más
 
-Esta doctrina **solo** ampara proteger **secretos y credenciales de verdad**. **NO ampara** proteger el trabajo: ni los documentos del asunto, ni las comprobaciones, ni la configuración de calidad. Si un mecanismo **impide escribir** algo que es trabajo legítimo, no pertenece aquí y se retira — un guard que bloquea no mide nada, solo produce parálisis.
+Esta doctrina **solo** ampara proteger **secretos y credenciales de verdad**. **NO ampara** proteger el trabajo: ni los documentos del asunto, ni las comprobaciones, ni la configuración de calidad. Si un mecanismo **impide escribir** algo que es trabajo legítimo, no pertenece aquí y se retira — un mecanismo que bloquea no mide nada, solo produce parálisis.
 
 **Y el flag de permisos amplios es lo NORMAL en local**, no una excepción que haya que justificar: lo que sigue protegiendo son las **deny rules**, que aguantan incluso bajo él.
 
@@ -17,7 +17,7 @@ Los ficheros de configuración local de un asunto —`settings.local.json` con l
 
 **Por qué importa (no es solo comodidad):** si la IA no puede tocar la config local, esta se **desfasa** de la plantilla versionada (que va ganando claves nuevas) y el entorno se rompe en silencio. Que la IA mantenga sincronizadas la config local y su plantilla mantiene el vault coherente entre máquinas. Aplica a **todas** las sesiones: coordinación **y** ejecución.
 
-**Lo único que la deny-list bloquea** son las **credenciales de máquina/usuario** — las llaves a cuentas y servicios **reales**, cuya lectura sí podría comprometer algo de fuera:
+**Lo único que la lista de denegación bloquea** son las **credenciales de máquina/usuario** — las llaves a cuentas y servicios **reales**, cuya lectura sí podría comprometer algo de fuera:
 
 - **Bloqueado (deny `Read`):** `~/.ssh/**`, `~/.aws/**`, `~/.gnupg/**`, claves privadas `id_rsa` / `id_ed25519`, y el almacén de credenciales de cualquier herramienta instalada (`~/.config/<herramienta>/`).
 - **Sin deny:** todo lo demás, incluida la config local del asunto y los documentos del vault.
@@ -42,7 +42,7 @@ Cuando una tanda modifica **masivamente** archivos de configuración de sesión 
 
 **Solución:** el director lanza la CLI con el flag de permisos amplios (`--dangerously-skip-permissions`) **desde el inicio**. Una vez iniciada la sesión sin el flag, no se puede añadir retroactivamente sin reiniciar y perder contexto, así que debe decidirse de antemano.
 
-El coordinador indica en el `## Setup` del prompt si la tanda lo requiere. **Criterio:** ¿la tanda va a escribir 5 o más archivos en `.claude/` o en hooks? Si sí, incluir el flag (y usar la CLI, no Desktop/web). La config local y los documentos del asunto **no** disparan interrupciones (no están en la deny-list), así que por sí solos no requieren el flag.
+El coordinador indica en el `## Setup` del prompt si la tanda lo requiere. **Criterio:** ¿la tanda va a escribir 5 o más archivos en `.claude/` o en hooks? Si sí, incluir el flag (y usar la CLI, no Desktop/web). La config local y los documentos del asunto **no** disparan interrupciones (no están en la lista de denegación), así que por sí solos no requieren el flag.
 
 **Recordatorio:** ni con ese flag se saltan las **deny rules** — son la única barrera que aguanta ([[orquestacion_sesiones_por_herramienta]]). Por eso lo que quieras impedir se expresa como DENY.
 

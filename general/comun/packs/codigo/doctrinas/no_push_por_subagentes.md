@@ -11,7 +11,7 @@ El **push lo ejecuta la sesión principal** (coordinador o sesión de ejecución
 
 > **Ámbito: el repositorio del asunto, no el vault.** El **vault de coordinación** es git **local sin remoto**: allí no hay push que dar. Esta doctrina aplica al **repositorio de código, que vive fuera del vault** (donde el runtime lo sirve, según `docs/emplazamiento-runtime.md` del asunto). Lo que sí sobrevive tal cual en el vault es la parte de **no reescribir historia desde un subagente** y la de **no cambiar de rama en un árbol compartido**.
 
-> **"Las pruebas pasan" se EJECUTA, no se asume (v2.1).** Donde el asunto tenga puertas instaladas, esa precondición la comprueba una **puerta determinista** (hook `Stop`/`SubagentStop` con **exit 2**, que impide cerrar el turno con la puerta en rojo), no la afirmación del agente en su reporte. Un "todo OK" sin puerta ejecutada **no cuenta como verificación**. → [[gates_de_calidad_locales]], [[estrategia_de_pruebas_por_tipo_de_proyecto]]
+> **"Las pruebas pasan" se EJECUTA, no se da por sentado (v2.1).** Donde el asunto tenga puertas instaladas, esa precondición la comprueba una **puerta determinista** (hook `Stop`/`SubagentStop` con **exit 2**, que impide cerrar el turno con la puerta en rojo), no la afirmación del agente en su reporte. Un "todo OK" sin puerta ejecutada **no cuenta como verificación**. → [[gates_de_calidad_locales]], [[estrategia_de_pruebas_por_tipo_de_proyecto]]
 
 ## Lo que NO cambia: los subagentes no pushean
 

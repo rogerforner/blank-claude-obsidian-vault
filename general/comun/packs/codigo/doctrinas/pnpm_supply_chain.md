@@ -11,7 +11,7 @@ En asuntos con código Node, usar **pnpm v11+** como gestor de paquetes para mit
 
 1. **Riesgo real de supply chain.** Los compromisos de mantenedores de paquetes populares publican versiones maliciosas con scripts `postinstall` que **exfiltran credenciales**. Estos paquetes son dependencias transitivas de casi cualquier proyecto Node moderno.
 2. **El `.env` del entorno puede contener credenciales reales** que un `postinstall` malicioso ejecutado durante `install` exfiltraría.
-3. **`minimumReleaseAge` (default 7 días)**: un paquete debe llevar X días publicado antes de instalarse. Mitiga *hot-release attacks*, porque las versiones maliciosas se retiran en horas/días tras su detección.
+3. **`minimumReleaseAge` (por defecto, 7 días)**: un paquete debe llevar X días publicado antes de instalarse. Mitiga *hot-release attacks*, porque las versiones maliciosas se retiran en horas/días tras su detección.
 4. **Beneficios operativos:** strict mode (bloquea *phantom dependencies*), `node_modules` con symlinks (más rápido, menos disco), mejor manejo de monorepos.
 
 ## Reglas tras adoptar

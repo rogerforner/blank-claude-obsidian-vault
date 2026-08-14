@@ -23,5 +23,5 @@ Y tampoco por herencia automática: nada se auto-provee. Lo que aplica a un asun
 ## Versionado de doctrinas
 
 - Cada doctrina/convención lleva **`version`** en el frontmatter. La versión **sube** cuando su contenido cambia de forma sustantiva; el cambio se anota en el **footer** de la propia doctrina (changelog corto) y, si es relevante para el kit, en `_meta/bitacora.md`.
-- La **fuente de verdad versionada** es este catálogo `general/`, y los asuntos lo leen de aquí. Si un asunto llega a fijar una copia (motivo declarado), esa copia es un snapshot y su resync corre a cargo de quien la hizo.
+- La **fuente de verdad versionada** es este catálogo `general/`, y los asuntos lo leen de aquí. Si un asunto llega a fijar una copia (motivo declarado), esa copia queda congelada en ese momento y traer los cambios posteriores corre a cargo de quien la hizo.
 - Al actualizar una doctrina, **actualiza su entrada en el índice en el mismo commit**: un índice desfasado miente en silencio ([[verificacion_fuente_primaria]]).

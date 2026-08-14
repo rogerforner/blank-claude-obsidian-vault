@@ -40,10 +40,10 @@ Esto es la **red de seguridad del caso excepcional**, no la forma normal de trab
 
 ### Qué va en `memoria/`, y qué NO es un olvido
 
-**La fuente de verdad es siempre el catálogo** (`general/comun/doctrinas/`), que todo contenedor tiene en `additionalDirectories`. `memoria/` guarda las doctrinas **propias del asunto** y, **opcionalmente**, copias-snapshot de las del catálogo que ese asunto quiera fijar.
+**La fuente de verdad es siempre el catálogo** (`general/comun/doctrinas/`), que todo contenedor tiene en `additionalDirectories`. `memoria/` guarda las doctrinas **propias del asunto** y, **opcionalmente**, copias fijadas de las del catálogo que ese asunto quiera fijar.
 
 - **Un `[[wikilink]]` sin copia local resuelve al catálogo, y eso es lo normal — no un olvido.** No hay que instalar una doctrina solo porque el `CLAUDE.md` la enlace.
-- **Copiar no es gratis: la copia asume el deber de resync.** Una copia **desfasada miente** con la autoridad de estar "instalada", y una copia **idéntica** al catálogo no aporta nada mientras el asunto viva dentro del vault. Por eso el **default es NO copiar**. *(Medido: de 12 copias en dos contenedores, 11 eran idénticas al catálogo y 1 estaba dos versiones por detrás.)*
+- **Copiar no es gratis: la copia asume el deber de resincronizarse.** Una copia **desfasada miente** con la autoridad de estar "instalada", y una copia **idéntica** al catálogo no aporta nada mientras el asunto viva dentro del vault. Por eso el **default es NO copiar**. *(Medido: de 12 copias en dos contenedores, 11 eran idénticas al catálogo y 1 estaba dos versiones por detrás.)*
 - **Cuándo SÍ copiar:** cuando el asunto necesita **fijar** una versión concreta (y entonces se dice por qué), o cuando va a **salir del vault** y el catálogo no viaja con él. Quien copia, resincroniza.
 
 ## Configs de sesión por rol (dónde viven y cómo se lanzan)
@@ -61,7 +61,7 @@ Un contenedor puede operarse con una **flota de sesiones**; cada rol tiene su co
 
 ## Tablero del asunto (si se usa)
 
-Tableros con el plugin **Bases** de Obsidian, **nota-por-tarjeta** (`estado`/`responsable`/`asunto` en el frontmatter de cada nota) → versionado en **Markdown**, comparable en git y **operable por la IA** igual que el resto del vault. **No** usar apps con base de datos propietaria: rompen el Markdown-en-disco, y con él la única garantía de que dentro de diez años el asunto se siga pudiendo leer.
+Tableros con el plugin **Bases** de Obsidian, **nota-por-tarjeta** (`estado`/`responsable`/`asunto` en el frontmatter (bloque de metadatos al inicio del fichero) de cada nota) → versionado en **Markdown**, comparable en git y **operable por la IA** igual que el resto del vault. **No** usar apps con base de datos propietaria: rompen el Markdown-en-disco, y con él la única garantía de que dentro de diez años el asunto se siga pudiendo leer.
 
 ## Cross-links entre asuntos acoplados
 

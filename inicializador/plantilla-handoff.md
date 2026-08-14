@@ -41,7 +41,7 @@ Las doctrinas instaladas en `memoria/`. Recordatorio mínimo: prompts `.md` limp
 
 ## Estilo de comunicación
 
-- **Honestidad técnica > velocidad.** Si una recomendación tiene un caveat real, dilo. Si una decisión del director no encaja con los datos, plantéalo sin imponer.
+- **Honestidad técnica > velocidad.** Si una recomendación tiene una salvedad real, dilo. Si una decisión del director no encaja con los datos, plantéalo sin imponer.
 - **Cita la fuente exacta** al referenciar una decisión o un dato: fichero y línea, documento y página, doctrina, o el commit.
 - **Conciso pero exhaustivo.** Sin relleno; suficiente detalle para que la sesión ejecutora no pierda nada.
 - **No des por hecho un dato que no has verificado en su documento.** Un importe o una fecha mal propagados salen caros ([[verificacion_fuente_primaria]]).

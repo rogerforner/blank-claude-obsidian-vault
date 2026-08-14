@@ -56,7 +56,7 @@ Dos categorías de efímero, con tratamiento de git distinto:
 
 ## Al cerrar/usar una tanda
 
-Housekeeping **automático del coordinador** (no se espera al director):
+**Limpieza automática del coordinador** (no se espera al director):
 1. **Borrar** el prompt ejecutado y los briefs ya con informe (`git rm` + **commit local**).
 2. Confirmar que la raíz queda solo con lo activo/vivo.
 

@@ -35,7 +35,7 @@ Tu trabajo es HACER lo que dice esta spec, con tus propias manos, en esta misma 
 
 **Fase: `{{análisis | ejecución}}`** — si es ejecución y la tanda lleva análisis, **Plan de referencia:** `plan-tanda-{{NOMBRE}}.md`. *(Ojo: el `Plan mode` de abajo es el modo del CLI y **no** es esto; la fase de análisis es una **ejecutora aparte con entregable escrito**.)*
 
-Modelo: `{{MODELO}}`. Effort: `{{EFFORT}}`. **Los dos salen de la tabla rol → modelo → esfuerzo de [[modelo_por_tarea]]; aquí solo se copian, no se decide de nuevo.** **Fíjalos al arrancar y no los cambies**: el cambio provoca cache-miss completo. Plan mode: `{{SÍ/NO}}`. Git: local, un commit por hito, por pathspec.
+Modelo: `{{MODELO}}`. Effort: `{{EFFORT}}`. **Los dos salen de la tabla rol → modelo → esfuerzo de [[modelo_por_tarea]]; aquí solo se copian, no se decide de nuevo.** **Fíjalos al arrancar y no los cambies**: el cambio obliga a reprocesar el contexto entero desde cero, porque se pierde la caché que hasta entonces ahorraba tiempo y cuota. Plan mode: `{{SÍ/NO}}`. Git: local, un commit por hito, por pathspec.
 
 *(Si el material que hay que manejar roza el vocabulario de la seguridad informática —contraseñas, cifrado, credenciales, control de accesos— usa **Opus 5**: los clasificadores de seguridad pueden enrutar la petición a otro modelo, y el cambio de modelo rompe el hilo de trabajo. → [[modelo_por_tarea]])*
 
@@ -55,7 +55,7 @@ Modelo: `{{MODELO}}`. Effort: `{{EFFORT}}`. **Los dos salen de la tabla rol → 
 
 **Y luego lo importante, que es tuyo:** lee el plan, **corrige esta especificación** con lo que haya destapado, y **solo entonces** lanza la ejecución. El plan no existe para que la ejecutora se organice: existe para que **tú arregles la especificación antes de que cueste trabajo**. Si no vas a leerlo, no lances la fase.
 
-**Comprueba que fue read-only de verdad** (un comando, y llevas la cuenta): `git status --short` muestra solo el fichero de plan, y `HEAD` no se ha movido. No se instala ningún guard para forzarlo — se mide después.
+**Comprueba que fue read-only de verdad** (un comando, y llevas la cuenta): `git status --short` muestra solo el fichero de plan, y `HEAD` no se ha movido. No se instala ninguna salvaguarda para forzarlo — se mide después.
 
 > **Y para que esa comprobación signifique algo, no toques el árbol mientras la tanda corre.** El `git status` del cierre no distingue quién escribió qué: si tú editas ficheros en paralelo, la hija se los encuentra modificados y **su propia prueba de inocencia queda inservible**. *(Caso real: una tanda de análisis cerró avisando de cuatro ficheros modificados que no eran suyos —los estaba tocando el coordinador a la vez— y tuvo que razonar por descarte para poder afirmar que no los había escrito ella. Se portó bien; la siguiente puede no darse cuenta, o peor, dar por hecho que sí eran suyos.)* **Si vas a trabajar en paralelo, anota el `git status --short` de partida antes de lanzar** y compara contra él, no contra el vacío.
 
@@ -85,7 +85,7 @@ Si la tanda no cabe en la menor de las tres, se trocea antes de lanzarla.
 
 {{Hechos ya confirmados con su ubicación: fichero y línea, número de expediente, fecha del sello, importe y de qué documento sale, nombre del organismo.}}
 
-**Etiqueta cada dato, sin excepción: `[MEDIDO]`** — con quién, con qué y cuándo — **o `[A CONFIRMAR]`**, para que la ejecutora lo verifique en vez de asumirlo. Si dudas de en cuál cae, es *a confirmar*. Un dato de apoyo erróneo **sobrevive al viaje** y quien lo recibe lo hereda como verificado. → [[verificacion_fuente_primaria]]
+**Etiqueta cada dato, sin excepción: `[MEDIDO]`** — con quién, con qué y cuándo — **o `[A CONFIRMAR]`**, para que la ejecutora lo verifique en vez de suponerlo. Si dudas de en cuál cae, es *a confirmar*. Un dato de apoyo erróneo **sobrevive al viaje** y quien lo recibe lo hereda como verificado. → [[verificacion_fuente_primaria]]
 
 ## Decisiones ya tomadas (NO las reabras)
 
