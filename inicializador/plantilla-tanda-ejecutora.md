@@ -152,6 +152,7 @@ Esto de aquí abajo es **sintaxis**: cómo se lanza la ejecutora.
 |---|---|
 | Lanzar la ejecutora | `cd "<ruta>" && claude -p "<prompt>"` |
 | Informe a fichero | `--output-format json` |
+| **Nombre de la sesión** (así la reconoces en el listado y puedes dirigirte a ella) | `--name "<nombre>"` |
 | Directorio adicional (solo para LEER) | `--add-dir` |
 | Fase de análisis, solo lectura | perfil de `settings.json` en modo plan |
 | Fase de ejecución | perfil por defecto del destino |
@@ -161,6 +162,7 @@ Esto de aquí abajo es **sintaxis**: cómo se lanza la ejecutora.
 
 ```bash
 cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "No eres el coordinador de este asunto: el CLAUDE.md que vas a cargar es suyo y no se te aplica. NO lances subprocesos ni otra ejecutora, NO uses subagentes, y que el trabajo sea voluminoso no es motivo para delegarlo. Analiza la tanda descrita en <spec>.md. NO modifiques material, NO commitees, deja el historial intacto. Tu UNICO entregable de escritura es plan-tanda-<nombre>.md, con los cinco apartados que pide la spec" \
+  --name "analisis-<nombre>" \
   --add-dir "<solo lo que tenga que LEER fuera de su cwd>" \
   --allowedTools "Read,Grep,Glob" \
   --permission-mode dontAsk \
@@ -179,12 +181,27 @@ Lee el plan, **corrige la especificación**, y entonces:
 
 ```bash
 cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "No eres el coordinador de este asunto: el CLAUDE.md que vas a cargar es suyo y no se te aplica. NO lances subprocesos ni otra ejecutora, NO uses subagentes, y que el trabajo sea voluminoso no es motivo para delegarlo: es el motivo por el que existes. Ejecuta con tus propias manos la tanda descrita en <spec-ya-corregida>.md, apoyandote en plan-tanda-<nombre>.md. Escribe tu reporte en informe-tanda.md" \
+  --name "ejecucion-<nombre>" \
   --add-dir "<solo lo que tenga que LEER fuera de su cwd>" \
   --allowedTools "Read,Edit,Bash(git add:*),Bash(git commit:*)" \
   --permission-mode dontAsk \
   --max-turns 300 --max-budget-usd 60.00 \
   --output-format json
 ```
+
+### Ponle nombre a la tanda: `--name`
+
+**Verificado en fuente el 2026-08-17.** Una sesión lanzada con `-p` **enlaza su buzón igual que una interactiva**, así que **aparece en el listado de sesiones y es direccionable**. Y lo que la nombra es `--name`: *"a session answers to the name you set with the `/rename` command or the `--name` flag"*. Sin nombre, el sistema le pone uno derivado de la carpeta, que con varias tandas del mismo asunto es indistinguible.
+
+**Para qué sirve de verdad aquí**, que no es lo que parece a primera vista:
+
+- **Para reconocerla.** Con dos o tres tandas en vuelo, el listado sin nombres no dice cuál es cuál.
+- **Para dirigirte a ella**, si alguna vez lanzas una tanda que sí deba escuchar.
+- **Y para reanudarla por nombre** en vez de por identificador.
+
+> **Pero ojo, que aquí hay una decisión de método que NO cambia:** las ejecutoras de este kit llevan `crossSessionInbound: "refuse"` **a propósito** — se rigen por un contrato cerrado, y una tanda que acepta mensajes a mitad deja de ser verificable contra su especificación. Ponerle nombre **no** la abre: solo la hace identificable. **Nombrar y escuchar son cosas distintas, y aquí queremos la primera sin la segunda.**
+
+**El coste de esa decisión, ahora que se puede medir:** existe un mecanismo para que una sesión **avise cuando queda inactiva** —útil para no ir preguntando si la tanda terminó— y **con `refuse` no llega**, porque los controles de entrada se le aplican igual que a un mensaje. Se asume: el precio de que la tanda sea verificable es que hay que ir a buscar su resultado, que es justo lo que ya hace el coordinador comprobando el disco.
 
 **Los techos.** Los de arriba son una **referencia medida**, no constantes — pon los tuyos con **margen del 100% sobre tu propia línea base**. Una tanda real **murió por `error_max_budget_usd`** con el techo demasiado ajustado, y morir a mitad sale más caro que el margen. `--max-budget-usd` es un **cortacircuito nominal, no un cargo**: sin `ANTHROPIC_API_KEY` lo que se consume es ventana de suscripción. Para una tanda mecánica y pequeña, 30 turnos siguen bastando: cada lanzamiento cuesta **~42.000 tokens fijos** aunque no haga nada, y eso se paga **por lanzamiento, no por trabajo hecho**.
 

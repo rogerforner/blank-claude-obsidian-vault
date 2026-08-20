@@ -67,6 +67,7 @@ Lo de arriba es **método** y no cambia. Esto es **sintaxis**: cómo se lanza un
 | Configuración | `.claude/settings.json` |
 | Lanzar ejecutora | `cd "<ruta>" && claude -p "…"` |
 | Informe a fichero | `--output-format json` |
+| Nombre de la sesión lanzada | `--name "<nombre>"` — la hace **reconocible y direccionable** en el listado; **nombrar no es abrirla a mensajes**, eso lo decide `crossSessionInbound` |
 | Directorio adicional | `--add-dir` (para lo que solo hay que leer) |
 | Tope de turnos y gasto | `--max-turns`, `--max-budget-usd` |
 | Modelo por rol | Opus 5 coordina · Sonnet 5 volumen · Haiku 4.5 subagentes y mecánica · Fable 5 escalada medida. **El reparto lo fija [[modelo_por_tarea]]; esta fila no lo repite** |

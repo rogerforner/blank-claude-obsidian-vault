@@ -41,6 +41,7 @@
   },
   "model": "sonnet",
   "effortLevel": "medium",
+  "outputStyle": "Concise",
   "crossSessionInbound": "refuse",
   "isolatePeerMachines": true,
   "attribution": {

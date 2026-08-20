@@ -54,6 +54,7 @@
   },
   "model": "opus",
   "effortLevel": "high",
+  "outputStyle": "Concise",
   "crossSessionInbound": "accept",
   "isolatePeerMachines": true,
   "attribution": {
