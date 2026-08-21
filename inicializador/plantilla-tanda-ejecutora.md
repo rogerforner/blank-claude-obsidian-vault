@@ -55,7 +55,9 @@ Modelo: `{{MODELO}}`. Effort: `{{EFFORT}}`. **Los dos salen de la tabla rol → 
 
 **Y luego lo importante, que es tuyo:** lee el plan, **corrige esta especificación** con lo que haya destapado, y **solo entonces** lanza la ejecución. El plan no existe para que la ejecutora se organice: existe para que **tú arregles la especificación antes de que cueste trabajo**. Si no vas a leerlo, no lances la fase.
 
-**Comprueba que fue read-only de verdad** (un comando, y llevas la cuenta): `git status --short` muestra solo el fichero de plan, y `HEAD` no se ha movido. No se instala ninguna salvaguarda para forzarlo — se mide después.
+**Comprueba que fue read-only de verdad** (un comando, y llevas la cuenta): `git status --short` muestra solo el fichero de plan, y `HEAD` no se ha movido.
+
+> **Y escribe el comando de cierre con el MISMO alcance que declaraste arriba** *(fallo real del coordinador, 2026-08-20)*. Una especificación excluía un fichero en su § Alcance y luego cerraba con un `grep` sobre `_meta` entero, donde ese fichero también vive: el recuento salió **6** contra las **4** exigidas y la tanda se dio por fallida sin serlo. **Lo que excluye el alcance hay que excluirlo también en el comando**, o el criterio miente. *(La ejecutora hizo lo correcto: lo reportó y paró en vez de ajustar el `grep` para que pasara.)* No se instala ninguna salvaguarda para forzarlo — se mide después.
 
 > **Y para que esa comprobación signifique algo, no toques el árbol mientras la tanda corre.** El `git status` del cierre no distingue quién escribió qué: si tú editas ficheros en paralelo, la hija se los encuentra modificados y **su propia prueba de inocencia queda inservible**. *(Caso real: una tanda de análisis cerró avisando de cuatro ficheros modificados que no eran suyos —los estaba tocando el coordinador a la vez— y tuvo que razonar por descarte para poder afirmar que no los había escrito ella. Se portó bien; la siguiente puede no darse cuenta, o peor, dar por hecho que sí eran suyos.)* **Si vas a trabajar en paralelo, anota el `git status --short` de partida antes de lanzar** y compara contra él, no contra el vacío.
 
@@ -172,10 +174,13 @@ cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "No eres el coordinador de est
 
 **Al volver, antes de nada:** `git status --short` (solo el fichero de plan) y `git rev-parse HEAD` (sin mover).
 
-> **Dos trampas medidas al volver, y las dos hacen que una tanda vacía parezca buena** *(casos reales, 2026-08-14)*:
+> **Tres trampas medidas al volver, y las tres hacen que una tanda vacía parezca buena** *(casos reales, 2026-08-14 y 2026-08-20)*:
 >
 > - **`subtype: success` NO significa trabajo hecho.** Es el veredicto del **runner**, no del modelo: una ejecutora que no hizo nada de lo encargado devolvió `success` igual. **El verde falso puede venir de la tubería y no del trabajo.** Lo que lo destapó fue un `wc -c` **desde fuera**, no su informe — que ni llegó a existir. **Comprueba el efecto en el disco, no el código de salida.**
 > - **El modo plan DESVÍA el entregable.** Si lanzas la fase de análisis con `--permission-mode plan` para tener barrera real de solo lectura, la hija puede **escribir su plan en `~/.claude/plans/`** en vez de devolverlo, y lo que te llega es una frase diciendo *"está en el plan"* — con el contenido fuera del working dir y recuperable solo del transcript. **Si quieres un fichero de una sesión en modo plan, dale permiso de escritura acotado a ese fichero o recoge la salida por redirección.** No des por hecho que el entregable aparecerá donde lo pediste.
+>
+> - **`--output-format json` no emite NADA hasta que la tanda termina** *(medido el 2026-08-20)*. Si el watchdog la corta, no te queda **ni un byte**: ni informe, ni error, ni rastro de por dónde iba — solo un fichero de cero bytes y diez minutos perdidos. **Para cualquier tanda que pueda pasar de unos minutos, usa `--verbose --output-format stream-json`**, que escribe evento a evento: así ves que avanza y, si hay que matarla, conservas el trabajo hasta ahí. El JSON de una sola pieza vale para tandas cortas y para poco más.
+> - **Y el watchdog que manda es el MÁS CORTO de los dos.** Si tu llamante corta a los 10 minutos, poner 15 en el `timeout` no sirve de nada. Cuando la tanda pueda ser larga, **lánzala en segundo plano** y deja que el watchdog sea el tuyo.
 
 Lee el plan, **corrige la especificación**, y entonces:
 
