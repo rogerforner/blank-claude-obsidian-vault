@@ -48,6 +48,15 @@ function git(args, opciones = {}) {
   return execFileSync('git', args, { cwd: RAIZ, encoding: 'utf8', ...opciones });
 }
 
+// La fecha del sello va en hora LOCAL, no UTC. `toISOString()` da UTC y con el equipo en UTC+2
+// un sello escrito a la una de la madrugada se lee como "de ayer a las 23:00", que es justo la
+// confusion que este vault acaba de pagar cara en otro sitio. Misma decision que en el verificador
+// y en el hook: las tres piezas que hablan de "cuando" tienen que decir la misma hora.
+function fechaLocal() {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().replace('Z', '');
+}
+
 // --- huella del contenido versionado ------------------------------------
 // Por CONTENIDO: se leen los ficheros del disco, no el arbol de un commit. Un sello que colgara
 // del commit diria "todo bien" con cambios sin guardar encima, que es justo el caso que mas duele.
@@ -310,7 +319,7 @@ if (fallidas.length) {
 const h = huella();
 if (!ARGS.has('--sin-sello')) {
   writeFileSync(SELLO, JSON.stringify({
-    hash: h.hash, ficheros: h.ficheros, fecha: new Date().toISOString(), puertas: nombres,
+    hash: h.hash, ficheros: h.ficheros, fecha: fechaLocal(), puertas: nombres,
   }, null, 2) + '\n');
 }
 console.log(`\nRESULTADO: CERRADO — ${nombres.length} puertas en verde sobre ${h.ficheros} ficheros versionados.`);
