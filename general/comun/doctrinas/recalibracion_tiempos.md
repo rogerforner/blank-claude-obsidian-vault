@@ -3,6 +3,8 @@ name: Recalibración de estimaciones de tiempo
 description: Toda estimación de tiempo que el coordinador presente al director debe recalibrarse para "Claude Code + modelo de razonamiento de gama alta como ejecutor", no para una persona trabajando a mano; las estimaciones externas están radicalmente infladas para este contexto. Los plazos que no dependen de nosotros no se recalibran.
 type: doctrine
 version: 1.0
+index_summary: >-
+  Lo nuestro se recalibra 5-25× respecto al trabajo a mano; los plazos ajenos (organismos, citas, obras, decisiones del director) **no** se recalibran.
 ---
 
 **Toda estimación de tiempo de trabajo que el coordinador presente al director debe estar recalibrada para Claude Code + un modelo de razonamiento de gama alta como ejecutor**, no para "una persona haciéndolo a mano en sus ratos libres".

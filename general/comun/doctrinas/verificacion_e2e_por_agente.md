@@ -3,6 +3,8 @@ name: Verificación de extremo a extremo ejecutada por el agente
 description: Las comprobaciones que se pueden ejecutar con comandos (sin interacción humana) las ejecuta el agente como criterio de cierre y reporta el output literal; no se delegan al director. Lo que no se puede comprobar por comando se comprueba EN CAMPO y se documenta el procedimiento.
 type: doctrine
 version: 1.1
+index_summary: >-
+  Lo comprobable por comando lo ejecuta el agente y reporta **output literal**; lo demás pasa a **comprobación en campo** con procedimiento escrito, no desaparece del criterio de cierre.
 ---
 
 Cualquier comprobación de extremo a extremo que pueda ejecutarse con comandos automáticos la **ejecuta el agente de la sesión** como parte del criterio de cierre, **no el director**.

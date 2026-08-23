@@ -3,6 +3,8 @@ name: Documentación de onboarding sin referencias a fases ni identificadores hi
 description: La documentación que un nuevo lector consume para entender y empezar (README del asunto, guías operativas, CLAUDE.md) es autocontenida y no menciona fases, identificadores de tanda ni narra el proceso de trabajo; los docs de tracking/histórico interno sí pueden.
 type: doctrine
 version: 1.0
+index_summary: >-
+  README/CLAUDE.md/charter autocontenidos, sin identificadores históricos ni narración del proceso; el tracking interno sí puede.
 ---
 
 La documentación de **onboarding** debe ser **autocontenida, minimalista y directa**, estilo "de usuario para usuario". Su único objetivo es que alguien que llega de nuevo —el director dentro de seis meses, un familiar, la gestoría, un perito— entienda el asunto y pueda operar rápido. **No es registro histórico ni narración del proceso.**

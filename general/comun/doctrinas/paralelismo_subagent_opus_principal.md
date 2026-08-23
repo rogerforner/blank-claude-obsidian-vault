@@ -3,6 +3,8 @@ name: Paralelismo subagente read-only + agente principal
 description: Paralelizar un subagente read-only en background con trabajo independiente del agente principal ahorra wall-clock sin interferencias, con reconciliación de hallazgos antes del checkpoint.
 type: doctrine
 version: 1.0
+index_summary: >-
+  Subagente read-only en background paralelo al principal ahorra wall-clock; reconciliar y citar fuente antes del checkpoint.
 ---
 
 Lanzar un **subagente read-only en background** (Agent tool con `run_in_background`) en paralelo a trabajo **independiente** del agente principal ahorra tiempo de pared sin riesgo de que dos procesos se pisen el mismo fichero.

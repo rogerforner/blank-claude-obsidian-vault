@@ -3,6 +3,8 @@ name: Mejora continua del kit — retroalimentar lo aprendido en cada arranque d
 description: Cada vez que se arranca un asunto nuevo aparecen correcciones de pasos y mejores formas de trabajar. El coordinador general las anota en la bitácora y las funde en los artefactos del kit (checklist, plantillas, doctrinas) para que los próximos arranques usen los pasos que mejor funcionaron, en el orden adecuado.
 type: doctrine
 version: 1.0
+index_summary: >-
+  Anotar en `_meta/bitacora.md` lo aprendido en cada arranque y fundirlo en checklist/plantillas/doctrinas.
 ---
 
 El kit **no es estático: mejora con cada arranque**. Cada vez que se inicializa un asunto —una reclamación, una obra, una declaración, un contrato— aparecen correcciones de pasos y mejores formas de trabajar. Ese aprendizaje **debe volver al kit**.

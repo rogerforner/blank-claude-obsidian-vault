@@ -3,6 +3,8 @@ name: Infraestructura en región europea, matizada por exposición a datos perso
 description: Región EU obligatoria para servicios que procesan input no controlable del usuario (puede contener datos personales); EU deseable pero no bloqueante para servicios con input controlado por construcción donde un mecanismo garantiza la ausencia de datos personales por diseño.
 type: doctrine
 version: 1.0
+index_summary: >-
+  EU **obligatoria** cuando el input libre del usuario puede llevar datos personales; EU **deseable** cuando el diseño garantiza que no los hay. La distinción no es laxitud: es honestidad sobre dónde aplica el riesgo.
 ---
 
 La elección de región de infraestructura/proveedores se **matiza por la superficie de exposición a datos personales**. No es una regla absoluta, sino una distinción honesta sobre dónde aplica realmente el riesgo.

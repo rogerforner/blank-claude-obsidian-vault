@@ -3,6 +3,8 @@ name: Estructura uniforme del contenedor de asunto
 description: Todo asunto vive en asuntos/<asunto>/ con la MISMA estructura (slug = nombre del asunto): ficheros raíz de coordinación, .claude/ con un settings por rol de sesión, y subcarpetas docs/estudios/memoria/coordinacion. Uniforme para todos los asuntos, para orientarse sin reaprender. En el perfil `asunto con software` el código vive FUERA del vault, donde el runtime lo sirve (docs/emplazamiento-runtime.md); repo/ dentro del contenedor es la excepción, no el caso normal. La instancia canónica es inicializador/plantilla-contenedor-asunto/.
 type: convention
 version: 1.5
+index_summary: >-
+  Todo asunto en `asuntos/<asunto>/` con la misma estructura (raíz de coordinación, `.claude/` con un settings por rol, docs/estudios/memoria/coordinacion). Lo recibido o entregado es intocable; el documento real gana a la nota. Instancia canónica: la plantilla del inicializador. **`memoria/` = doctrinas PROPIAS del asunto**: las del catálogo se **leen**, no se copian; un `[[wikilink]]` sin copia local resuelve al catálogo y **no es un olvido**; el valor por defecto es **no copiar**, y quien copia asume la resincronización.
 ---
 
 Cada asunto se opera desde un **contenedor uniforme** en `asuntos/<asunto>/` (**slug = nombre corto y estable del asunto**: `reclamacion-agua-2026`, `obra-cocina`, `renta-2025`, `alquiler-local`). Mismo sitio para lo mismo en todos los asuntos → uno se orienta sin reaprender, y dentro de seis meses también. La **instancia canónica** que se copia al inicializar es `inicializador/plantilla-contenedor-asunto/` (ver [checklist de arranque](../../../inicializador/checklist-arranque.md)).

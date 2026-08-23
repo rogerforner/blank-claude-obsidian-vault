@@ -3,6 +3,8 @@ name: Sesión consultor paralelo (read-only)
 description: Una sesión Claude Code paralela read-only resuelve dudas factuales del director sin consumir el contexto del coordinador; no decide ni redacta prompts, solo consulta y cita fuentes.
 type: convention
 version: 1.1
+index_summary: >-
+  Sesión paralela read-only para dudas factuales sin gastar contexto del coordinador; cita fuente y no decide.
 ---
 
 El director dispone de una **sesión Claude Code paralela "consultor"**, con permisos **read-only**, para resolver dudas factuales y concretas (qué dice la doctrina X, dónde está el justificante Y, qué plazo tenía el asunto Z, por qué se decidió lo otro) **sin consumir el contexto del coordinador**.

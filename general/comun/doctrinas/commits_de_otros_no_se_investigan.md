@@ -3,6 +3,8 @@ name: commits_de_otros_no_se_investigan
 description: En un vault trabajado por varias sesiones (varios coordinadores + el director, trabajo concurrente), los commits que una sesión no hizo son NORMALES; no se investiga su procedencia ni bloquean cerrar tareas. Verificar solo ante anomalía real (historia reescrita, commit propio perdido).
 type: convention
 version: 1.0
+index_summary: >-
+  En un vault trabajado por varias sesiones, los commits que no hiciste tú son NORMALES: no investigar su origen ni bloquean cerrar tareas; el pathspec (la lista explícita de rutas del commit) protege. Verificar solo ante anomalía real (historia reescrita, commit propio perdido).
 ---
 
 El vault es **compartido en el tiempo y entre sesiones**: el coordinador general, los coordinadores de cada asunto, las sesiones ejecutoras y el propio director trabajan de forma intercalada y commitean sobre el mismo árbol local.

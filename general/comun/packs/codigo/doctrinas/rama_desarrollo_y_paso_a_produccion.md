@@ -3,6 +3,8 @@ name: Rama de desarrollo obligatoria; dev→prod y push como paso verificado de 
 description: La IA edita siempre sobre una rama de desarrollo, nunca sobre producción; al inicializar se analiza si el repositorio del asunto ya tiene rama de desarrollo y, si no, se crea desde producción. El merge dev→prod, el versionado/tags y el push los EJECUTA la IA como paso final verificado: las pruebas que la IA no puede correr las testea el director y reporta, y entonces la IA promociona/pushea. Producción protegida por la rama de desarrollo, no por un bloqueo de permiso.
 type: doctrine
 version: 2.1
+index_summary: >-
+  La IA edita siempre en la rama de desarrollo, nunca sobre producción; el merge dev→prod, el tag y el push los **ejecuta la IA como paso final verificado**, con el director testeando lo que la IA no puede y dando el go.
 ---
 
 Para que el trabajo con IA **no rompa lo que funciona en producción**, toda edición con IA ocurre sobre una **rama de desarrollo**, nunca directamente sobre la de producción.

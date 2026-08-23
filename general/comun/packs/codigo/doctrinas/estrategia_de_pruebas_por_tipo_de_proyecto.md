@@ -3,6 +3,8 @@ name: Estrategia de pruebas por tipo de proyecto
 description: Qué garantías se exigen según el tipo de proyecto: greenfield estricto (todo bloqueante desde el día 1), legacy en contención (solo el código nuevo, con baseline que solo decrece; nunca tocar el legacy) e infra (contratos declarativos y smoke reproducible). La criticidad es la variable de gobierno: la batería completa solo donde el riesgo lo justifica. El humano revisa la ESPECIFICACIÓN (acceptance criteria, contratos, diffs de tests), no la implementación.
 type: doctrine
 version: 1.3
+index_summary: >-
+  Qué se le exige a cada asunto según su perfil: **greenfield estricto** (todo bloqueante desde el día 1), **legacy en contención** (solo el código nuevo, baseline que solo decrece, no tocar el legacy) e **infra** (contratos declarativos y smoke reproducible). La criticidad es la variable de gobierno, y **el humano revisa la especificación, no la implementación**.
 ---
 
 > **Sintaxis:** el "Día 1" de esta doctrina (hooks `PostToolUse`/`Stop` con `exit 2`) está escrito para Claude Code. Detalle → tabla "Ejecución" en [`../README.md`](../README.md).

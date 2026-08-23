@@ -3,6 +3,8 @@ name: Push verificado; los subagentes no hacen push
 description: El push (y lo que toca remotos o reescribe historia) lo ejecuta la SESIÓN PRINCIPAL como paso final verificado, nunca un subagente (que permanece read-only o, como mucho, add+commit local). Seguridad por proceso (rama de desarrollo + tests + minuciosidad), no por bloqueo de permiso. El reflog no distingue al actor: ante anomalía de remoto, preguntar antes de declarar incidencia.
 type: doctrine
 version: 2.4
+index_summary: >-
+  El push lo cierra la **sesión principal**; el subagente es read-only o, como mucho, `add`+`commit` local, y **nunca** reescribe historia ni cambia de rama en árbol compartido (los worktrees aíslan ficheros, no el estado git). El reflog **no distingue al actor**: ante anomalía, preguntar antes de declarar incidencia.
 ---
 
 > **Sintaxis:** el mecanismo de aislamiento por `isolation: worktree` es de Claude Code. Detalle → tabla "Ejecución" en [`../README.md`](../README.md).

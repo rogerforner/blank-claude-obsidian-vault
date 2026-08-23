@@ -3,6 +3,8 @@ name: Entrega de prompts en .md y respuestas vía buffer "Otros"
 description: Los prompts para sesiones operativas se entregan en archivos .md en el working dir activo, no inline en el chat; las respuestas a AskUserQuestion del agente se escriben completas en un buffer sobreescribible que el director pega en "Otros".
 type: convention
 version: 1.0
+index_summary: >-
+  Prompts en archivo `.md` (no inline); respuestas a AskUserQuestion completas en buffer sobreescribible que el director pega en "Otros".
 ---
 
 ## Entrega de prompts en `.md`

@@ -3,6 +3,8 @@ name: Gates de calidad locales (el agente no cierra tarea con la puerta en rojo)
 description: La confianza en el código que escribe la IA no se asume: se ejecuta. Puertas deterministas locales (sin CI en la nube) montadas con hooks de Claude Code, pre-commit y un script de definition-of-done: PostToolUse para lint rápido por edición, Stop/SubagentStop con exit 2 para impedir cerrar tarea con puertas en rojo, pre-commit para secretos e integridad. Mutation score (no cobertura) como señal antifraude. El agente NUNCA edita sus propios criterios de aprobación.
 type: doctrine
 version: 2.3
+index_summary: >-
+  *"las pruebas pasan"* deja de ser una afirmación asumida y pasa a ser **una puerta ejecutada** que impide cerrar la tarea en rojo. `PostToolUse` para lo rápido por edición · **el hook `Stop` corre por TURNO**, así que **verifica sello + huella** en vez de ejecutar el DoD (y comprueba `stop_hook_active`, o hay bucle infinito) · pre-commit para secretos e integridad. El `PreToolUse` **solo ve `Edit`/`Write`**: una escritura por Bash lo esquiva ⇒ los invariantes se comprueban también sobre el **estado final** en el DoD. **Mutation score, no cobertura**, y el agente **nunca edita sus criterios de aprobación**.
 ---
 
 > **Sintaxis:** lo de aquí (hooks `PreToolUse`/`PostToolUse`/`Stop`/`SubagentStop`, `exit 2`, precedencia `deny > defer > ask > allow`) está escrito para Claude Code. Detalle → tabla "Ejecución" en [`../README.md`](../README.md).

@@ -3,6 +3,8 @@ name: Guarda de ficheros sensibles y flags de lanzamiento
 description: La config local del asunto la lee y edita la IA sin restricción; la deny-list solo bloquea las credenciales de máquina/usuario (~/.ssh, ~/.aws, …). Los datos personales SÍ viven en el vault —es su sitio—; lo que no sale NUNCA son los secretos (contraseñas, claves, tokens), y desde 2026-08-14 el material de trabajo sí puede ir a un cuaderno cerrado que no entrene con él. Las tandas que tocan masivamente .claude/ o hooks se lanzan con el flag de permisos amplios desde el inicio.
 type: convention
 version: 2.2
+index_summary: >-
+  La config local del asunto es editable **sin restricción**; la lista de denegación solo bloquea credenciales de máquina (`~/.ssh`, `~/.aws`, …). Los datos personales **sí** viven en el vault, pero **no salen de la máquina**. Tandas que tocan masivamente `.claude/`/hooks → flag al inicio. **Ámbito estricto: secretos y credenciales reales; NO ampara proteger el trabajo** ni la configuración de calidad, y el flag de permisos amplios es **lo normal** en local.
 ---
 
 ## Ámbito ESTRICTO: secretos y credenciales reales, nada más

@@ -3,6 +3,8 @@ name: Rutas absolutas para referencias fuera del working dir
 description: En los prompts operativos, toda referencia a un fichero fuera del working dir de la sesión va con ruta absoluta desde la raíz de la unidad; las relativas a otro árbol fallan en silencio.
 type: convention
 version: 1.0
+index_summary: >-
+  Referencias fuera del working dir → ruta absoluta; las relativas a otro árbol fallan en silencio.
 ---
 
 Los prompts operativos se ejecutan en sesiones rooteadas en un **asunto concreto**. Una ruta **relativa a otro árbol** del disco (el vault de documentación, la carpeta de escaneos, el archivo de otro asunto) **la sesión no la puede resolver**: no encuentra el fichero y trabaja solo con lo que diga el prompt, **sin error visible** y sin que el director lo perciba.

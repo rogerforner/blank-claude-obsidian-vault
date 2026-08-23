@@ -4,6 +4,7 @@
 // Sale con codigo 0 si todo esta en verde, 1 si hay hallazgos.
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, relative, basename, dirname } from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -216,6 +217,27 @@ for (const f of md) {
     }
   }
 }
+
+// --- 11. el indice de doctrinas es DERIVADO, no mantenido a mano ---------
+// La regla 7 comprueba que el indice y sus ficheros se correspondan; esta comprueba que el
+// TEXTO de cada entrada siga siendo el de su ficha. Es el hueco que dejaba la regla en prosa
+// "si cambias una ficha, actualiza su entrada del indice en el mismo commit": dependia de que
+// alguien se acordase, y las dos redacciones son plausibles por separado, asi que releyendo no
+// se nota. El resumen vive en el `index_summary` del frontmatter de la ficha -- fuente unica --
+// y el indice se rellena desde ahi con `generar-indice-doctrinas.mjs --escribir`.
+try {
+  const gen = join(RAIZ, '_meta', 'generar-indice-doctrinas.mjs');
+  if (existsSync(gen)) {
+    try {
+      execFileSync(process.execPath, [gen], { encoding: 'utf8', timeout: 20000, stdio: ['ignore', 'pipe', 'ignore'] });
+    } catch (e) {
+      for (const l of (e.stdout || '').split('\n')) {
+        const m = l.match(/^\s{2}(\S.*?) :: (.*)$/);
+        if (m) nota('indice derivado', join(RAIZ, m[1].split(' ')[0]), m[2]);
+      }
+    }
+  }
+} catch { /* si el generador no esta, esta regla simplemente no aplica */ }
 
 // --- resultado ----------------------------------------------------------
 const revisados = `${md.length} markdown y ${mjs.length + jsonInicializador.length} script/config`;

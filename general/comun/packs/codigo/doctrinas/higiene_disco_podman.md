@@ -3,6 +3,8 @@ name: Higiene de disco en stacks Podman/Compose
 description: Los stacks de contenedores acumulan disco en silencio (imágenes y capas colgantes, build cache, volúmenes huérfanos, logs, dumps de BD). Medir antes de limpiar (podman system df), podar quirúrgicamente (no system prune -a a ciegas), backup verificado ANTES de toda operación destructiva, proteger imágenes pesadas y volúmenes con datos, y rotar backups. Aplica a cualquier asunto con contenedores (Podman o Docker).
 type: practice
 version: 1.0
+index_summary: >-
+  Los stacks acumulan disco en silencio. **Medir antes de limpiar** (`podman system df`), **backup verificado antes de destruir**, poda quirúrgica (nunca `system prune -a --volumes` por costumbre), proteger imágenes pesadas y volúmenes con datos, rotar backups.
 ---
 
 Un stack de contenedores **acumula disco en silencio**: imágenes y capas *dangling* tras cada rebuild, **build cache**, volúmenes huérfanos, logs, y **dumps de BD** que crecen sin límite. En stacks con **imágenes pesadas** (p. ej. un microservicio de IA/NER con modelos cacheados puede rondar **>10 GB**) la presión de disco es aguda y, cuando se agota, **rompe builds y arranques de forma confusa**. En Windows el disco de la VM de Podman/WSL2 (`ext4.vhdx`) **crece y no se reduce solo**.

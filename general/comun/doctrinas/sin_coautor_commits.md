@@ -3,6 +3,8 @@ name: Sin Co-Authored-By en commits
 description: Los commits no llevan footer Co-Authored-By ni referencias a modelos IA; se automatiza con el setting attribution.commit vacío. No retroactivo. Grep de verificación refinado para evitar falsos positivos.
 type: convention
 version: 1.0
+index_summary: >-
+  Commits sin footer de atribución a IA; `attribution.commit` vacío; grep refinado de verificación. Git local: el histórico es del director.
 ---
 
 Los commits llevan **solo el mensaje técnico**, sin footer `Co-Authored-By` ni referencias a modelos de IA. El director sabe y comunica que usa IA; la inclusión automática en cada commit es intrusiva. El historial del vault es un **registro de trabajo del director**, no un currículum de la herramienta.

@@ -3,6 +3,8 @@ name: Adopción de tooling externo requiere caso de uso concreto
 description: Antes de adoptar cualquier herramienta externa nueva, exigir un caso de uso concreto YA presente (no especulativo) y validar cinco criterios; aplica también a estructuras internas preventivas. Verificar disponibilidad y condiciones de uso de los recursos externos al inicio de cada tanda.
 type: doctrine
 version: 1.0
+index_summary: >-
+  Caso de uso concreto YA + 5 criterios + piloto; aplica a estructuras internas preventivas; verificar disponibilidad y condiciones de uso de los recursos externos al inicio.
 ---
 
 Antes de instalar cualquier herramienta externa nueva, exigir un **caso de uso concreto YA presente**, no especulativo. Las adopciones preventivas "porque suena bien" terminan revertidas tras invertir tiempo en instalación y diagnóstico.

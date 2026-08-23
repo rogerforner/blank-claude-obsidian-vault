@@ -3,6 +3,8 @@ name: Cuestionar las premisas de fondo antes de una investigación o una gestió
 description: Antes de comprometer una investigación extensa o una gestión cara (un profesional, un peritaje, un trámite con tasa), cuestionar explícitamente las premisas implícitas —que hace falta un tercero, una herramienta nueva, una vía formal—, no solo comparar opciones dentro de una premisa dada; y pilotar la opción mínima antes de comprometer dinero o plazos.
 type: doctrine
 version: 1.0
+index_summary: >-
+  Antes de una investigación o una gestión cara: cuestionar si hace falta el tercero, la herramienta o la vía formal; pilotar lo mínimo primero.
 ---
 
 Antes de comprometer recursos costosos —una investigación amplia, la contratación de un profesional, un peritaje, una tasa, o una gestión que consuma un plazo— el coordinador ejecuta un **paso explícito de cuestionamiento de las premisas implícitas**. El fallo típico es comparar opciones **dentro de una caja** sin cuestionar la caja.

@@ -3,6 +3,8 @@ name: pnpm como gestor de paquetes — supply chain security
 description: Usar pnpm v11+ como gestor de paquetes en asuntos Node para mitigar ataques de supply chain; minimumReleaseAge evita hot-release attacks, strict mode bloquea phantom dependencies. npm prohibido tras la migración.
 type: doctrine
 version: 1.0
+index_summary: >-
+  En asuntos con Node: pnpm v11+, `minimumReleaseAge`, pin exacto, `onlyBuiltDependencies: []`, sin Renovate/Dependabot. La más específica del pack: si el asunto no lleva Node, se ignora.
 ---
 
 En asuntos con código Node, usar **pnpm v11+** como gestor de paquetes para mitigar ataques de *supply chain*.

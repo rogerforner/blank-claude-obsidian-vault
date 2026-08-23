@@ -3,6 +3,8 @@ name: Minimizar AskUserQuestion del agente operativo
 description: El agente operativo no pide confirmación para acciones legítimas y obvias dentro de su scope; solo escala en cuatro casos reales (decisión de fondo, hallazgo bloqueante, conflicto doctrinal, bloqueo técnico).
 type: doctrine
 version: 1.0
+index_summary: >-
+  El agente no pide confirmación para acciones obvias; solo escala en cuatro casos reales. Entregar fuera no es escalada: es el final de su scope.
 ---
 
 El agente operativo **no pide confirmación constante** para acciones legítimas y obvias dentro del scope autorizado del prompt. Opera con autonomía y reporta al cierre.

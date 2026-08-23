@@ -3,6 +3,8 @@ name: Repo remoto como Git puro; CI/tooling local, no SaaS externo
 description: El repositorio remoto se trata como remoto Git puro (commits locales + push como paso verificado + visualización read-only). Prohibido el resto del ecosistema del proveedor de hosting y cualquier SaaS externo de CI/CD/testing/security/build; todo se ejecuta local o en infraestructura propia.
 type: doctrine
 version: 1.2
+index_summary: >-
+  Tres acciones permitidas (commits locales, push verificado, visualización read-only); prohibido el CI integrado, la CLI del proveedor y cualquier SaaS externo de build/test/security. Todo se ejecuta en local o en infraestructura propia.
 ---
 
 El repositorio en el proveedor de hosting (GitHub u otro) se trata **exclusivamente como remoto Git puro**. Razón fundacional: **soberanía operativa total + control de datos + cero dependencia de SaaS extranjeros** para procesos críticos del ciclo de desarrollo.

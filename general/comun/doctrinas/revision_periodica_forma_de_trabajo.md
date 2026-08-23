@@ -3,6 +3,8 @@ name: Revisión periódica de la forma de trabajo
 description: Cadencia ligera de auto-revisión del trabajo humano-IA (feedback flywheel). El ritmo importa más que el rigor: una rutina mínima sostenida supera a un proceso elaborado que se abandona.
 type: convention
 version: 1.0
+index_summary: >-
+  Cadencia ligera (tras-sesión / quincenal / trimestral / por-evento). El ritmo importa más que el rigor.
 ---
 
 Revisión ligera y sostenida de **cómo se trabaja con la IA**. Principio rector: **el ritmo importa más que el rigor** — una rutina mínima sostenida supera a un proceso elaborado que se abandona.

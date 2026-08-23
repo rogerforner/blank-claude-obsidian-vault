@@ -3,6 +3,8 @@ name: Verificar en el runtime real, no en el host
 description: El filesystem que ves no es necesariamente el que ejecuta la aplicación. Antes de concluir que falta una dependencia o que algo está roto, localiza DÓNDE se ejecuta y compruébalo AHÍ DENTRO. Un árbol de dependencias incompleto en el host NO prueba que la app esté rota (el contenedor las tiene todas), y su presencia en el host tampoco prueba que el runtime las cargue. Las comprobaciones se ejecutan dentro del runtime; no se "arregla" el host para que se parezca al runtime.
 type: practice
 version: 1.1
+index_summary: >-
+  El filesystem que ves no es el que ejecuta: un árbol de dependencias incompleto en el host **NO** significa que la app esté rota (el contenedor las tiene todas), y su presencia tampoco prueba que el runtime las cargue. Comprueba **dentro**, no "arregles" el host; las librerías servidas desde un host externo son **ilegibles** para un agente, así que lo que afirme de ellas es suposición; "verificado en código" ≠ verificado en el runtime.
 ---
 
 Cuando el código corre en un **contenedor**, en un **entorno remoto** o depende de librerías servidas desde un **host de assets propio**, el estado del host de desarrollo es un **proxy** de la realidad — y un proxy malo. La pregunta que va **antes** de cualquier diagnóstico es: **¿dónde se ejecuta esto?**; y la comprobación se hace **ahí dentro**. Es [[verificacion_fuente_primaria]] aplicada al eje del entorno: la fuente primaria de *"qué dependencias carga la app"* es **el proceso que corre**, no un directorio.

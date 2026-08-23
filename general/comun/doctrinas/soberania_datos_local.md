@@ -3,6 +3,8 @@ name: Soberanía de datos y trabajo local
 description: El trabajo del vault vive y se procesa en local: git local sin nube, procesamiento local. Lo que NO sale nunca, a ningún servicio, son los SECRETOS (contraseñas, claves de API, tokens, certificados) — eso es seguridad de sistemas, no privacidad. Desde 2026-08-14 la frontera distingue por servicio: el material de trabajo SÍ puede subirse a un cuaderno cerrado que no entrene con él, aunque lleve datos personales incidentales; el chat web abierto conserva su cautela porque entrena y admite revisión humana.
 type: doctrine
 version: 1.2
+index_summary: >-
+  Git local sin nube y procesamiento local. **Lo que NO sale nunca son los SECRETOS** —contraseñas, claves de API, tokens, certificados—: eso es **seguridad de sistemas**, no privacidad, y es la línea que no se mueve. **Desde el 2026-08-14 la frontera distingue por servicio:** el **material de trabajo SÍ puede subirse a un cuaderno cerrado** que no entrene con él, aunque lleve datos personales incidentales (el objetivo es dejar de releer manuales enteros en cada sesión); el **chat web abierto conserva su cautela** porque entrena por defecto y admite revisión humana. Categorías especialmente sensibles y datos de terceros: criterio del director, caso a caso.
 ---
 
 El vault y su trabajo se tratan con **soberanía total**: control de los datos + cero dependencia de servicios externos para lo crítico. Razón de fondo en un vault doméstico: buena parte del contenido son **datos personales** (finanzas, contratos, correspondencia, la casa y su entorno) y no tienen por qué salir de tu máquina.

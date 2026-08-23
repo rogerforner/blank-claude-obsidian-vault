@@ -3,6 +3,8 @@ name: Scripts ad-hoc para tareas repetitivas
 description: Cuando una tarea es mecánica, determinista y verificable, preferir que la IA genere un script ejecutable y se ejecute, en lugar de procesar ítem por ítem cargando contexto. Menos tokens, output determinista, reutilizable y auditable.
 type: doctrine
 version: 1.0
+index_summary: >-
+  Tarea mecánica + determinista + verificable → generar y ejecutar script, no procesar ítem por ítem. Nunca en el sitio sobre un original.
 ---
 
 Cuando una tarea es **mecánica, repetitiva y procesable de forma determinista**, suele ser más eficiente que la IA **genere un script** que ejecute la tarea, en lugar de procesar ítem por ítem cargando contexto completo en cada paso.

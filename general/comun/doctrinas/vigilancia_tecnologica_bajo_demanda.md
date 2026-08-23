@@ -3,6 +3,8 @@ name: Vigilancia tecnológica bajo demanda
 description: La investigación de novedades externas (modelos, herramientas, métodos) no sigue calendario fijo: la dispara el director cuando detecta algo a evaluar. El coordinador la convierte en uno o varios briefs FOCALIZADOS de deep research (Chat Web), sintetiza y funde los hallazgos en doctrinas/decisiones. Investigar ≠ adoptar: toda adopción pasa el filtro (caso de uso, condiciones de uso, soberanía del dato, madurez + piloto).
 type: convention
 version: 1.0
+index_summary: >-
+  La investigación de novedades la dispara el director cuando quiera; el coordinador la concreta en briefs focalizados de deep research (Chat Web), sintetiza y funde; investigar ≠ adoptar (filtro de caso de uso / condiciones de uso / soberanía del dato / piloto).
 ---
 
 La IA y su ecosistema avanzan rápido. Para no perder oportunidades ni esperar meses, la **investigación de novedades externas** se trata como un **pipeline bajo demanda**, no como un calendario.

@@ -3,6 +3,8 @@ name: Doctrina de licencias — tres líneas rojas
 description: Tres líneas rojas sobre licencias de dependencias: sin contagio copyleft al código propio, sin restricciones anti-SaaS al modelo de negocio, y propiedad intelectual del código propio defendible. Copyleft aceptable solo en microservicio aislado por REST sin modificar.
 type: doctrine
 version: 1.0
+index_summary: >-
+  Tres líneas rojas: sin contagio copyleft al código propio, sin restricciones anti-SaaS al modelo de negocio, y PI defendible. Copyleft solo en microservicio aislado por REST. Zonas grises → al director.
 ---
 
 Tres líneas rojas concretas sobre las licencias de las dependencias del asunto.
