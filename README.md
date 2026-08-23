@@ -364,7 +364,7 @@ Su primer trabajo es **entender el expediente**: cronología y reconocimiento. Y
    - **¿Hay un segundo proveedor de IA?** El vault nace con esa llave **apagada** (`_meta/memoria/proveedor-secundario-ia.md`), y se gira a propósito o no está girada.
 5. **Ajusta el `_meta/` a tu ámbito**: el charter, los primeros bloques de la cola y las decisiones abiertas. Llegan **vacíos a propósito**, con su estructura y un ejemplo.
 6. **Inicializa el primer asunto** con [`inicializador/checklist-arranque.md`](inicializador/checklist-arranque.md), o con [`checklist-migracion-existentes.md`](inicializador/checklist-migracion-existentes.md) si ya viene en marcha. La carpeta `asuntos/` **no existe todavía**: aparece con el primero.
-7. **Comprueba que el kit está sano**: `node _meta/verificar-kit.mjs` tiene que salir en **verde**. Comprueba ocho reglas estructurales —enlaces colgados, índices desincronizados, rutas absolutas de máquina coladas en lo versionado—. **Y no se ajusta el verificador para que pase.**
+7. **Comprueba que el kit está sano**: `node _meta/verificar-kit.mjs` tiene que salir en **verde**. Comprueba **diez** reglas estructurales —enlaces colgados, índices desincronizados, rutas absolutas de máquina coladas en lo versionado, **datos cuya fecha de caducidad ya venció** y **fechas de estado imposibles, puestas en el futuro**—. **Y no se ajusta el verificador para que pase.**
 
 **Lo que NO hay que hacer al arrancar:** rellenar carpetas por adelantado, instalar herramientas "por si acaso" ni traer todos los papeles de golpe. Cada pieza entra con un caso de uso concreto delante.
 

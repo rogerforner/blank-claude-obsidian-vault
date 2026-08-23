@@ -89,6 +89,8 @@ Si la tanda no cabe en la menor de las tres, se trocea antes de lanzarla.
 
 **Etiqueta cada dato, sin excepción: `[MEDIDO]`** — con quién, con qué y cuándo — **o `[A CONFIRMAR]`**, para que la ejecutora lo verifique en vez de suponerlo. Si dudas de en cuál cae, es *a confirmar*. Un dato de apoyo erróneo **sobrevive al viaje** y quien lo recibe lo hereda como verificado. → [[verificacion_fuente_primaria]]
 
+**Y si el dato caduca, ponle la fecha: `[CADUCA AAAA-MM-DD]`.** El verificador **para el kit en rojo** cuando vence, así que no depende de que nadie se acuerde. Va sobre todo en dos sitios: los datos de **plataforma** (límites, precios, nombres de opciones, versiones) y **todo lo que dejes marcado como *a confirmar*** — ahí la fecha es *hasta cuándo es aceptable seguir sin comprobarlo*. Lo que sea conclusión propia medida contra su fuente **no lleva caducidad**.
+
 ## Decisiones ya tomadas (NO las reabras)
 
 {{Las decisiones ya cerradas —de fondo, de forma, económicas o jurídicas— para que la ejecutora no vuelva a plantearlas ni pida confirmación. Esto es lo que más reduce las preguntas.}}

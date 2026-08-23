@@ -2,7 +2,7 @@
 name: Convención de organización de la carpeta de trabajo
 description: La carpeta de coordinación mantiene en su raíz solo lo activo y lo vivo. Handoffs y buffers son LOCALES (gitignored, nunca se versionan); los prompts ejecutados y los briefs con informe se versionan en vuelo y se BORRAN al cumplir (git rm; git conserva el histórico). No se acumulan ficheros obsoletos. Y lo que se lee entero en cada arranque —cola, bitácora— tiene TECHO escrito, igual que el CLAUDE.md: 40.960 y 30.720 bytes de `wc -c`, comparados sin convertir.
 type: convention
-version: 2.7
+version: 2.8
 ---
 
 La carpeta de coordinación de un asunto (`asuntos/<asunto>/coordinacion/`) se mantiene **limpia**: solo lo **activo** y lo **vivo**. Los insumos efímeros ya usados **se borran** — git conserva el histórico y el resultado perdura en otro sitio. Así nunca hay ficheros obsoletos que confundan ni que obliguen a leer de más.
@@ -69,6 +69,9 @@ La limpieza no puede depender solo del cierre de tanda: las sesiones a menudo **
 - **Auto-borra** los handoffs y buffers `tmp-otros-actual.md` **gitignored** que ya no sirven, por cualquiera de dos motivos independientes: **superados** (hay otro más reciente en su misma serie) o **caducados** (más de 14 días, aunque sean los únicos de su serie). Los de **hoy** no se tocan nunca; cero impacto en git. La caducidad no es redundante: **una serie de un solo elemento no tiene sucesor que la desplace**, así que sin ella un handoff con nombre único se conservaba para siempre.
 - **Avisa** por contexto de los **prompts/briefs trackeados** ya cumplidos, para que el coordinador los quite con `git rm` (con criterio: puede haber prompts en vuelo). One-liner de apoyo: `LIMPIEZA_LIST_TRACKED=1 node <script> | while IFS= read -r f; do git rm -- "$f"; done`.
 
+- **Sella la fecha del sistema** en el contexto, siempre y sea cual sea el resto. La sesión no vuelve a deducir qué día es leyendo un fichero: se lo dice una **ejecución**. Va con su alcance escrito al lado —sirve para el caso ordinario, no para dirimir una duda sobre el propio reloj— porque una fecha que se entrega sin límites se acaba usando para aquello que no cubre. → [[verificacion_fuente_primaria]]
+- **Ejecuta el verificador del kit y avisa SOLO si sale en rojo.** Es la *prueba básica de arranque*: descubrir lo que la sesión anterior dejó roto **antes** de tocar nada, en vez de descubrirlo al ir a commitear. Lo busca subiendo desde el directorio de trabajo, así que funciona igual desde la raíz que desde un contenedor; si no lo encuentra, no dice nada.
+
 Nunca bloquea el arranque (exit 0). La limpieza es, por tanto, **ritual de arranque además de cierre**. El script es un único fichero compartido en `general/` (read-only para los coordinadores de asunto); se referencia con `${CLAUDE_PROJECT_DIR}/../../general/comun/hooks/…` (contenedor a 2 niveles bajo la raíz) y `${CLAUDE_PROJECT_DIR}/general/comun/hooks/…` desde la raíz.
 
 ## `tmp-otros-actual.md`
@@ -77,6 +80,7 @@ Buffer **exclusivo** de texto que el director pega como respuesta a la pregunta 
 
 > v2.0 (2026-06-08): se sustituye el archivado en `cerrados/` por **borrado** (git es el histórico). Mantener los directorios sin ficheros obsoletos.
 > v2.1 (2026-06-09): se distingue **local/gitignored** (handoffs, buffers — nunca se versionan) de **versionado-y-borrado** (prompts, briefs). Añadidos al `.gitignore` raíz `**/handoff-*.md`.
+> v2.8 (2026-08-23): el hook de arranque deja de hacer solo higiene y pasa a ser el **ritual de arranque** completo: además de borrar y avisar, **sella la fecha del sistema** y **ejecuta el verificador**, avisando solo si sale en rojo. Sale del informe de continuidad entre sesiones: la pieza que faltaba frente a arneses comparables era correr una comprobación básica **antes** de empezar, no al cerrar.
 > v2.2 (2026-07-14): enforcement por **hook `SessionStart`** (auto-borra handoffs gitignored superados + avisa de prompts/briefs trackeados) → la limpieza es **ritual de arranque además de cierre**. Motivado por acumulación real observada (las sesiones morían antes de limpiar al cerrar).
 > v2.4 (2026-08-12): **techo escrito para lo que se lee entero en cada arranque** — 40 KB la cola de un asunto, 30 KB la bitácora del kit, con el criterio de qué baja al histórico. El techo va **en KB y no en líneas** porque la primera versión de esta misma regla, escrita en líneas, no habría marcado el fichero que la motivó: 620 líneas de párrafo denso son 197 KB. Sale de medir: una cola había llegado a 192 KB (~53.400 tokens), y su coordinador gastaba ~60.000 tokens en abrir la sesión antes de trabajar. La asimetría estaba a la vista desde el principio: el `CLAUDE.md` tenía límite y los ficheros de estado no, siendo los tres lo que se lee en cada arranque.
 > v2.3 (2026-08-12): el hook añade **caducidad a los 14 días**, porque "superado por otro de su serie" dejaba fuera las series de **un solo elemento** — medidos seis handoffs de julio vivos en dos contenedores, cada uno con nombre propio y por tanto sin sucesor posible. Corregido además un fallo del propio hook que hacía que **solo informase las veces que no borraba nada**: listaba los ficheros antes de borrar y luego consultaba los ya borrados, con lo que la excepción se tragaba el informe entero.

@@ -14,6 +14,14 @@
 //      Lo de HOY nunca se toca, pase lo que pase.
 //   2. AVISA por stdout (que Claude recibe como contexto) de los prompts/briefs TRACKEADOS ya
 //      cumplidos, para que el coordinador los quite con `git rm` (con criterio: puede haber en vuelo).
+//   3. SELLA LA FECHA del sistema en el contexto (desde 2026-08-23). La sesion no vuelve a deducir
+//      que dia es leyendo un fichero: se lo dice una EJECUCION al arrancar. Sale del informe de
+//      continuidad, y del caso que lo motivo -- una sesion que arranco desde un handoff fechado y
+//      arrastro esa fecha a 38 sitios. Con su limite escrito al lado, que tambien se aprendio
+//      caro: esta fecha es la del EQUIPO, asi que sirve para el caso ordinario y NO para dirimir.
+//   4. EJECUTA EL VERIFICADOR del kit y avisa SOLO si sale en rojo (desde 2026-08-23). Es el
+//      equivalente a la prueba basica de arranque del arnes de referencia: detectar lo que la
+//      sesion anterior dejo roto ANTES de tocar nada, en vez de descubrirlo al ir a commitear.
 //
 // Nunca borra nada trackeado. Siempre termina con exit 0 (jamás rompe el arranque).
 // Modo prueba: LIMPIEZA_DRY_RUN=1 → reporta lo que borraría, sin borrar.
@@ -147,6 +155,19 @@ function main() {
     return;
   }
 
+  // --- sello de fecha (SIEMPRE, haya o no hallazgos) ---
+  // Es lo primero que se emite a proposito: quien lea el contexto ve el marco temporal antes
+  // que cualquier otra cosa. Y lleva su propia advertencia de alcance, porque una fecha que se
+  // presenta sin limites se usa para todo -- incluido aquello para lo que no vale.
+  const sello = [];
+  try {
+    const ahora = new Date();
+    const dias = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+    const iso = new Date(ahora.getTime() - ahora.getTimezoneOffset() * 60000).toISOString();
+    sello.push(`[FECHA] Hoy es ${dias[ahora.getDay()]} ${iso.slice(0, 10)}, ${iso.slice(11, 16)} (reloj de ESTE equipo, leido al arrancar).`);
+    sello.push('  No deduzcas la fecha de ningun fichero, ni del nombre de un handoff: usa esta. Para DIRIMIR una duda sobre fechas ya escritas, esta no vale — cuelga del mismo reloj que estarias poniendo en duda, y hace falta un testigo externo a la maquina.');
+  } catch { /* el sello nunca rompe el arranque */ }
+
   // --- salida (stdout → contexto de Claude) ---
   const rel = (f) => f.startsWith(ROOT) ? f.slice(ROOT.length + 1).replace(/\\/g, '/') : f;
   const lines = [];
@@ -158,7 +179,34 @@ function main() {
     lines.push(`[AVISO] Higiene de coordinación: ${surfaced.length} fichero(s) trackeado(s) probablemente obsoleto(s). Revísalos y quita con \`git rm\` los ya cumplidos (git conserva el histórico); CONSERVA los que sigan en vuelo. Doctrina: convencion_organizacion_carpeta_trabajo.`);
     for (const [f, why] of surfaced) lines.push(`  - ${rel(f)}  (${why})`);
   }
-  if (lines.length) process.stdout.write(lines.join('\n') + '\n');
+  // --- verificador del kit al arrancar (solo avisa si sale en ROJO) ---
+  // Se busca subiendo desde el directorio de trabajo: la raiz del vault lo tiene en `_meta/`,
+  // y un contenedor de asunto lo alcanza subiendo dos niveles. Si no aparece, no pasa nada.
+  const rojo = [];
+  try {
+    let dir = ROOT;
+    for (let i = 0; i < 4; i++) {
+      const v = join(dir, '_meta', 'verificar-kit.mjs');
+      if (existsSync(v)) {
+        try {
+          execFileSync(process.execPath, [v], { encoding: 'utf8', timeout: 20000, stdio: ['ignore', 'pipe', 'ignore'] });
+        } catch (e) {
+          const salida = (e.stdout || '').trim();
+          if (salida) {
+            rojo.push('[VERIFICADOR] El kit NO esta en verde AL ARRANCAR, o sea que algo quedo roto de antes. Arreglalo antes de empezar nada nuevo, y no ajustes el verificador para que pase:');
+            for (const l of salida.split('\n')) rojo.push('  ' + l);
+          }
+        }
+        break;
+      }
+      const padre = dirname(dir);
+      if (padre === dir) break;
+      dir = padre;
+    }
+  } catch { /* el verificador nunca rompe el arranque */ }
+
+  const salida = [...sello, ...lines, ...rojo];
+  if (salida.length) process.stdout.write(salida.join('\n') + '\n');
 }
 
 // No usar process.exit(): trunca el buffer de stdout (Node/Windows con pipe) y se

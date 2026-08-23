@@ -178,6 +178,45 @@ for (const f of md.filter(zonaDeEstiloEstricto)) {
   });
 }
 
+// --- 9. datos con CADUCIDAD declarada que ya venció ----------------------
+// Sale del informe de continuidad (2026-08-23): el kit tenia varios datos con fecha de
+// caducidad -- una ampliacion de limites, un precio introductorio, un plazo -- y ninguno
+// se caia solo al vencer. El unico que se despacho a tiempo fue por casualidad, un dia
+// tarde. Un dato que depende de que alguien mire el calendario NO es un dato vigilado.
+// Sintaxis: `caduca: AAAA-MM-DD` en el frontmatter, o `[CADUCA AAAA-MM-DD]` en el cuerpo.
+// El disparador NO es un planificador externo: es este verificador, que ya se ejecuta tras
+// cualquier cambio del kit y ahora tambien al arrancar la sesion (hook de coordinacion).
+const HOY = new Date().toISOString().slice(0, 10);
+const CADUCA = /(?:^caduca:\s*|\[CADUCA\s+)(\d{4}-\d{2}-\d{2})/gm;
+for (const f of md) {
+  const t = readFileSync(f, 'utf8');
+  for (const m of t.matchAll(CADUCA)) {
+    if (m[1] < HOY) {
+      const linea = t.slice(0, m.index).split('\n').length;
+      nota('dato caducado', f, `caduco el ${m[1]} (hoy es ${HOY}), linea ${linea} — verificalo en su fuente y actualizalo o retiralo`);
+    }
+  }
+}
+
+// --- 10. una fecha de ESTADO no puede estar en el futuro -----------------
+// Los marcadores de abajo declaran CUANDO SE HIZO algo, asi que una fecha posterior a hoy
+// es imposible por definicion y delata una de dos cosas: una fecha escrita de memoria, o un
+// reloj en el que no se puede confiar. Las dos pasaron en este vault en la misma semana.
+// AMBITO ACOTADO A PROPOSITO: no se miran TODAS las fechas del arbol, porque una fecha futura
+// puede ser legitima (un plazo, un vencimiento, una fecha de revision). Solo se miran las que
+// afirman un hecho pasado. Ampliarla a todas las fechas la llenaria de falsos positivos, y una
+// regla que grita en falso se acaba ignorando, que es como se pierde un verificador.
+const FECHA_DE_ESTADO = /(?:\[(?:HECHO|MEDIDO|VERIFICADO|RESUELTO|CERRADO|DIRIMIDO|ABIERTO|CONFIRMADO|INVESTIGADO|EJECUTADO|APLICADO|CORREGIDO|PUBLICADA|AMPLIADO)\s+|^version:\s*[\d.]+\s*\()(\d{4}-\d{2}-\d{2})/gm;
+for (const f of md) {
+  const t = readFileSync(f, 'utf8');
+  for (const m of t.matchAll(FECHA_DE_ESTADO)) {
+    if (m[1] > HOY) {
+      const linea = t.slice(0, m.index).split('\n').length;
+      nota('fecha futura', f, `declara como ya ocurrido algo fechado el ${m[1]}, y hoy es ${HOY} (linea ${linea})`);
+    }
+  }
+}
+
 // --- resultado ----------------------------------------------------------
 const revisados = `${md.length} markdown y ${mjs.length + jsonInicializador.length} script/config`;
 if (!hallazgos.length) {

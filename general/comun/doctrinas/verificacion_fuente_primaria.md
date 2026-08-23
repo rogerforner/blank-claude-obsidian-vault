@@ -2,7 +2,7 @@
 name: Verificar en la fuente primaria antes de propagar
 description: Un dato que contradice lo documentado es un conflicto a resolver en la fuente primaria (el documento real, el escrito registrado, la cifra oficial), NUNCA licencia para "corregir" la nota desde un proxy (tamaño/fecha/nombre de fichero). No lleves una conclusión a docs/doctrina/prompts/commits sin verificarla, y acota la afirmación a lo realmente probado. Como tus notas se propagan a otras sesiones, tu listón de verificación es más alto, no más bajo.
 type: practice
-version: 1.3
+version: 1.4
 ---
 
 El coordinador **propaga**: lo que escribe en `docs/`, doctrinas, prompts y commits lo leen y dan por bueno otras sesiones —y el propio director dentro de seis meses—. Por eso su listón de verificación es **más alto**, no más bajo. La regla: **verifica en la fuente primaria ANTES de propagar.**
@@ -23,6 +23,22 @@ Un encargo entre coordinadores —o el que te escribes a ti mismo para dentro de
 **Regla: cada dato de apoyo va etiquetado.** `[MEDIDO]` — con **quién**, **con qué** y **cuándo** (el comando o el documento, y la fecha) — o `[A CONFIRMAR POR EL RECEPTOR]`. Si no sabes en cuál cae, es *a confirmar*. Cuesta una línea y evita que el otro construya sobre arena.
 
 *(Caso real: un encargo afirmaba que cierto sistema "solo ofrecía dos opciones disponibles"; medidas contra el sistema real eran 48. Lo único que importaba para el encargo sí era cierto, así que el encargo era válido — pero el dato de apoyo era falso y viajó entero. Quien lo detectó fue el receptor, al chocar con la realidad.)*
+
+**Y si el dato CADUCA, dilo con una fecha que el verificador entienda: `[CADUCA AAAA-MM-DD]`** en el cuerpo, o `caduca: AAAA-MM-DD` en el frontmatter de una pieza de método. **No es un recordatorio: es una parada.** Cuando esa fecha pasa, el verificador pone el kit en **rojo** con el fichero y la línea, y no vuelve a verde hasta que alguien lo comprueba en su fuente y lo actualiza o lo retira.
+
+Existe porque *"lo miro el día X"* no es un mecanismo: **un dato con caducidad que depende de que alguien mire el calendario ya está caducado, solo que todavía no lo sabes.** Este vault enseñó una política de plataforma abandonada durante dos semanas, y despachó un plazo vencido **un día tarde y por casualidad** — porque la sesión siguiente lo leyó de pasada, no porque nada avisara.
+
+**Qué merece caducidad y qué no:** los datos de **plataforma** (límites, precios, nombres de opciones, versiones), lo que dependa de un **plazo externo**, y todo lo marcado *a confirmar* que aún no se ha confirmado — a eso se le pone la fecha en que deja de ser aceptable seguir sin comprobarlo. Lo que es **conclusión propia medida contra la fuente** no caduca: se revisa cuando cambie el mundo, no cuando pase una fecha.
+
+## El marco temporal se EJECUTA, no se lee
+
+**Ninguna sesión deduce qué día es a partir de un fichero** — ni del nombre de un handoff, ni de la última entrada de la bitácora, ni de lo que diga un conector. El **hook de arranque sella la fecha del sistema** en el contexto, de una ejecución, antes de que nadie escriba nada.
+
+Sale de un caso que costó caro: una sesión arrancó desde un handoff fechado, arrastró esa fecha **a 38 sitios** y hubo que corregirlos uno a uno contra el registro de cambios que respaldaba cada uno — porque los desfases **no eran uniformes** y una sustitución global habría escrito una fecha falsa en más de la mitad.
+
+**Con su límite escrito al lado, que se aprendió igual de caro:** ese sello es el reloj **de este equipo**, así que vale para el caso ordinario y **no para dirimir**. Si lo que está en duda es el reloj mismo, contrastarlo contra `date` es preguntarle al sospechoso: hace falta un **testigo externo a la máquina**, y hay que elegirlo bien — un campo que solo guarda el último estado no sirve; una marca de tiempo puesta por un servidor en el momento del hecho, sí.
+
+**Y el corolario que generaliza más allá de las fechas: una prueba negativa vale lo que valga su cobertura.** Antes de concluir *no pasó*, escribe **qué huella habría dejado si hubiera pasado** y comprueba que es la huella que estás buscando. *(Caso real: se dio por refutado un desfase de reloj porque "no hay ningún registro fechado antes que su padre" — cierto, e irrelevante: un reloj atrasado que se corrige hacia adelante no deja esa huella, deja huecos.)*
 
 ## Fuente única también DENTRO del documento
 
@@ -46,5 +62,5 @@ Corolario de diagnóstico: **una limitación que alguien impuso "porque si no fa
 
 Relacionada: [[higiene_contexto_y_tokens]], [[mejora_continua_del_kit]], [[commits_de_otros_no_se_investigan]] (ante anomalía del histórico que no distingue actor, preguntar en vez de dar algo por hecho).
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v1.3 (2026-08-01):** dos reglas nacidas de encargos reales — lo que viaja en un encargo se etiqueta `[MEDIDO]` / `[A CONFIRMAR]` (un dato de apoyo erróneo sobrevive al viaje y el receptor lo hereda como verificado) y un comentario que declara algo "defensivo" sin haberlo medido es peor que no tenerlo, con su corolario de que un valor de configuración inválido no es latente si otros procesos lo heredan. **v1.1 (2026-07-29):** añadidas dos reglas aportadas por la implantación real — **fuente única dentro del propio documento** (la deriva entre copias no se detecta leyendo; incluye el par índice↔ficha, que se actualiza en el mismo commit) y **una comprobación favorable no prueba que el procedimiento sea fiable**, con su corolario de diagnóstico (una limitación impuesta puede ser el síntoma de un ajuste ausente). v1.0 (2026-06-15). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
+> Pieza de catálogo `general/comun/doctrinas/`. **v1.4 (2026-08-23):** entra la **caducidad declarada** (`[CADUCA AAAA-MM-DD]` / `caduca:` en frontmatter), que el verificador convierte en **parada** y no en recordatorio, con el criterio de qué merece caducar y qué no; y la sección del **marco temporal**, que pasa a **ejecutarse** en el hook de arranque en vez de leerse de un fichero. Las dos salen del informe de continuidad entre sesiones y de tres incidentes propios de la misma semana. Se añade además el corolario de la **prueba negativa**, que es el que evita el error más caro de esa tanda: refutar la prueba de alguien y dar por refutada su conclusión. **v1.3 (2026-08-01):** dos reglas nacidas de encargos reales — lo que viaja en un encargo se etiqueta `[MEDIDO]` / `[A CONFIRMAR]` (un dato de apoyo erróneo sobrevive al viaje y el receptor lo hereda como verificado) y un comentario que declara algo "defensivo" sin haberlo medido es peor que no tenerlo, con su corolario de que un valor de configuración inválido no es latente si otros procesos lo heredan. **v1.1 (2026-07-29):** añadidas dos reglas aportadas por la implantación real — **fuente única dentro del propio documento** (la deriva entre copias no se detecta leyendo; incluye el par índice↔ficha, que se actualiza en el mismo commit) y **una comprobación favorable no prueba que el procedimiento sea fiable**, con su corolario de diagnóstico (una limitación impuesta puede ser el síntoma de un ajuste ausente). v1.0 (2026-06-15). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
 > Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.

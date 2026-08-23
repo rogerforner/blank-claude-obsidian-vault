@@ -79,7 +79,7 @@ Esta es la más transferible de todas.
 
 ### 1.7 Puertas automáticas que te paren a ti
 
-Aquí hay un verificador con ocho reglas que se ejecuta tras cada cambio: frontmatter y pie de las piezas de método, índices que cuadren con sus ficheros en los dos sentidos, enlaces internos que resuelvan, ausencia de rutas de máquina, vocabulario prohibido, y **redacciones retiradas**.
+Aquí hay un verificador con **diez** reglas que se ejecuta tras cada cambio **y al arrancar cada sesión**: frontmatter y pie de las piezas de método, índices que cuadren con sus ficheros en los dos sentidos, enlaces internos que resuelvan, ausencia de rutas de máquina, vocabulario prohibido, y **redacciones retiradas**.
 
 **La prueba de que sirve:** al escribir una pieza nueva, su autor —que conocía la regla— usó cinco veces una palabra prohibida. El verificador la cazó con las cinco líneas. **Ninguna revisión por lectura lo habría pillado.**
 
