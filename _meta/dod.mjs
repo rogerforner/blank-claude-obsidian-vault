@@ -145,11 +145,18 @@ function puertaTechos() {
 // escrito siga describiendo lo que hay. Se comprueba sobre los commits de la sesion, porque es
 // ahi donde la documentacion se queda atras -- no en el arbol en reposo.
 //
-// (a) Una doctrina que cambia en su CUERPO tiene que subir `version` en el MISMO commit. Es la
-//     regla de fuente unica hecha puerta: sin ella, la ficha y su changelog cuentan historias
-//     distintas y releyendo no se nota, porque las dos son plausibles por separado.
+// (a) Una doctrina que cambia en su CUERPO tiene que subir `version`. Es la regla de fuente unica
+//     hecha puerta: sin ella, la ficha y su changelog cuentan historias distintas y releyendo no
+//     se nota, porque las dos son plausibles por separado.
+//     SE EVALUA LA VENTANA COMO CONJUNTO, no commit a commit, y la diferencia importa: si cambias
+//     una doctrina y subes su version tres commits despues, la deuda esta SALDADA y la puerta no
+//     tiene nada que denunciar. Juzgar commit a commit convertiria un arreglo correcto en un
+//     reproche permanente -- y una puerta que se queja de algo ya arreglado se acaba ignorando,
+//     que es como se pierde una puerta. Lo que sigue cazando es el caso real: cerrar la ventana
+//     con una doctrina cambiada y su version intacta. (Cazado asi el mismo dia que se escribio:
+//     cinco doctrinas, una de ellas del propio coordinador veinte minutos antes.)
 function puertaDoctrinasVersionadas(commits) {
-  const fallos = [];
+  const porFichero = new Map();   // fichero → { sustantivo, subeVersion, donde }
   for (const c of commits) {
     const tocados = git(['show', '--name-only', '--format=', c]).split('\n').filter(Boolean);
     for (const f of tocados) {
@@ -157,7 +164,6 @@ function puertaDoctrinasVersionadas(commits) {
       if (basename(f).startsWith('MEMORY-')) continue;          // el indice es derivado
       const diff = git(['show', '--format=', '--unified=0', c, '--', f]);
       const lineas = diff.split('\n').filter((l) => /^[+-]/.test(l) && !/^([+-][+-][+-])/.test(l));
-      const subeVersion = lineas.some((l) => /^\+version:\s*[\d.]+/.test(l));
       // Cambios que NO exigen subir version: el propio frontmatter derivado y las lineas de changelog.
       const sustantivo = lineas.some((l) => {
         const cuerpo = l.slice(1).trim();
@@ -166,10 +172,17 @@ function puertaDoctrinasVersionadas(commits) {
         if (cuerpo.startsWith('> **v') || cuerpo.startsWith('> Pieza de catálogo')) return false;
         return true;
       });
-      if (sustantivo && !subeVersion) fallos.push(`${c.slice(0, 7)} cambia ${f} sin subir \`version\``);
+      const acumulado = porFichero.get(f) || { sustantivo: false, subeVersion: false, donde: [] };
+      if (sustantivo) { acumulado.sustantivo = true; acumulado.donde.push(c.slice(0, 7)); }
+      if (lineas.some((l) => /^\+version:\s*[\d.]+/.test(l))) acumulado.subeVersion = true;
+      porFichero.set(f, acumulado);
     }
   }
-  if (!fallos.length) return anota('doctrinas al dia', true, 'toda doctrina cambiada subio su version en el mismo commit');
+  const fallos = [];
+  for (const [f, a] of porFichero) {
+    if (a.sustantivo && !a.subeVersion) fallos.push(`${f} cambia en ${a.donde.join(', ')} y su \`version\` sigue intacta`);
+  }
+  if (!fallos.length) return anota('doctrinas al dia', true, `${porFichero.size} doctrina(s) tocada(s) en la ventana, todas con su version al dia`);
   for (const f of fallos) anota('doctrinas al dia', false, f);
 }
 
