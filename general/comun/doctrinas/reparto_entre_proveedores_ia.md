@@ -39,7 +39,7 @@ De ahí se sigue algo que conviene decir explícitamente para no minusvalorar al
 
 ## Qué material puede salir, y qué no sale nunca
 
-**La frontera NO es "datos personales sí o no". Es esta, y la fijó el director el 2026-08-14:**
+**La frontera NO es "datos personales sí o no". Es esta, y la fijó el director el 2026-08-13:**
 
 - **Nunca sale, a ningún servicio, por muy buena que sea su política de datos: contraseñas, claves de API, tokens, certificados, semillas de recuperación.** Un secreto filtrado **compromete un sistema**; un dato personal filtrado es un problema distinto y de otra magnitud. Confundirlos lleva a proteger mal las dos cosas.
 - **A un cuaderno cerrado —el que no entrena con lo que se le sube y solo responde de sus fuentes— sí puede ir el material de trabajo**, incluida documentación con datos del hogar. Ese es el punto: convertirlo en **el sitio donde vive la documentación técnica que hay que consultar**, en vez de leerla entera cada vez.

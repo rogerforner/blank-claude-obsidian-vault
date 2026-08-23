@@ -22,6 +22,15 @@
 //   4. EJECUTA EL VERIFICADOR del kit y avisa SOLO si sale en rojo (desde 2026-08-23). Es el
 //      equivalente a la prueba basica de arranque del arnes de referencia: detectar lo que la
 //      sesion anterior dejo roto ANTES de tocar nada, en vez de descubrirlo al ir a commitear.
+//   5. VUELCA EL TRABAJO EN CURSO de todo el vault (desde 2026-08-23): las lineas abiertas de
+//      cada `trabajo-en-curso.md`, el de la raiz y el de cada asunto. Cierra dos huecos que
+//      estaban escritos por separado en la cola y eran el mismo: (a) la mejora que pidio el
+//      coordinador de `climatizacion` -- antes de mandar un handoff hay que saber si el
+//      destinatario ya tiene ese trabajo abierto --, y (b) el buzon para sesiones apagadas,
+//      que no necesitaba herramienta nueva porque el fichero YA es un buzon persistente; lo
+//      que faltaba era que alguien lo leyera al arrancar sin tener que acordarse.
+//      Se busca desde la RAIZ DEL VAULT, no desde el directorio de trabajo, para que un
+//      coordinador de asunto vea tambien lo de los demas sin poder escribir en su contenedor.
 //
 // Nunca borra nada trackeado. Siempre termina con exit 0 (jamás rompe el arranque).
 // Modo prueba: LIMPIEZA_DRY_RUN=1 → reporta lo que borraría, sin borrar.
@@ -30,7 +39,7 @@
 //   contenedor: node ${CLAUDE_PROJECT_DIR}/../../general/comun/hooks/limpieza-coordinacion.mjs
 //   raíz:       node ${CLAUDE_PROJECT_DIR}/general/comun/hooks/limpieza-coordinacion.mjs
 
-import { readdirSync, statSync, rmSync, existsSync } from 'node:fs';
+import { readdirSync, statSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { join, basename, dirname } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
@@ -87,6 +96,57 @@ function seriesKey(file) {
   const b = basename(file).replace(/\.md$/i, '');
   const stripped = b.replace(/[-_]?\d{4}-\d{2}-\d{2}.*$/, '');
   return dirname(file) + '::' + (stripped || b);
+}
+
+// Raiz del vault: la carpeta que contiene `_meta/verificar-kit.mjs`, subiendo desde ROOT.
+// Un coordinador de asunto arranca con ROOT en su contenedor, asi que sin esto solo veria
+// lo suyo -- y el aviso serviria justo para lo contrario de para lo que existe.
+function raizDelVault() {
+  let dir = ROOT;
+  for (let i = 0; i < 4; i++) {
+    if (existsSync(join(dir, '_meta', 'verificar-kit.mjs'))) return dir;
+    const padre = dirname(dir);
+    if (padre === dir) break;
+    dir = padre;
+  }
+  return null;
+}
+
+// Lineas `- [ABIERTO AAAA-MM-DD] ...` de los `trabajo-en-curso.md` del vault. El formato lo
+// comprueba el verificador (regla 12): si deriva, el hook deja de leerlas y el aviso se
+// perderia EN SILENCIO, que es el peor modo de fallo de una pieza de higiene.
+const ABIERTO = /^- \[ABIERTO (\d{4}-\d{2}-\d{2})\] (.+)$/;
+function trabajoEnCurso(raiz) {
+  if (!raiz) return [];
+  const encontrados = [];
+  const buscar = (dir, prof) => {
+    if (prof > 3) return;
+    let entries;
+    try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      if (e.isDirectory()) {
+        if (SKIP_DIRS.has(e.name)) continue;
+        buscar(join(dir, e.name), prof + 1);
+      } else if (e.isFile() && e.name === 'trabajo-en-curso.md') {
+        encontrados.push(join(dir, e.name));
+      }
+    }
+  };
+  buscar(raiz, 0);
+  const out = [];
+  for (const f of encontrados.sort()) {
+    let texto;
+    try { texto = readFileSync(f, 'utf8'); } catch { continue; }
+    let enEjemplo = false;
+    for (const linea of texto.split('\n')) {
+      // Las lineas de dentro de un bloque de codigo son el EJEMPLO de formato, no trabajo real.
+      if (linea.startsWith('```')) { enEjemplo = !enEjemplo; continue; }
+      if (enEjemplo) continue;
+      const m = linea.match(ABIERTO);
+      if (m) out.push([f, m[1], m[2]]);
+    }
+  }
+  return out;
 }
 
 function main() {
@@ -205,7 +265,22 @@ function main() {
     }
   } catch { /* el verificador nunca rompe el arranque */ }
 
-  const salida = [...sello, ...lines, ...rojo];
+  // --- trabajo en curso de todo el vault (SIEMPRE que haya alguno) ---
+  const raiz = raizDelVault();
+  const curso = [];
+  try {
+    const abiertos = trabajoEnCurso(raiz);
+    if (abiertos.length) {
+      curso.push(`[EN CURSO] ${abiertos.length} trabajo(s) abierto(s) en el vault. Antes de abrir un frente nuevo o de mandar un handoff, mira si ya esta aqui — y si abres uno que sobrevive a tu sesion, anadelo a su fichero en el mismo commit:`);
+      for (const [f, fecha, texto] of abiertos) {
+        const dueno = f.startsWith(raiz) ? f.slice(raiz.length + 1).replace(/\\/g, '/') : f;
+        curso.push(`  - (desde ${fecha}) ${texto}`);
+        curso.push(`      ${dueno}`);
+      }
+    }
+  } catch { /* el volcado nunca rompe el arranque */ }
+
+  const salida = [...sello, ...lines, ...rojo, ...curso];
   if (salida.length) process.stdout.write(salida.join('\n') + '\n');
 }
 

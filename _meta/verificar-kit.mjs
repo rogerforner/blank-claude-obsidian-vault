@@ -187,7 +187,14 @@ for (const f of md.filter(zonaDeEstiloEstricto)) {
 // Sintaxis: `caduca: AAAA-MM-DD` en el frontmatter, o `[CADUCA AAAA-MM-DD]` en el cuerpo.
 // El disparador NO es un planificador externo: es este verificador, que ya se ejecuta tras
 // cualquier cambio del kit y ahora tambien al arrancar la sesion (hook de coordinacion).
-const HOY = new Date().toISOString().slice(0, 10);
+// Fecha LOCAL, no UTC. `toISOString()` da UTC, y con el equipo en UTC+2 eso significa que entre
+// medianoche y las dos de la madrugada el verificador cree que sigue siendo ayer: cualquier cosa
+// fechada hoy con el reloj local sale como "fecha futura". Cazado en vivo el 2026-08-24 a las
+// 00:0x escribiendo un cierre con la fecha del dia. El hook de arranque ya sellaba la fecha local,
+// asi que las dos piezas del kit que hablan de "hoy" decian dias distintos durante dos horas.
+const ahoraLocal = new Date();
+const HOY = new Date(ahoraLocal.getTime() - ahoraLocal.getTimezoneOffset() * 60000)
+  .toISOString().slice(0, 10);
 const CADUCA = /(?:^caduca:\s*|\[CADUCA\s+)(\d{4}-\d{2}-\d{2})/gm;
 for (const f of md) {
   const t = readFileSync(f, 'utf8');
@@ -238,6 +245,104 @@ try {
     }
   }
 } catch { /* si el generador no esta, esta regla simplemente no aplica */ }
+
+// --- 12. el fichero de TRABAJO EN CURSO se mantiene legible para el hook ---
+// El hook de arranque vuelca las lineas abiertas de cada `trabajo-en-curso.md` por contexto:
+// eso es lo unico que convierte el fichero en mecanismo, porque nadie tiene que acordarse de
+// abrirlo. El hook las reconoce solo por su prefijo `- [ABIERTO fecha]`, A PROPOSITO laxo: una
+// linea mal escrita se vuelca igual, mutilada, en vez de desaparecer del aviso. Fallar a la
+// vista es mejor que fallar en silencio. Lo que esta regla protege es lo OTRO -- que la linea
+// diga de QUIEN es el trabajo y DONDE vive --, porque sin esos dos campos el volcado no sirve
+// para lo unico que existe: saber a quien preguntar antes de abrir el mismo frente.
+// (La primera redaccion de este comentario decia que el hook dejaria de volcarla. Se probo y era
+// FALSO; queda escrito porque el error es el que el kit persigue: justificar sin comprobar.)
+// Las lineas de dentro de un bloque de codigo son el ejemplo de formato, no trabajo declarado.
+const EN_CURSO_OK = /^- \[ABIERTO \d{4}-\d{2}-\d{2}\] \*\*.+\*\* · dueño: `[^`]+` · artefacto: `[^`]+` — .+$/;
+for (const f of md.filter((x) => basename(x) === 'trabajo-en-curso.md')) {
+  const lineas = readFileSync(f, 'utf8').split('\n');
+  let enEjemplo = false;
+  lineas.forEach((linea, i) => {
+    if (linea.startsWith('```')) { enEjemplo = !enEjemplo; return; }
+    if (enEjemplo) return;
+    if (!linea.startsWith('- [ABIERTO')) return;
+    if (!EN_CURSO_OK.test(linea)) {
+      nota('trabajo en curso ilegible', f, `linea ${i + 1}: el hook la volcara sin dueño ni artefacto, o sea sin lo que sirve para algo — formato: - [ABIERTO AAAA-MM-DD] **que** · dueño: \`quien\` · artefacto: \`ruta\` — estado`);
+    }
+  });
+}
+
+// --- 13. cuantas reglas tiene el verificador NO se escribe a mano -------
+// Aparecio solo, y por eso esta aqui: al anadir la regla 12 habia TRES sitios distintos
+// diciendo "diez reglas" -- el README publico, el informe de metodo y el indice de `_meta/` --
+// cuando ya eran once desde el dia anterior. Nadie miente en ninguno; simplemente el numero se
+// copio a mano en cuatro sitios y solo se actualizo en uno. Es el mismo fallo que la regla 11
+// persigue en el indice de doctrinas: un dato derivable escrito a mano deriva en silencio, y
+// releyendo no se nota porque cada frase es plausible por separado.
+// AMBITO: lo que es METODO. El registro -- historico, bitacora, informes y los changelog de las
+// doctrinas -- NO se reescribe: alli "ocho reglas" era cierto cuando se escribio. Tambien quedan
+// fuera los handoffs, que son efimeros y se borran solos.
+const REGLAS_REALES = new Set([...readFileSync(fileURLToPath(import.meta.url), 'utf8')
+  .matchAll(/^\/\/ --- (\d+)\./gm)].map((m) => Number(m[1]))).size;
+const PALABRAS = { cinco: 5, seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10, once: 11,
+  doce: 12, trece: 13, catorce: 14, quince: 15, dieciseis: 16, diecisiete: 17, dieciocho: 18 };
+const ES_REGISTRO = (f) => /historico-kit\.md$|bitacora\.md$|brief-.*\.md$|handoff-.*\.md$|sintesis-.*\.md$/.test(f);
+const CUENTA = /\*{0,2}(\d{1,2}|[A-Za-zÁÉÍÓÚáéíóúñ]+)\*{0,2}\s+regla/gi;
+for (const f of md.filter((x) => !ES_REGISTRO(x))) {
+  const lineas = readFileSync(f, 'utf8').split('\n');
+  lineas.forEach((linea, i) => {
+    if (linea.startsWith('> **v')) return;                      // changelog: es registro
+    if (!/verificar-kit|verificador/i.test(linea)) return;       // solo donde se habla de ESTE script
+    for (const m of linea.matchAll(CUENTA)) {
+      const crudo = m[1].toLowerCase();
+      const n = /^\d+$/.test(crudo) ? Number(crudo) : PALABRAS[crudo.normalize('NFD').replace(/[̀-ͯ]/g, '')];
+      if (n === undefined) continue;                             // "las reglas", "sus reglas": no es una cuenta
+      if (n !== REGLAS_REALES) {
+        nota('cuenta de reglas', f, `linea ${i + 1}: dice ${n} regla(s) y el verificador tiene ${REGLAS_REALES} — no se escribe a mano, se cuenta`);
+      }
+    }
+  });
+}
+
+// --- 14. un asunto con SOFTWARE no puede existir sin su ficha de emplazamiento ---
+// La brecha que dejo el informe de OpenSpec, y era del kit, no de la herramienta: el checklist
+// obliga EN PROSA a la ficha de emplazamiento y al perfil de permisos correcto, y nada impedia
+// arrancar sin ellos. El propio kit tiene escrito que una regla que depende de que alguien se
+// acuerde no es una regla, asi que se estaba incumpliendo a si mismo.
+// ACOTADA A PROPOSITO, porque esto se hace mal si se automatiza de mas: NO se comprueba el
+// contenido de la ficha (eso es criterio, y una ficha rellenada a la fuerza para callar al
+// verificador es peor que ninguna), solo que EXISTA cuando el asunto es de software. Y no se
+// exige a nadie declarar un perfil: los asuntos que arrancaron antes de que el paso 6-bis
+// existiera no declaran ninguno, y sacarlos en rojo por trabajo que el general no puede tocar
+// -- los contenedores son de sus coordinadores -- convertiria el verificador en ruido.
+// Dos detonantes independientes: lo DECLARADO en el charter y lo que se ve DE HECHO en el
+// contenedor. El segundo existe porque el caso que duele es justo el que no declaro nada.
+const asuntosDir = join(RAIZ, 'asuntos');
+if (existsSync(asuntosDir)) {
+  for (const nombre of readdirSync(asuntosDir, { withFileTypes: true })
+      .filter((e) => e.isDirectory()).map((e) => e.name)) {
+    const cont = join(asuntosDir, nombre);
+    const charter = join(cont, 'charter-coordinador.md');
+    if (!existsSync(charter)) continue;                       // sin charter no hay asunto que juzgar
+    const textoCharter = readFileSync(charter, 'utf8');
+    const declarado = /asunto con software/i.test(textoCharter) && !/\{\{PERFIL\}\}/.test(textoCharter);
+    const porElPack = new RegExp(`\\[\\[(${[...delPack].join('|')})\\]\\]|packs/codigo`).test(textoCharter);
+    const porElRepo = existsSync(join(cont, 'repo'));
+    if (!declarado && !porElPack && !porElRepo) continue;      // no es un asunto de software
+    const porQue = declarado ? 'su charter declara el perfil `asunto con software`'
+      : porElRepo ? 'tiene un `repo/` dentro del contenedor'
+      : 'su charter se apoya en el pack `codigo/`';
+    if (!existsSync(join(cont, 'docs', 'emplazamiento-runtime.md'))) {
+      nota('arranque de software incompleto', charter,
+        `${porQue}, y falta \`asuntos/${nombre}/docs/emplazamiento-runtime.md\` — sin ella nadie sabe donde vive el codigo ni como se entra a ejecutarlo (checklist-arranque paso 6-bis)`);
+    }
+    // El perfil de permisos solo se exige a quien lo declaro: deducirlo del `repo/` seria adivinar.
+    const settings = join(cont, '.claude', 'settings.json');
+    if (declarado && existsSync(settings) && !/docker|podman|kubectl/.test(readFileSync(settings, 'utf8'))) {
+      nota('arranque de software incompleto', settings,
+        `el asunto declara perfil de software pero su settings no es \`plantilla-settings-coordinador-software.json\` — le falta el comando que entra al runtime`);
+    }
+  }
+}
 
 // --- resultado ----------------------------------------------------------
 const revisados = `${md.length} markdown y ${mjs.length + jsonInicializador.length} script/config`;

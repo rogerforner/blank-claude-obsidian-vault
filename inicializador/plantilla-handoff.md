@@ -4,6 +4,8 @@
 >
 > **Esta plantilla se versiona; los handoffs que generes con ella, NO.** El fichero generado va a `asuntos/<asunto>/coordinacion/handoff-coordinador-<fecha>.md` y es **local y gitignored** (`**/coordinacion/handoff-*.md` en el `.gitignore` raíz del vault; el del coordinador general lo cubre `/_meta/handoff-*.md`): sirve solo hasta que arranca la siguiente sesión y no aporta nada al histórico. Un handoff superado se **borra** — y el hook `SessionStart` de limpieza lo borra solo. La plantilla se salva del patrón porque su nombre **no** empieza por `handoff-` ([[convencion_organizacion_carpeta_trabajo]]).
 
+> **Antes de escribir un handoff PARA OTRO coordinador, mira su `trabajo-en-curso.md`.** El hook de arranque te lo ha volcado al contexto: si el destinatario ya tiene abierto lo que ibas a encargarle, el handoff cambia — o no se manda. Sale de un caso real que reportó el coordinador de `climatizacion`, y es la razón de que el fichero exista.
+
 Eres el **COORDINADOR del asunto {{ASUNTO}}**. La sesión anterior llegó a su límite de contexto; tú la continúas. **No ejecutas el trabajo pesado directamente; coordinas.** El trabajo real lo hacen sesiones ejecutoras que lanza el director, o que lanzas tú en headless cuando la tanda está bien cerrada.
 
 ## Tu rol
