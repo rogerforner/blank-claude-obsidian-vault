@@ -66,7 +66,13 @@ Thumbs.db
 desktop.ini
 .DS_Store
 
-# Arboles de trabajo que crea una sesion de fondo antes de editar. Medido: aparecen como
-# untracked en el arbol principal y contaminan `git status`. No se versionan NUNCA: son
-# copias de trabajo, y lo que valga de ahi se integra a mano en el arbol principal.
+# Arboles de trabajo que crea una sesion de fondo antes de editar. Medido el 2026-08-14:
+# aparecen como untracked en el arbol principal y contaminan `git status`. No se versionan
+# NUNCA: son copias de trabajo, y lo que valga de ahi se integra a mano en el arbol principal.
 /.claude/worktrees/
+
+# Sello del Definition of Done: es el estado de ESTA copia de trabajo, no contenido del vault.
+# Lo escribe `_meta/dod.mjs` al cerrar en verde y lo compara el hook de arranque. Versionarlo
+# haria que un sello de otra maquina se leyera aqui como si fuera propio, que es justo la mentira
+# que el sello existe para impedir.
+/.dod-seal.json

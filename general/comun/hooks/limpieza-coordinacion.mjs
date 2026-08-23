@@ -31,6 +31,11 @@
 //      que faltaba era que alguien lo leyera al arrancar sin tener que acordarse.
 //      Se busca desde la RAIZ DEL VAULT, no desde el directorio de trabajo, para que un
 //      coordinador de asunto vea tambien lo de los demas sin poder escribir en su contenedor.
+//   6. DICE SI LA SESION ANTERIOR CERRO SU DoD (desde 2026-08-24). El DoD (`_meta/dod.mjs`) sella
+//      una huella del contenido del arbol al cerrar; aqui se compara esa huella con lo que hay.
+//      Si no hay sello, o el arbol cambio despues de sellarlo, la anterior cerro sin cruzar la
+//      puerta y esta sesion se entera ANTES de tocar nada. El aviso va al arranque a proposito:
+//      un hook de cierre no lo lee nadie, y bloquear el cierre castiga al que si esta delante.
 //
 // Nunca borra nada trackeado. Siempre termina con exit 0 (jamás rompe el arranque).
 // Modo prueba: LIMPIEZA_DRY_RUN=1 → reporta lo que borraría, sin borrar.
@@ -40,6 +45,7 @@
 //   raíz:       node ${CLAUDE_PROJECT_DIR}/general/comun/hooks/limpieza-coordinacion.mjs
 
 import { readdirSync, statSync, rmSync, existsSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join, basename, dirname } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
@@ -147,6 +153,31 @@ function trabajoEnCurso(raiz) {
     }
   }
   return out;
+}
+
+// Estado del sello del DoD de la sesion anterior. Devuelve null si este arbol no usa DoD.
+// Se compara por CONTENIDO -- misma huella que escribe `_meta/dod.mjs` -- para que tocar un
+// fichero despues de sellar invalide el sello solo, sin que nadie tenga que acordarse.
+function estadoDoD(raiz) {
+  if (!raiz || !existsSync(join(raiz, '_meta', 'dod.mjs'))) return null;
+  const sello = join(raiz, '.dod-seal.json');
+  if (!existsSync(sello)) return { ok: false, por: 'no hay sello: la sesion anterior cerro sin correr el DoD' };
+  let s;
+  try { s = JSON.parse(readFileSync(sello, 'utf8')); } catch { return { ok: false, por: 'el sello esta ilegible' }; }
+  let ficheros;
+  try {
+    ficheros = execFileSync('git', ['ls-files'], { cwd: raiz, encoding: 'utf8' }).split('\n').filter(Boolean).sort();
+  } catch { return null; }                                  // sin git no hay nada que comparar
+  const h = createHash('sha256');
+  let contados = 0;
+  for (const f of ficheros) {
+    const ruta = join(raiz, f);
+    if (!existsSync(ruta)) continue;
+    h.update(f); h.update(readFileSync(ruta)); contados++;
+  }
+  const actual = h.digest('hex').slice(0, 16);
+  if (actual === s.hash) return { ok: true, por: `sellado el ${String(s.fecha).slice(0, 16).replace('T', ' ')} sobre ${s.ficheros} ficheros` };
+  return { ok: false, por: `el sello es del ${String(s.fecha).slice(0, 16).replace('T', ' ')} y el arbol ha cambiado desde entonces (${s.ficheros} → ${contados} ficheros)` };
 }
 
 function main() {
@@ -280,7 +311,17 @@ function main() {
     }
   } catch { /* el volcado nunca rompe el arranque */ }
 
-  const salida = [...sello, ...lines, ...rojo, ...curso];
+  // --- estado del DoD de la sesion anterior ---
+  const dod = [];
+  try {
+    const e = estadoDoD(raiz);
+    if (e && !e.ok) {
+      dod.push(`[DoD] La sesion anterior NO cerro su Definition of Done — ${e.por}.`);
+      dod.push('  Antes de dar por bueno lo que encuentres, corre `node _meta/dod.mjs` y mira que puerta esta en rojo: puede haber efimeros sin retirar, una doctrina cambiada sin subir version, una cola por encima de su techo o trabajo sin commitear.');
+    }
+  } catch { /* el estado del DoD nunca rompe el arranque */ }
+
+  const salida = [...sello, ...lines, ...rojo, ...curso, ...dod];
   if (salida.length) process.stdout.write(salida.join('\n') + '\n');
 }
 

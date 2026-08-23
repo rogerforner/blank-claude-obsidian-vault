@@ -366,6 +366,8 @@ Su primer trabajo es **entender el expediente**: cronología y reconocimiento. Y
 6. **Inicializa el primer asunto** con [`inicializador/checklist-arranque.md`](inicializador/checklist-arranque.md), o con [`checklist-migracion-existentes.md`](inicializador/checklist-migracion-existentes.md) si ya viene en marcha. La carpeta `asuntos/` **no existe todavía**: aparece con el primero.
 7. **Comprueba que el kit está sano**: `node _meta/verificar-kit.mjs` tiene que salir en **verde**. Comprueba **catorce** reglas estructurales —enlaces colgados, índices desincronizados, rutas absolutas de máquina coladas en lo versionado, **datos cuya fecha de caducidad ya venció** y **fechas de estado imposibles, puestas en el futuro**—. **Y no se ajusta el verificador para que pase.**
 
+8. **Cierra cruzando el DoD**: `node _meta/dod.mjs`. El verificador dice si el kit está bien **escrito**; el DoD dice si el trabajo está bien **terminado**, que no es lo mismo — árbol limpio, efímeros ya cumplidos retirados, colas por debajo de su techo, y **documentación al día** (toda doctrina cambiada sube su versión en el mismo commit). Si pasa, sella una huella del **contenido** del árbol: si tocas algo después, el sello caduca solo y la sesión siguiente se entera al arrancar.
+
 **Lo que NO hay que hacer al arrancar:** rellenar carpetas por adelantado, instalar herramientas "por si acaso" ni traer todos los papeles de golpe. Cada pieza entra con un caso de uso concreto delante.
 
 ---

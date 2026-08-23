@@ -114,6 +114,8 @@ Ejemplos de cómo se escribe un criterio **comprobable** en un asunto:
 
 ## Definition of done (comandos exactos)
 
+> **Esto es la SEGUNDA capa.** Debajo hay un suelo que no se escribe aquí porque es igual para todas las tandas: el **DoD del vault** (`node _meta/dod.mjs`), que comprueba que el estado queda consistente para quien venga después — árbol limpio, efímeros retirados, techos, documentación al día. **Lo corre el coordinador**, que es quien ve el árbol entero. Lo de abajo es lo tuyo: el **producto** de esta tanda. → [[definition_of_done]]
+
 ```
 {{Los comandos que deben pasar en verde. En un asunto son verificaciones sobre el PRODUCTO:
  - recuento de ficheros del lote y cotejo contra lo que dice el escrito;
