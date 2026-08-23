@@ -138,7 +138,9 @@ La ejecutora **ejecuta estos comandos y reporta el output literal** antes de cer
 
 Dentro de ese límite: qué has hecho y **dónde** (ficheros y commits). El **output literal** de los comandos de la definition of done. Los criterios de aceptación, **uno por uno**, con la evidencia de que se cumplen. Lo que **NO** has hecho y por qué. Hallazgos y decisiones que tomaste tú. Y si algo de la especificación estaba mal o faltaba, **dilo explícitamente**: es lo que mejora la siguiente tanda.
 
-**Y una línea de constancia al arrancar:** con qué **modelo y esfuerzo** estás corriendo de verdad (`/status` lo dice, y el esfuerzo aparece junto al indicador de actividad). No existe ninguna variable que lo estampe sola: es convención, y sirve para saber después con qué se hizo un trabajo — sobre todo si un clasificador te cambió el modelo por el camino.
+**Y una línea de constancia al arrancar:** con qué **modelo** estás corriendo de verdad. Sirve para saber después con qué se hizo un trabajo, sobre todo si un clasificador te cambió el modelo por el camino.
+
+> **Ojo con el ESFUERZO, que no es simétrico** *(medido el 2026-08-21)*. **Una ejecutora headless NO puede declarar su esfuerzo real:** `/status` es un comando **del cliente**, no una herramienta, así que desde dentro no hay nada que lo exponga — y el perfil del fichero **no lo dice tampoco**, porque un `--effort` del lanzamiento lo pisa sin dejar rastro visible. *(Caso real: una tanda razonó, correctamente y con el fichero delante, que corría a `high`, cuando el lanzamiento le había pasado `max`.)* **Consecuencia práctica: no le pidas a la ejecutora que declare su esfuerzo — es un criterio que no puede cumplir por comando, y lo que devuelva será una deducción, no una medición.** Quien lo sabe es **quien lanza**, así que la constancia la deja **él** al anotar la tanda.
 
 ---
 
