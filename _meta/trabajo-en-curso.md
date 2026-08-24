@@ -13,7 +13,7 @@ Formato **exacto** —lo comprueba el verificador, porque un formato que deriva 
 ```
 
 - **`<quién>`** es el rol, no la persona: `coordinador-general`, `coordinador-climatizacion`, `coordinador-homeassistant`, `ejecutora-<nombre>`, `director`.
-- **`<artefacto>`** es dónde vive el trabajo. Si todavía no hay fichero, un guion.
+- **`<artefacto>` va SIEMPRE desde la raíz del vault**, aunque el fichero viva en un contenedor: `asuntos/<asunto>/cola-pendientes.md`, no `cola-pendientes.md`. **Han tropezado ya dos sesiones con esto**, porque la ruta parece relativa a la carpeta donde está escrita. Quien la lee —el hook y la puerta del DoD— trabaja sobre el vault entero. Si todavía no hay fichero, un guion.
 - **La fecha es la de apertura**, no la de la última vez que se tocó. Si una línea lleva semanas abierta, eso es exactamente lo que hay que ver.
 
 ## Cuándo se toca

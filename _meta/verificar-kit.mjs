@@ -266,7 +266,7 @@ for (const f of md.filter((x) => basename(x) === 'trabajo-en-curso.md')) {
     if (enEjemplo) return;
     if (!linea.startsWith('- [ABIERTO')) return;
     if (!EN_CURSO_OK.test(linea)) {
-      nota('trabajo en curso ilegible', f, `linea ${i + 1}: el hook la volcara sin dueño ni artefacto, o sea sin lo que sirve para algo — formato: - [ABIERTO AAAA-MM-DD] **que** · dueño: \`quien\` · artefacto: \`ruta\` — estado`);
+      nota('trabajo en curso ilegible', f, `linea ${i + 1}: el hook la volcara sin dueño ni artefacto, o sea sin lo que sirve para algo — formato: - [ABIERTO AAAA-MM-DD] **que** · dueño: \`quien\` · artefacto: \`ruta DESDE LA RAIZ DEL VAULT\` — estado`);
     }
   });
 }

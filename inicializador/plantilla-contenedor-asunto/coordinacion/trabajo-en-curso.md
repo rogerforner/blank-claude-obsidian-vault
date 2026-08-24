@@ -13,6 +13,7 @@ Formato **exacto**; lo comprueba el verificador del kit:
 ```
 
 - **`<quién>`** es el rol: `coordinador-{{ASUNTO}}`, `ejecutora-<nombre>`, `director`.
+- **`<artefacto>` va SIEMPRE desde la raíz del vault**, no desde tu contenedor: `asuntos/{{SLUG}}/cola-pendientes.md`, no `cola-pendientes.md`. **Es la piedra con la que han tropezado ya dos sesiones**, porque el fichero vive en tu carpeta y la ruta parece relativa a ella. El motivo es que quien lo lee —el hook y la puerta del DoD— trabaja sobre el vault entero, no sobre un contenedor. Si todavía no hay fichero, un guion.
 - **La fecha es la de apertura.** Si una línea lleva semanas ahí, eso es justo lo que hay que ver.
 - **Al cerrar el frente, borra la línea.** Git es el histórico; aquí solo vive lo abierto.
 - **Lo que empieza y acaba en tu misma sesión no entra.**

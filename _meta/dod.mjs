@@ -209,7 +209,7 @@ function puertaTrabajoEnCurso() {
       const m = linea.match(/artefacto: `([^`]+)`/);
       if (!m || m[1] === '-') return;
       const destino = join(RAIZ, m[1].replace(/^\.\//, ''));
-      if (!existsSync(destino)) fallos.push(`${rel} linea ${i + 1}: el artefacto \`${m[1]}\` no existe`);
+      if (!existsSync(destino)) fallos.push(`${rel} linea ${i + 1}: el artefacto \`${m[1]}\` no existe — la ruta va DESDE LA RAIZ DEL VAULT, no desde el contenedor donde escribes`);
     });
   }
   if (!fallos.length) return anota('trabajo en curso', true, 'los artefactos declarados existen');
