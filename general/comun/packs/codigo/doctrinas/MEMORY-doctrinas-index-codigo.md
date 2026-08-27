@@ -2,7 +2,7 @@
 
 > **Este pack presupone el core.** No es un catálogo alternativo: es un **añadido** a `general/comun/doctrinas/`, que se instala **encima** y **nunca en lugar de él**. Las diez piezas de aquí dan por supuestas las del core (estructura del contenedor de asunto, verificación por el agente, modelo por tarea, commits sin coautor, guarda de ficheros sensibles…) y enlazan a ellas con normalidad. Instalar el pack sin el core deja doctrinas cojas; instalar el core sin el pack **no deja nada cojo** → [`../README.md`](../README.md) para qué es un pack y cómo se instala.
 >
-> **Aquí sí se habla de software.** El resto de la plantilla usa vocabulario neutro de dominio (asunto, producto, verificaciones); en este pack el vocabulario técnico —repositorio, rama, push, tests, lint, contenedores, gestor de paquetes— **se conserva a propósito**: el valor del pack es ser concreto. Cada pieza **se instala por copia** en `asuntos/<asunto>/memoria/`; **no se hereda**.
+> **Aquí sí se habla de software.** El resto de la plantilla usa vocabulario neutro de dominio (asunto, producto, verificaciones); en este pack el vocabulario técnico —repositorio, rama, push, tests, lint, contenedores, gestor de paquetes— **se conserva a propósito**: el valor del pack es ser concreto. Cada pieza **se LEE desde aquí**, igual que el core: no se copia al contenedor ni se hereda. Lo que activa el pack es **declararlo en el charter** del asunto, no copiar sus ficheros.
 
 ## Puertas de calidad y pruebas
 

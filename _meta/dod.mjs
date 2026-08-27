@@ -23,10 +23,11 @@
 //   node _meta/dod.mjs --sin-sello  → corre las puertas y no escribe el sello (ensayo)
 //   node _meta/dod.mjs --estado     → solo dice si el sello vigente cuadra con el arbol de ahora
 //
-// EL SELLO (`.dod-seal.json`, local y gitignored) guarda una HUELLA DEL CONTENIDO de lo versionado
-// -- por contenido y no por commit, asi que incluye lo que aun no esta commiteado -- mas la fecha
-// y que puertas corrieron. El hook de cierre lo compara con el arbol: si tocas algo despues de
-// sellar, el sello CADUCA SOLO. No hay forma de sellar y seguir editando sin que se note.
+// EL SELLO (`.dod-seal.json`, local y gitignored) guarda una HUELLA DEL CONTENIDO del arbol
+// -- por contenido y no por commit, asi que incluye lo que aun no esta commiteado, y tambien los
+// ficheros NUEVOS sin trackear -- mas la fecha y que puertas corrieron. El hook de arranque lo
+// compara con el arbol: si tocas o creas algo despues de sellar, el sello CADUCA SOLO. Lo unico
+// que queda fuera es lo gitignored, que es estado de esta copia y no del vault.
 //
 // El veredicto esta en el bloque de resumen, y el codigo de salida es 0/1. No lo encadenes con
 // tuberia: `node _meta/dod.mjs` a secas, igual que el verificador.
@@ -57,11 +58,19 @@ function fechaLocal() {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().replace('Z', '');
 }
 
-// --- huella del contenido versionado ------------------------------------
+// --- huella del contenido del arbol -------------------------------------
 // Por CONTENIDO: se leen los ficheros del disco, no el arbol de un commit. Un sello que colgara
 // del commit diria "todo bien" con cambios sin guardar encima, que es justo el caso que mas duele.
+// Y entran TAMBIEN los ficheros sin trackear que no esten ignorados (`--others --exclude-standard`),
+// no solo los del indice. La primera version usaba `ls-files` a secas y por tanto un fichero NUEVO
+// creado despues de sellar no invalidaba el sello -- justo lo que el comentario de arriba promete
+// que no puede pasar. Lo cazo una tanda de extraccion del propio metodo y se reprodujo en vivo:
+// tres ficheros sin trackear en el arbol y `--estado` respondiendo SELLO VALIDO. Los ignorados se
+// quedan fuera a proposito: son estado de esta copia de trabajo (el propio sello, la config local,
+// los handoffs), y meterlos haria caducar el sello por cosas que no son el vault.
 function huella() {
-  const ficheros = git(['ls-files']).split('\n').filter(Boolean).sort();
+  const ficheros = git(['ls-files', '--cached', '--others', '--exclude-standard'])
+    .split('\n').filter(Boolean).sort();
   const h = createHash('sha256');
   let contados = 0;
   for (const f of ficheros) {

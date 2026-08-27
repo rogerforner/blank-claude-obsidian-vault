@@ -1,14 +1,7 @@
 {
   "permissions": {
     "defaultMode": "acceptEdits",
-    "additionalDirectories": [
-      "../../general",
-      "../../_meta/memoria"
-    ],
     "allow": [
-      "WebSearch",
-      "WebFetch(domain:docs.anthropic.com)",
-      "WebFetch(domain:code.claude.com)",
       "Bash(ls:*)",
       "Bash(cat:*)",
       "Bash(pwd:*)",
@@ -20,19 +13,9 @@
       "Bash(file:*)",
       "Bash(stat:*)",
       "Bash(git:*)",
-      "PowerShell(git:*)",
-      "Bash(docker:*)",
-      "PowerShell(docker:*)",
-      "Bash(podman:*)",
-      "PowerShell(podman:*)",
-      "Bash(kubectl:*)",
-      "PowerShell(kubectl:*)"
+      "PowerShell(git:*)"
     ],
     "deny": [
-      "Write(//**/general/**)",
-      "Edit(//**/general/**)",
-      "Write(//**/_meta/**)",
-      "Edit(//**/_meta/**)",
       "Bash(git push:*)",
       "Bash(git remote:*)",
       "PowerShell(git push:*)",
@@ -48,6 +31,12 @@
       "Bash(sudo:*)",
       "Bash(su:*)",
       "Bash(rm -rf:*)",
+      "Write(//**/_meta/**)",
+      "Edit(//**/_meta/**)",
+      "Write(//**/general/**)",
+      "Edit(//**/general/**)",
+      "Write(//**/inicializador/**)",
+      "Edit(//**/inicializador/**)",
       "Read(~/.ssh/**)",
       "Read(~/.aws/**)",
       "Read(~/.gnupg/**)",
@@ -56,29 +45,15 @@
       "Read(//**/id_ed25519)"
     ]
   },
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PROJECT_DIR}/../../general/comun/hooks/limpieza-coordinacion.mjs\""
-          }
-        ]
-      }
-    ]
-  },
-  "model": "opus",
-  "effortLevel": "high",
+  "model": "sonnet",
+  "effortLevel": "medium",
   "outputStyle": "Concise",
-  "crossSessionInbound": "accept",
+  "crossSessionInbound": "refuse",
   "isolatePeerMachines": true,
   "attribution": {
-    "commit": "",
-    "pr": ""
+    "commit": ""
   },
   "env": {
-    "CLAUDE_CODE_DISABLE_FAST_MODE": "1",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "haiku"
+    "CLAUDE_CODE_DISABLE_FAST_MODE": "1"
   }
 }

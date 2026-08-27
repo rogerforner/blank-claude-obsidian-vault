@@ -162,7 +162,7 @@ Esto de aquí abajo es **sintaxis**: cómo se lanza la ejecutora.
 | Informe a fichero | `--output-format json` |
 | **Nombre de la sesión** (así la reconoces en el listado y puedes dirigirte a ella) | `--name "<nombre>"` |
 | Directorio adicional (solo para LEER) | `--add-dir` |
-| Fase de análisis, solo lectura | perfil de `settings.json` en modo plan |
+| Fase de análisis, solo lectura | `--settings inicializador/plantilla-settings-ejecutora.json` **y NO modo plan** — el read-only se comprueba al volver, no se impone: en modo plan la fase de análisis **no puede escribir su propio plan** |
 | Fase de ejecución | perfil por defecto del destino |
 | Tope de turnos y de gasto | `--max-turns`, `--max-budget-usd` |
 
@@ -183,7 +183,11 @@ cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "No eres el coordinador de est
 > **Tres trampas medidas al volver, y las tres hacen que una tanda vacía parezca buena** *(casos reales, 2026-08-14 y 2026-08-20)*:
 >
 > - **`subtype: success` NO significa trabajo hecho.** Es el veredicto del **runner**, no del modelo: una ejecutora que no hizo nada de lo encargado devolvió `success` igual. **El verde falso puede venir de la tubería y no del trabajo.** Lo que lo destapó fue un `wc -c` **desde fuera**, no su informe — que ni llegó a existir. **Comprueba el efecto en el disco, no el código de salida.**
-> - **El modo plan DESVÍA el entregable.** Si lanzas la fase de análisis con `--permission-mode plan` para tener barrera real de solo lectura, la hija puede **escribir su plan en `~/.claude/plans/`** en vez de devolverlo, y lo que te llega es una frase diciendo *"está en el plan"* — con el contenido fuera del working dir y recuperable solo del transcript. **Si quieres un fichero de una sesión en modo plan, dale permiso de escritura acotado a ese fichero o recoge la salida por redirección.** No des por hecho que el entregable aparecerá donde lo pediste.
+> - **[REGLA, 2026-08-27] Si la sesión no puede escribir su entregable, PARA Y DILO — no lo dejes donde caiga.** Es el caso que faltaba por escribir y se vivió entero: una tanda de extracción arrancó en modo plan sin que nadie lo pidiera, **hizo la investigación completa, gastó su presupuesto y no pudo entregar**. Lo hizo bien: paró en seco, dijo dónde había quedado el trabajo y por qué. Lo que **no** se hace es fingir que salió bien ni dar por entregado un fichero que está en otro sitio. **Y para el que lanza, la contrapartida: comprueba el disco, no el código de salida** — aquella tanda devolvió éxito.
+>
+> - **Fija el modo de permisos EXPLÍCITAMENTE al lanzar.** No des por hecho el que traiga por defecto: en esa misma tanda no se pasó ninguno y salió en modo plan. Una ejecutora que tiene que escribir se lanza con `--permission-mode acceptEdits`, y el perfil se pasa con `--settings inicializador/plantilla-settings-ejecutora.json` para que no herede el del coordinador — que es más amplio y trae el canal entre sesiones abierto.
+>
+> - **El modo plan DESVÍA el entregable.**> - **El modo plan DESVÍA el entregable.** Si lanzas la fase de análisis con `--permission-mode plan` para tener barrera real de solo lectura, la hija puede **escribir su plan en `~/.claude/plans/`** en vez de devolverlo, y lo que te llega es una frase diciendo *"está en el plan"* — con el contenido fuera del working dir y recuperable solo del transcript. **Si quieres un fichero de una sesión en modo plan, dale permiso de escritura acotado a ese fichero o recoge la salida por redirección.** No des por hecho que el entregable aparecerá donde lo pediste.
 >
 > - **`--output-format json` no emite NADA hasta que la tanda termina** *(medido el 2026-08-20)*. Si el watchdog la corta, no te queda **ni un byte**: ni informe, ni error, ni rastro de por dónde iba — solo un fichero de cero bytes y diez minutos perdidos. **Para cualquier tanda que pueda pasar de unos minutos, usa `--verbose --output-format stream-json`**, que escribe evento a evento: así ves que avanza y, si hay que matarla, conservas el trabajo hasta ahí. El JSON de una sola pieza vale para tandas cortas y para poco más.
 > - **Y el watchdog que manda es el MÁS CORTO de los dos.** Si tu llamante corta a los 10 minutos, poner 15 en el `timeout` no sirve de nada. Cuando la tanda pueda ser larga, **lánzala en segundo plano** y deja que el watchdog sea el tuyo.

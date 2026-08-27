@@ -41,7 +41,7 @@ Vale aquí con más motivo que en ningún otro perfil del kit: es el único con 
 ## Qué comprobar al instalarlo
 
 1. El `.json` **parsea**.
-2. Lanzado con cwd en `repo/`: `git push` **no pide confirmación de más** (o, si el `defaultMode` local pide aprobación puntual, no está bloqueado por un `deny`).
+2. **Lanzado con el cwd en el repositorio de código** —la ruta que registra `docs/emplazamiento-runtime.md` del asunto, que en el **caso normal está fuera del vault**; `repo/` dentro del contenedor solo si se declaró la excepción—: `git push` **no pide confirmación de más** (o, si el `defaultMode` local pide aprobación puntual, no está bloqueado por un `deny`). *(Esta línea decía "cwd en `repo/`" a secas y contradecía la cabecera de estas mismas notas, que sitúa el repositorio fuera del vault. Corregido el 2026-08-27: **la excepción no se nombra como si fuera el caso normal**, porque quien lee un procedimiento se queda con el ejemplo, no con la salvedad de otra página.)*
 3. `git remote add <url-de-prueba>` **se deniega**.
 4. Un comando denegado en el perfil del coordinador (usado en la medición en vivo) sigue denegado aquí también si coincide con esta lista — y **cualquier otro no cubierto por este `deny` pide confirmación**, no se ejecuta solo.
 5. No hay **ninguna ruta absoluta** de máquina en el fichero.

@@ -169,10 +169,22 @@ const RETIRADAS = [
     motivo: 'ningun mecanismo lo implementa, y cambiar de modelo cuesta un cache miss completo' },
 ];
 const sinCitas = (l) => l.replace(/"[^"\n]*"/g, '').replace(/[«“][^»”\n]*[»”]/g, '');
+// El enfasis se quita ANTES de buscar la frase retirada. Sin esto, escribir `se **instala por
+// copia**` se escapa: la cadena real lleva asteriscos en medio y deja de contener la frase. Y el
+// enfasis es justo lo que se le pone a una afirmacion importante, o sea que la regla fallaba
+// precisamente en el caso que mas importa. Cazado el 2026-08-27 al acotar la excepcion de arriba:
+// salto la copia del pack -- escrita en llano -- y NO la del catalogo, escrita en negrita.
+const sinEnfasis = (l) => l.replace(/[*_`]/g, '');
 for (const f of md.filter(zonaDeEstiloEstricto)) {
   readFileSync(f, 'utf8').split('\n').forEach((linea, i) => {
-    if (/^\s*>/.test(linea)) return;              // pie de doctrina / bloque de cita: describe, no afirma
-    const limpia = sinCitas(sinLiterales(linea)); // lo entrecomillado se esta citando, no diciendo
+    // La excepcion es SOLO para el pie y el changelog, que son REGISTRO: alli una redaccion
+    // retirada es historia y no se reescribe. Antes saltaba cualquier linea que empezara por `>`
+    // -- toda cita en bloque -- y por ahi se colo durante semanas la cabecera del indice del
+    // catalogo, que es una cita en bloque AFIRMANDO politica vigente: decia "se instala por copia"
+    // contra el `CLAUDE.md`, que dice que el catalogo se lee y no se copia. Lo cazo una tanda de
+    // extraccion del metodo, no el verificador. Una excepcion mas ancha que su motivo es un agujero.
+    if (/^\s*>\s*(\*\*v[\d.]|Pieza de catálogo|Adaptada al enfoque neutro)/.test(linea)) return;
+    const limpia = sinEnfasis(sinCitas(sinLiterales(linea))); // lo entrecomillado se cita, no se dice
     for (const r of RETIRADAS)
       if (limpia.toLowerCase().includes(r.frase.toLowerCase()))
         nota('redaccion retirada', f, `"${r.frase}" (retirada el ${r.desde}: ${r.motivo}) en la linea ${i + 1}`);

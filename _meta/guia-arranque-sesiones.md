@@ -12,12 +12,14 @@ Todo lo necesario para **abrir, relevar y cerrar** sesiones sobre este vault: la
 
 **4. El modelo y el esfuerzo ya NO los eliges tú al arrancar.** Desde el **2026-08-12** van escritos en el `settings.json` de cada perfil, porque una regla que depende de que alguien se acuerde de tocar un desplegable no es una regla. Cada sesión arranca sola con lo que le toca:
 
-| Sesión | Modelo | Esfuerzo |
-|---|---|---|
-| Coordinador general y de asunto | Opus 5 | `high` |
-| Consultor | Sonnet 5 | `medium` |
-| Ejecutora | Sonnet 5 | `medium` |
-| Sus subagentes | Haiku 4.5 | — |
+| Sesión | Modelo | Esfuerzo | Perfil |
+|---|---|---|---|
+| Coordinador general y de asunto | Opus 5 | `high` | `.claude/settings.json` de su carpeta |
+| Consultor | Sonnet 5 | `medium` | `plantilla-settings-consultor.json` |
+| Ejecutora | Sonnet 5 | `medium` | **`--settings inicializador/plantilla-settings-ejecutora.json`** (o `-codigo` si toca código) |
+| Sus subagentes | Haiku 4.5 | — | ninguno: **heredan el de la sesión que los lanza** |
+
+> **La columna del perfil es nueva (2026-08-27) y arregla algo que estaba roto en silencio: no tener perfil no significa correr sin permisos, significa correr con los del de al lado.** Hasta esa fecha no existía perfil de ejecutora no-código, así que una tanda lanzada desde la raíz del vault heredaba el del **coordinador general**: el modelo caro en vez del de volumen —esta misma tabla decía Sonnet y corría Opus—, el canal entre sesiones **abierto** cuando la regla dice que las ejecutoras lo tienen cerrado, y sin denegación sobre `general/`. **El perfil se pasa en el lanzamiento con `--settings`**, no se copia a ningún sitio: una ejecutora no vive en una carpeta, nace y muere con su tanda.
 
 **Tres cosas que conviene que sepas:**
 

@@ -23,7 +23,7 @@
 // El verificador lo llama en modo verificacion, asi que una ficha corregida sin su resumen
 // deja el kit en ROJO en vez de dejar una mentira suelta.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { join, dirname, resolve } from 'node:path';
+import { join, dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -79,9 +79,18 @@ for (const rel of INDICES) {
       continue;
     }
 
+    // La ruta del problema sale SIEMPRE relativa a la raiz del vault, igual que la del otro caso
+    // de abajo. Antes este emitia `m[3]` a secas -- el nombre de fichero suelto tal como aparece
+    // en el enlace del indice -- y quien lo consume (la regla 11 del verificador) lo convierte en
+    // ruta con `join(RAIZ, ...)`: el hallazgo salia apuntando a la raiz del vault en vez de a la
+    // carpeta de doctrinas, o sea a un fichero que no existe. Nunca se vio fallar porque hace
+    // falta una ficha sin `index_summary` para llegar aqui, y no ha habido ninguna desde que la
+    // regla existe. Un mensaje de error que nadie ha visto es tan de fiar como una puerta que
+    // nadie ha visto fallar.
+    const relFicha = relative(RAIZ, ficha).replace(/\\/g, '/');
     const resumen = leerResumen(txtFicha);
     if (resumen === null) {
-      problemas.push(`${m[3]} :: no declara "index_summary" en su frontmatter, asi que su linea del indice no tiene fuente`);
+      problemas.push(`${relFicha} :: no declara "index_summary" en su frontmatter, asi que su linea del indice no tiene fuente`);
       salida.push(linea);
       continue;
     }

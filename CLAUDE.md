@@ -21,7 +21,7 @@
 
 - **Higiene: lo efímero se borra, y se limpia también AL ARRANCAR.** Los **insumos ya ejecutados** —prompts cumplidos, briefs que ya tienen su informe— se **borran** (`git rm` + commit): git es el histórico y el resultado perdura en el informe, en la cola y en los commits. **Handoffs y buffers (`tmp-otros-actual.md`) son locales y gitignored.** Un **hook de arranque** —un script que se dispara solo al abrir la sesión— (`general/comun/hooks/limpieza-coordinacion.mjs`) auto-borra los handoffs superados y **avisa por contexto** de los trackeados que hay que quitar.
 
-- **Coordinas, NO ejecutas.** El trabajo **voluminoso** —transcribir un lote de escaneos, tabular cuarenta facturas, redactar un escrito largo, generar el documento maquetado— va a una **sesión ejecutora** con **contrato `.md`** (`inicializador/plantilla-tanda-ejecutora.md`: decisiones ya tomadas + criterios de aceptación + definition of done ejecutable), no a tu contexto. Tus **subagentes son solo de lectura**, con barrera técnica real: un perfil de `settings.json` en modo plan.
+- **Coordinas, NO ejecutas.** El trabajo **voluminoso** —transcribir un lote de escaneos, tabular cuarenta facturas, redactar un escrito largo, generar el documento maquetado— va a una **sesión ejecutora** con **contrato `.md`** (`inicializador/plantilla-tanda-ejecutora.md`: decisiones ya tomadas + criterios de aceptación + definition of done ejecutable), no a tu contexto. Tus **subagentes son solo de lectura**, y conviene saber **por qué**: no existe perfil propio para ellos —heredan el de la sesión que los lanza y no se pueden re-enraizar—, así que **ahí no hay barrera técnica, hay encargo**. Lo que sí es barrera es lo que denieguen los perfiles, y lo que lo hace barato es que su contexto muere con ellos.
 
 - **La ejecutora la puedes lanzar TÚ**, en modo no interactivo y acotado, recogiendo el informe en un `.md`: corre en un **proceso aparte con contexto limpio**, así que "coordinar ≠ ejecutar" se mantiene intacto. Condiciones: **credenciales de API en ningún sitio** —ni como variable de entorno **ni en un `.env` del proyecto**, que el agente también lee: en ambos casos **factura por API en silencio** en vez de consumir la suscripción, y hay caso documentado—, **watchdog o tope de tiempo** en el llamante, **baja concurrencia** (una o dos, nunca un enjambre) y entradas grandes **por ruta de fichero**. Antes de una tanda, **comprueba de forma positiva que la sesión está autenticada por cuenta y no por clave**; si dice clave, **para**. No hay tope de gasto configurable en una cuenta personal: el control es **por ausencia de claves y de créditos**, no por candado. La sintaxis concreta está en "Ejecución".
 
@@ -75,7 +75,8 @@ Lo de arriba es **método** y no cambia. Esto es **sintaxis**: cómo se lanza un
 | Directorio adicional | `--add-dir` (para lo que solo hay que leer) |
 | Tope de turnos y gasto | `--max-turns`, `--max-budget-usd` |
 | Modelo por rol | Opus 5 coordina · Sonnet 5 volumen · Haiku 4.5 subagentes y mecánica · Fable 5 escalada medida. **El reparto lo fija [[modelo_por_tarea]]; esta fila no lo repite** |
-| Sesión de solo lectura | perfil de `settings.json` con modo plan |
+| Sesión de solo lectura | `plantilla-settings-consultor.json` (`defaultMode: plan`) — **solo para quien no entrega ficheros**: en modo plan la sesión **no puede escribir su entregable** |
+| Sesión ejecutora | `--settings inicializador/plantilla-settings-ejecutora.json` (o `-codigo` si toca código) |
 | Cuota | `/usage` |
 | Modo que factura aparte | `/fast` **vetado por configuración** |
 

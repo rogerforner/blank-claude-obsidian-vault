@@ -166,7 +166,12 @@ function estadoDoD(raiz) {
   try { s = JSON.parse(readFileSync(sello, 'utf8')); } catch { return { ok: false, por: 'el sello esta ilegible' }; }
   let ficheros;
   try {
-    ficheros = execFileSync('git', ['ls-files'], { cwd: raiz, encoding: 'utf8' }).split('\n').filter(Boolean).sort();
+    // MISMA lista que `_meta/dod.mjs` calcula en su `huella()`: trackeados + nuevos sin ignorar.
+    // Si las dos no coinciden, el hook y el DoD dan veredictos distintos sobre el mismo sello, que
+    // es el fallo de fuente duplicada que este kit persigue. (La primera version de las dos usaba
+    // `ls-files` a secas y dejaba pasar los ficheros nuevos.)
+    ficheros = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'],
+      { cwd: raiz, encoding: 'utf8' }).split('\n').filter(Boolean).sort();
   } catch { return null; }                                  // sin git no hay nada que comparar
   const h = createHash('sha256');
   let contados = 0;
@@ -183,7 +188,16 @@ function estadoDoD(raiz) {
 function main() {
   const files = [];
   for (const z of ZONES) walk(join(ROOT, z), files);
-  if (files.length === 0) return;
+  // NO se sale aqui aunque `files` venga vacio, y esto costo encontrarlo: habia un `return` que
+  // cortaba el hook entero cuando no habia ningun .md en `coordinacion/`, `estudios/` ni `_meta/`
+  // bajo esta raiz. Pero de las seis cosas que hace este hook, solo las dos primeras -- borrar
+  // efimeros y avisar de trackeados -- dependen de esa lista. Las otras cuatro NO: el sello de
+  // fecha, el verificador, el volcado de trabajo en curso y el aviso del DoD tienen que salir
+  // SIEMPRE. Con el `return`, una sesion abierta en una carpeta sin efimeros arrancaba sin fecha,
+  // sin saber si el kit estaba en rojo y sin ver el trabajo en curso de nadie -- y en silencio,
+  // que es el peor modo de fallo para una pieza cuyo trabajo es avisar. Lo cazo una tanda de
+  // extraccion del propio metodo (2026-08-27) leyendo el codigo, no usandolo: por definicion,
+  // el caso que rompe es aquel en el que el hook no dice nada.
 
   const today = todayStr();
   const deleted = [];
