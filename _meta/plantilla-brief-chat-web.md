@@ -12,6 +12,10 @@
 
 ## Contexto verificado (para que no se re-derive)
 
+> **[REGLA, aprendida cara el 2026-08-27] Este apartado NO se escribe de memoria.** Se escribe **leyendo lo que el método tiene hoy** —las reglas, las plantillas, los ficheros de configuración—, no recordando lo que uno cree que tiene. **Lo que omitas aquí, la investigación te lo propondrá construir**, y volverá una recomendación madura, bien argumentada y **para algo que ya existe**. Pasó con dos de las tres propuestas de un informe: una pedía crear un fichero de estándares transversales —que ya era el fichero de reglas siempre activo— y otra pedía acotar una ceremonia **que ya estaba acotada, con su criterio y su coste medido**. El informe no se equivocó: **el brief no se lo había contado**.
+>
+> **Y el coste de esa omisión no es solo el trabajo perdido:** una propuesta de "crear X" cuando X existe es indistinguible, para quien lee el informe seis meses después, de una propuesta legítima. **Antes de mandar un brief, relee su contexto contra el árbol y pregúntate qué pieza real no has nombrado.**
+
 {{Lo que ya está confirmado y no hace falta investigar: qué herramientas se usan hoy, qué se descartó y por qué, qué restricción no se va a levantar. Marca explícitamente lo que es "a confirmar" — si va sin marcar, volverá dado por bueno.}}
 
 ## Restricciones duras (inviolables)
