@@ -66,6 +66,17 @@ Qué protege esta plantilla, y por qué cada cosa:
   - *Alcance real, dicho sin adornos:* esto ataja la **invocación directa** del binario, que es la vía por la que se usaría. No es un sandbox: no cubre que alguien lo envuelva en un script con otro nombre. Sirve para lo que tiene que servir — **que ninguna sesión lo lance por iniciativa propia creyendo que hace lo correcto** —, no para detener a quien quiera saltárselo a conciencia.
 - **`sudo` / `su` / `rm -rf` / `git config --global`** — suelo de seguridad mínimo.
 
+## Este perfil es un SUELO: el asunto lo endurece, y eso NO es deriva
+
+**La copia que vive en un contenedor puede y debe apartarse de esta plantilla**, y conviene decirlo porque una comparación mecánica lo leería como desviación. Lo legítimo es **hacia el lado duro**:
+
+- **Conceder lo que ese asunto necesita de verdad** —el servidor externo con el que trabaja, un intérprete concreto— y nada más.
+- **Y sobre todo, DENEGAR lo destructivo de esas herramientas nuevas.** Este es el punto que más se olvida: las listas de denegación de un kit se escriben pensando en ficheros y comandos, mientras que **una herramienta de un servidor externo actúa sobre el mundo real** — borra un dispositivo, retira una automatización, desarma una alarma. Si el asunto conecta una, **las operaciones irreversibles de esa herramienta van al `deny` de su perfil, nombradas una a una**.
+
+**Caso real (2026-08-27):** un asunto con servidor de domótica tenía en su perfil seis denegaciones propias —borrar dispositivo, borrar automatización, borrar guion, borrar escena, borrar panel, retirar integraciones— que esta plantilla no trae y no puede traer, porque no sabe qué conecta cada asunto. **Estaba bien hecho y no estaba declarado en ninguna parte**, así que parecía deriva. Lo que faltaba no era el endurecimiento: era escribir que es lo esperado.
+
+**Lo que sí sería deriva:** aflojar. Quitar de la copia una denegación que esta plantilla trae **no es adaptación, es un agujero**, y se trata como tal.
+
 ## Salvedades de portabilidad (leídas antes de fiarse)
 
 - **Un `deny` con ruta RELATIVA no funciona en Windows.** `Write(../../general/**)` **no** resuelve contra la ruta absoluta: se puede escribir en el catálogo igualmente. Por eso el deny del catálogo se expresa como **glob**: `//**/general/**` — el mismo estilo que el deny de claves privadas (`//**/id_rsa`), que sí funciona. **No lo cambies a ruta relativa "para que quede más limpio".**

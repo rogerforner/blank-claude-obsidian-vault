@@ -165,6 +165,8 @@ for (const dir of [...new Set(md.filter(esDoctrina).map(dirname))]) {
 const RETIRADAS = [
   { frase: 'se instala por copia', desde: '2026-08-01',
     motivo: 'el catalogo se LEE; no se copia al contenedor ni se hereda' },
+  { frase: 'copia a memoria/', desde: '2026-08-01',
+    motivo: 'es la misma politica retirada dicha con otras palabras: el catalogo se LEE y memoria/ es para lo propio del asunto' },
   { frase: 'Haiku redacta los commits', desde: '2026-08-12',
     motivo: 'ningun mecanismo lo implementa, y cambiar de modelo cuesta un cache miss completo' },
 ];
@@ -297,14 +299,25 @@ const REGLAS_REALES = new Set([...readFileSync(fileURLToPath(import.meta.url), '
   .matchAll(/^\/\/ --- (\d+)\./gm)].map((m) => Number(m[1]))).size;
 const PALABRAS = { cinco: 5, seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10, once: 11,
   doce: 12, trece: 13, catorce: 14, quince: 15, dieciseis: 16, diecisiete: 17, dieciocho: 18 };
-const ES_REGISTRO = (f) => /historico-kit\.md$|bitacora\.md$|brief-.*\.md$|handoff-.*\.md$|sintesis-.*\.md$/.test(f);
+// AMBITO: lo que es METODO. Queda fuera el REGISTRO -- lo que relata, cita o describe un estado
+// pasado: historico, bitacora, informes, sintesis, handoffs, extracciones y los changelog. Alli
+// "ocho reglas" era cierto cuando se escribio, y una frase como "nacio de que diez reglas decian
+// lo mismo" es historia correcta, no una cuenta desactualizada. Se anadio `extraccion-` el
+// 2026-08-27, cuando una extraccion del propio metodo salto por eso. NO es relajar el criterio:
+// es que esa pieza pertenece a una categoria que la regla ya excluia y el patron no nombraba.
+const ES_REGISTRO = (f) => /historico-kit\.md$|bitacora\.md$|brief-.*\.md$|handoff-.*\.md$|sintesis-.*\.md$|extraccion-.*\.md$|informe-.*\.md$/.test(f);
 const CUENTA = /\*{0,2}(\d{1,2}|[A-Za-zÁÉÍÓÚáéíóúñ]+)\*{0,2}\s+regla/gi;
 for (const f of md.filter((x) => !ES_REGISTRO(x))) {
   const lineas = readFileSync(f, 'utf8').split('\n');
   lineas.forEach((linea, i) => {
     if (linea.startsWith('> **v')) return;                      // changelog: es registro
     if (!/verificar-kit|verificador/i.test(linea)) return;       // solo donde se habla de ESTE script
-    for (const m of linea.matchAll(CUENTA)) {
+    // Lo entrecomillado y lo que va entre acentos graves se CITA, no se dice -- mismo criterio que
+    // la regla 8, que ya lo hacia y esta no. Sin esto, un documento de analisis que cita la cuenta
+    // de OTRO fichero se lleva el hallazgo como si la afirmara el. Cazado el 2026-08-27 por una
+    // extraccion del propio metodo que citaba tres cuentas ajenas en la misma linea.
+    const dicha = sinEnfasis(sinCitas(sinLiterales(linea)));
+    for (const m of dicha.matchAll(CUENTA)) {
       const crudo = m[1].toLowerCase();
       const n = /^\d+$/.test(crudo) ? Number(crudo) : PALABRAS[crudo.normalize('NFD').replace(/[̀-ͯ]/g, '')];
       if (n === undefined) continue;                             // "las reglas", "sus reglas": no es una cuenta
