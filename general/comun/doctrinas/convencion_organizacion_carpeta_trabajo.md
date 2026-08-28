@@ -2,7 +2,7 @@
 name: Convención de organización de la carpeta de trabajo
 description: La carpeta de coordinación mantiene en su raíz solo lo activo y lo vivo. Handoffs y buffers son LOCALES (gitignored, nunca se versionan); los prompts ejecutados y los briefs con informe se versionan en vuelo y se BORRAN al cumplir (git rm; git conserva el histórico). No se acumulan ficheros obsoletos. Y lo que se lee entero en cada arranque —cola, bitácora— tiene TECHO escrito, igual que el CLAUDE.md: 40.960 y 30.720 bytes de `wc -c`, comparados sin convertir.
 type: convention
-version: 2.8
+version: 2.9
 index_summary: >-
   Raíz solo con lo activo/vivo; prompts/briefs ejecutados se BORRAN (git es el histórico); handoffs y buffers son locales/gitignored; hook `SessionStart` que es el **ritual de arranque** —borra lo **superado por su serie** y lo **caducado a los 14 días**, **sella la fecha del sistema** y **ejecuta el verificador avisando solo si sale en rojo**— (sin lo segundo, un handoff con nombre único no se borraba nunca). **Lo que se lee entero en cada arranque tiene TECHO**: **40.960 bytes** la cola de un asunto, **30.720** la bitácora, comparados contra `wc -c` sin convertir, y lo cerrado baja al histórico (en bytes y no en líneas: 620 líneas de párrafo denso son 197 KB) — el `CLAUDE.md` ya lo tenía y los ficheros de estado no, que es como una cola llegó a costar 53.000 tokens por arranque. **Resumir TARDE produce desfase**: la conclusión sube a la cola en el mismo commit que genera el dato, o el fichero de estado deja de contar el estado — y eso no lo arregla podar. En un asunto en ejecución las palancas se agotan y se puede llegar al 97 % legítimamente; **entonces no se sube el techo, se decide qué se cierra**. Los originales no son efímeros: no se borran.
 ---
@@ -93,5 +93,18 @@ Buffer **exclusivo** de texto que el director pega como respuesta a la pregunta 
 
 Relacionada: [[feedback_prompt_delivery]], [[formato_prompts_markdown_limpio]], [[orquestacion_sesiones_por_herramienta]], [[estructura_contenedor_asunto]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. La versión vigente es la del frontmatter; el changelog de arriba la detalla. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente. *(Las copias ya instaladas se resincronizan por el coordinador del asunto; modelo snapshot.)*
+## Antes de archivar: cómo se comprueba que no entierras trabajo abierto
+
+**Es la operación más peligrosa del kit** —mover una sección cerrada al histórico— y ya ha rescatado algo **cuatro veces**. Pero la comprobación se hace a mano cada vez, y el 2026-08-28 **falló**: el patrón capturó una etiqueta de dentro de una **cita de código** (`grep '^- \[ABIERTO'` escrito como ejemplo), abortó por un falso positivo y **por poco tapa dos hallazgos reales**.
+
+**Procedimiento, con la cobertura declarada:**
+
+1. **Quita los literales entre acentos graves ANTES de buscar.** Una cita de código no es una marca. *(Es exactamente lo que las reglas del verificador ya hacían y lo que la comprobación a mano no hacía: el criterio existía, no se aplicó.)*
+2. **Busca TODAS las etiquetas que significan trabajo por hacer, no dos**: `PENDIENTE`, `ABIERTO`, `A CONFIRMAR`, `TODO`, `POR HACER`, `PARA EL DIRECTOR`, `EN STANDBY`, `CADUCA`. **Las dos que se rescataron ese día eran `PARA EL DIRECTOR` y `CADUCA`** — ninguna de las dos habría salido con un patrón de solo *pendiente* y *abierto*.
+3. **Lo que salga se RESCATA a la cola antes de mover el resto**, no se mueve "porque va con su bloque".
+4. **Escribe la cobertura, no solo el resultado.** *"Comprobado y sin trabajo abierto"* no dice nada; *"barrido de estas ocho etiquetas sobre el bloque, con los literales fuera, más lectura completa"* sí.
+
+**Y por qué esto NO se automatiza del todo:** decidir si algo es trabajo abierto **es criterio**, y una etiqueta es solo el indicio. El patrón se escribe para que nadie lo improvise peor; la lectura sigue siendo obligatoria.
+
+> Pieza de catálogo `general/comun/doctrinas/`. **v2.9 (2026-08-28): el procedimiento de la comprobación de trabajo abierto antes de archivar, con su cobertura.** Se hacía a mano cada vez y ese día **falló**: el patrón capturó una etiqueta de dentro de una **cita de código**, abortó por falso positivo y por poco tapa dos hallazgos reales — que resultaron ser `PARA EL DIRECTOR` y `CADUCA`, **ninguna de las cuales salía con un patrón de solo *pendiente* y *abierto***. Quedan escritos los cuatro pasos: quitar literales antes de buscar (lo que las reglas del verificador ya hacían y la comprobación a mano no), barrer las ocho etiquetas, **rescatar antes de mover**, y escribir la cobertura y no solo el resultado. **No se automatiza del todo a propósito:** decidir si algo es trabajo abierto es criterio, y la etiqueta solo es el indicio. La versión vigente es la del frontmatter; el changelog de arriba la detalla. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente. *(Las copias ya instaladas se resincronizan por el coordinador del asunto; modelo snapshot.)*
 > Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.

@@ -131,6 +131,22 @@ const esMio = (ruta) => AMBITO.prefijo
   ? ruta.startsWith(AMBITO.prefijo)
   : !/^asuntos\/[^/]+\//.test(ruta);
 
+// De quien es una ruta, para poder nombrarlo en el aviso.
+const duenoDe = (ruta) => (ruta.match(/^asuntos\/([^/]+)\//) || [, 'el general'])[1];
+
+// ANOTA SEGUN DE QUIEN SEA. Un hallazgo sobre algo que no es tuyo no puede pedirte una accion que
+// no puedes ejecutar: o se dice de quien es, o no se enseña. La primera version de esto se aplico
+// solo a la puerta de arbol limpio, y las otras cinco se quedaron con la forma vieja -- una de
+// ellas diciendole a un coordinador de asunto "poda antes de escribir largo" sobre un fichero del
+// general. Lo cazo el mismo coordinador, y su argumento es el que manda: *un aviso que no es para
+// ti se aprende a ignorar rapido, y el dia que el 97 % sea el tuyo ya no lo leeras*.
+//   - `bloquea`: si es tuyo, es rojo y la instruccion va dirigida a ti.
+//   - si es ajeno: nunca es rojo, se nombra al dueño y se dice que no es cosa tuya.
+function anotaPorAmbito(puerta, ruta, textoSiMio, { bloquea = true } = {}) {
+  if (esMio(ruta)) return anota(puerta, !bloquea, textoSiMio);
+  return anota(puerta, true, `${textoSiMio}  →  no es tuyo, es de \`${duenoDe(ruta)}\`: no lo toques ni lo podes; avisale si le bloquea a el`);
+}
+
 // --- 2. el arbol esta limpio, EN TU AMBITO -------------------------------
 // Cerrar con cambios sin commitear es la forma mas comun de perder trabajo entre sesiones: la
 // siguiente los encuentra sin saber de quien son ni si estaban terminados.
@@ -179,8 +195,8 @@ function puertaHigiene() {
   } catch { return anota('higiene', true, 'el hook no pudo listar (se salta, no se da por buena)'); }
   const pendientes = salida.split('\n').filter(Boolean);
   if (!pendientes.length) return anota('higiene', true, 'sin efimeros cumplidos por retirar');
-  anota('higiene', false, `${pendientes.length} efimero(s) trackeado(s) ya cumplidos — \`git rm\` los que no sigan en vuelo:`);
-  for (const f of pendientes) anota('higiene', false, '   ' + f.replace(RAIZ + '/', ''));
+  anota('higiene', true, `${pendientes.length} efimero(s) trackeado(s) ya cumplidos:`);
+  for (const f of pendientes) anotaPorAmbito('higiene', f.replace(RAIZ + '/', ''), `   ${f.replace(RAIZ + '/', '')} — \`git rm\` si ya cumplio`);
 }
 
 // --- 4. los techos de los ficheros que se leen enteros al arrancar ------
@@ -205,13 +221,17 @@ function puertaTechos() {
     const bytes = readFileSync(ruta).length;
     const pct = Math.round((bytes / techo) * 100);
     if (bytes > techo) {
-      malos++;
-      anota('techos', false, `${rel}: ${bytes} B de ${techo} (${pct} %) — POR ENCIMA del techo`);
+      if (esMio(rel)) malos++;
+      anotaPorAmbito('techos', rel, `${rel}: ${bytes} B de ${techo} (${pct} %) — POR ENCIMA del techo, podalo antes de cerrar`);
     } else if (pct >= 85) {
-      anota('techos', true, `${rel}: ${bytes} B (${pct} %) — cerca del techo, poda antes de escribir largo`);
+      anotaPorAmbito('techos', rel, `${rel}: ${bytes} B (${pct} %) — cerca del techo, poda antes de escribir largo`, { bloquea: false });
     }
   }
-  if (!malos) anota('techos', true, 'ninguna cola ni bitacora por encima de su techo');
+  // "malos" solo cuenta los TUYOS: el mensaje tiene que decirlo o se contradice con la linea de
+  // arriba, que puede estar declarando un techo ajeno superado.
+  // `malos` solo cuenta los TUYOS: el mensaje tiene que decirlo, o se contradice con la linea
+  // de arriba cuando esa esta declarando un techo AJENO superado.
+  if (!malos) anota('techos', true, `ninguna cola ni bitacora TUYA por encima de su techo (${AMBITO.quien})`);
 }
 
 // --- 5. la documentacion no se queda desfasada -------------------------
@@ -274,11 +294,11 @@ function puertaTrabajoEnCurso() {
       const m = linea.match(/artefacto: `([^`]+)`/);
       if (!m || m[1] === '-') return;
       const destino = join(RAIZ, m[1].replace(/^\.\//, ''));
-      if (!existsSync(destino)) fallos.push(`${rel} linea ${i + 1}: el artefacto \`${m[1]}\` no existe — la ruta va DESDE LA RAIZ DEL VAULT, no desde el contenedor donde escribes`);
+      if (!existsSync(destino)) fallos.push([rel, `${rel} linea ${i + 1}: el artefacto \`${m[1]}\` no existe — la ruta va DESDE LA RAIZ DEL VAULT, no desde el contenedor donde escribes`]);
     });
   }
   if (!fallos.length) return anota('trabajo en curso', true, 'los artefactos declarados existen');
-  for (const f of fallos) anota('trabajo en curso', false, f);
+  for (const [rel, texto] of fallos) anotaPorAmbito('trabajo en curso', rel, texto);
 }
 
 // (c) Si la sesion toco el catalogo o el inicializador, la plantilla tiene que quedar sincronizada.
