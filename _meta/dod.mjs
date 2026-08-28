@@ -93,19 +93,75 @@ function puertaVerificador() {
   } catch (e) {
     const salida = (e.stdout || '').trim().split('\n').filter(Boolean);
     anota('verificador', false, salida[0] || 'el verificador salio en rojo');
-    for (const l of salida.slice(1)) anota('verificador', false, '   ' + l.trim());
+    // El verificador SIGUE mirando el vault entero y SIGUE bloqueando aunque el hallazgo sea de
+    // otro contenedor, y eso es deliberado: a diferencia de un arbol sucio ajeno -- que no mueve a
+    // nadie mas que a su dueño --, un hallazgo del verificador es el kit REALMENTE incumplido, y
+    // que le salte a un tercero es lo que hace que llegue a quien puede arreglarlo. Paso el
+    // 2026-08-28: un coordinador vio en rojo el charter de OTRO asunto, avisó, y se arregló.
+    // Lo que si cambia es el mensaje: si el hallazgo no es de tu ambito, se te dice de quien es y
+    // que tu trabajo es AVISARLE, no arreglarlo. Un rojo que no dice a quien mueve deja parado al
+    // que lo ve sin activar al que puede actuar.
+    const ajenos = new Set();
+    for (const l of salida.slice(1)) {
+      anota('verificador', false, '   ' + l.trim());
+      const m = l.match(/asuntos\/([^/\s]+)\//);
+      if (m && !esMio(`asuntos/${m[1]}/`)) ajenos.add(m[1]);
+    }
+    if (ajenos.size) {
+      anota('verificador', false, `   → ${[...ajenos].map((a) => `\`${a}\``).join(', ')}: NO es tuyo y no lo toques. Avisa a su coordinador —por el canal si esta vivo, por handoff si no— y dilo en tu informe de cierre.`);
+    }
   }
 }
 
-// --- 2. el arbol esta limpio --------------------------------------------
+// --- ambito: que parte del arbol es TUYA ---------------------------------
+// Se deduce del directorio DESDE EL QUE SE INVOCA el DoD, igual que el cwd fija el rol de una
+// sesion. Un coordinador de asunto cierra desde su contenedor y responde de su contenedor; el
+// general cierra desde la raiz y responde de todo lo que no es un asunto ajeno.
+function ambitoPropio() {
+  const cwd = process.cwd();
+  if (cwd.startsWith(join(RAIZ, 'asuntos') + '/')) {
+    const resto = cwd.slice(join(RAIZ, 'asuntos').length + 1);
+    const nombre = resto.split('/')[0];
+    if (nombre) return { prefijo: `asuntos/${nombre}/`, quien: `coordinador de \`${nombre}\`` };
+  }
+  return { prefijo: null, quien: 'coordinador general' };   // null = todo salvo asuntos ajenos
+}
+const AMBITO = ambitoPropio();
+const esMio = (ruta) => AMBITO.prefijo
+  ? ruta.startsWith(AMBITO.prefijo)
+  : !/^asuntos\/[^/]+\//.test(ruta);
+
+// --- 2. el arbol esta limpio, EN TU AMBITO -------------------------------
 // Cerrar con cambios sin commitear es la forma mas comun de perder trabajo entre sesiones: la
 // siguiente los encuentra sin saber de quien son ni si estaban terminados.
+//
+// PERO SOLO BLOQUEA POR LO TUYO, y esto es una correccion del 2026-08-28. Antes miraba el arbol
+// ENTERO, asi que con dos sesiones vivas -- que es lo normal, no lo raro -- **ninguna podia cerrar
+// mientras la otra tuviera trabajo a medias**, por impecable que estuviera su contenedor. Lo
+// destaparon los dos coordinadores el mismo dia, por separado y sin poder sellar: uno con su
+// contenedor limpio y siete puertas en verde, bloqueado por cuatro ficheros del general.
+//
+// La otra salida que se propuso era acotar la puerta al contenedor y ya esta. Se descarto: eso
+// perderia lo unico que mira el CONJUNTO. Asi que lo ajeno **no bloquea pero SI se dice, con
+// nombre y en el sello**: nadie cierra en falso creyendo que el vault estaba entero, y nadie se
+// queda bloqueado por trabajo del que no responde ni puede tocar.
+let ajenoPendiente = [];
 function puertaArbolLimpio() {
   const sucio = git(['status', '--porcelain']).split('\n').filter(Boolean);
-  if (!sucio.length) return anota('arbol limpio', true, 'sin cambios pendientes');
-  anota('arbol limpio', false, `${sucio.length} fichero(s) sin commitear:`);
-  for (const l of sucio.slice(0, 12)) anota('arbol limpio', false, '   ' + l);
-  if (sucio.length > 12) anota('arbol limpio', false, `   ... y ${sucio.length - 12} mas`);
+  const ruta = (l) => l.slice(3).replace(/^"|"$/g, '').split(' -> ').pop();
+  const mios = sucio.filter((l) => esMio(ruta(l)));
+  ajenoPendiente = sucio.filter((l) => !esMio(ruta(l)));
+
+  if (ajenoPendiente.length) {
+    const duenos = [...new Set(ajenoPendiente.map((l) => (ruta(l).match(/^asuntos\/([^/]+)\//) || [, 'el general'])[1]))];
+    anota('arbol limpio', true, `${ajenoPendiente.length} fichero(s) sin commitear que NO son tuyos (${duenos.join(', ')}) — no te bloquean y no los toques; queda constancia en el sello`);
+  }
+  if (!mios.length) {
+    return anota('arbol limpio', true, `sin cambios pendientes en tu ambito (${AMBITO.quien})`);
+  }
+  anota('arbol limpio', false, `${mios.length} fichero(s) TUYOS sin commitear:`);
+  for (const l of mios.slice(0, 12)) anota('arbol limpio', false, '   ' + l);
+  if (mios.length > 12) anota('arbol limpio', false, `   ... y ${mios.length - 12} mas`);
 }
 
 // --- 3. higiene: nada efimero ya cumplido sigue vivo --------------------
@@ -329,6 +385,8 @@ const h = huella();
 if (!ARGS.has('--sin-sello')) {
   writeFileSync(SELLO, JSON.stringify({
     hash: h.hash, ficheros: h.ficheros, fecha: fechaLocal(), puertas: nombres,
+    cerradoPor: AMBITO.quien,
+    ajenoPendienteAlSellar: ajenoPendiente.length,
   }, null, 2) + '\n');
 }
 console.log(`\nRESULTADO: CERRADO — ${nombres.length} puertas en verde sobre ${h.ficheros} ficheros versionados.`);
