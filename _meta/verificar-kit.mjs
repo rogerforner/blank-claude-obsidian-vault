@@ -349,7 +349,17 @@ if (existsSync(asuntosDir)) {
     const charter = join(cont, 'charter-coordinador.md');
     if (!existsSync(charter)) continue;                       // sin charter no hay asunto que juzgar
     const textoCharter = readFileSync(charter, 'utf8');
-    const declarado = /asunto con software/i.test(textoCharter) && !/\{\{PERFIL\}\}/.test(textoCharter);
+    // Se mira SOLO la linea del encabezado del perfil, no el charter entero. Buscar la cadena en
+    // todo el fichero es un falso positivo garantizado, y ademas SISTEMATICO: la plantilla de
+    // charter invita a razonar por que se descarta cada uno de los otros tres perfiles, asi que
+    // **nombrar el perfil para DESCARTARLO bastaba para darlo por declarado**. Y fallaba en la
+    // direccion mala -- exigia ficha de emplazamiento y perfil de software a quien acababa de
+    // escribir que no es de software. Lo diagnostico el coordinador de `homeassistant` el
+    // 2026-08-28, con la linea del codigo en la mano, cuando le salto en rojo por una tabla en la
+    // que descartaba ese perfil. (Correccion en el verificador y no en su texto: un parche en el
+    // charter le habria funcionado a el y el asunto siguiente habria tropezado igual.)
+    const encabezado = (textoCharter.match(/^##+\s*Perfil del asunto:.*$/mi) || [''])[0];
+    const declarado = /asunto con software/i.test(encabezado) && !/\{\{PERFIL\}\}/.test(encabezado);
     const porElPack = new RegExp(`\\[\\[(${[...delPack].join('|')})\\]\\]|packs/codigo`).test(textoCharter);
     const porElRepo = existsSync(join(cont, 'repo'));
     if (!declarado && !porElPack && !porElRepo) continue;      // no es un asunto de software
