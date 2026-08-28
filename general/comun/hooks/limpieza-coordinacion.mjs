@@ -31,6 +31,12 @@
 //      que faltaba era que alguien lo leyera al arrancar sin tener que acordarse.
 //      Se busca desde la RAIZ DEL VAULT, no desde el directorio de trabajo, para que un
 //      coordinador de asunto vea tambien lo de los demas sin poder escribir en su contenedor.
+//   6bis. AVISA DE LOS HANDOFFS VIVOS que hay en tus zonas (desde 2026-08-28). Un handoff se borra
+//      cuando esta cumplido -- esa es la regla -- asi que uno que sigue ahi es, por definicion,
+//      trabajo sin despachar. Faltaba, y lo destapo el director: se le dejaron dos handoffs a dos
+//      coordinadores y las dos sesiones arrancaron SIN ENTERARSE, porque un handoff es un fichero
+//      y nadie les dijo que estaba. El aviso cuesta cuatro lineas y cierra el hueco que quedaba
+//      del "buzon para sesiones apagadas": el fichero ya era el buzon, pero nadie lo abria.
 //   6. DICE SI LA SESION ANTERIOR CERRO SU DoD (desde 2026-08-24). El DoD (`_meta/dod.mjs`) sella
 //      una huella del contenido del arbol al cerrar; aqui se compara esa huella con lo que hay.
 //      Si no hay sello, o el arbol cambio despues de sellarlo, la anterior cerro sin cruzar la
@@ -324,6 +330,22 @@ function main() {
       }
     }
   } catch { /* el volcado nunca rompe el arranque */ }
+
+  // --- handoffs vivos: los que quedaron tras la limpieza del punto 1 ---
+  // `handoffs` se listo ANTES de borrar, asi que se filtra por lo que sigue existiendo. No se
+  // intenta adivinar si ya se leyo: la regla es que un handoff cumplido se BORRA, asi que uno
+  // vivo es trabajo pendiente y avisar de el nunca es ruido.
+  const pendientes = [];
+  try {
+    for (const f of handoffs) {
+      if (!existsSync(f)) continue;                       // borrado hace un momento por superado
+      pendientes.push(rel(f));
+    }
+    if (pendientes.length) {
+      lines.push(`[HANDOFF] ${pendientes.length} handoff(s) sin despachar. Un handoff cumplido se BORRA, asi que si sigue aqui es trabajo pendiente — leelo antes de entrar en materia y borralo al cumplirlo:`);
+      for (const f of pendientes) lines.push(`  - ${f}`);
+    }
+  } catch { /* el aviso nunca rompe el arranque */ }
 
   // --- estado del DoD de la sesion anterior ---
   const dod = [];
