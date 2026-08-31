@@ -3,7 +3,7 @@
 //   node _meta/verificar-kit.mjs
 // Sale con codigo 0 si todo esta en verde, 1 si hay hallazgos.
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
-import { join, relative, basename, dirname } from 'node:path';
+import { join, relative, basename, dirname, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
@@ -376,6 +376,55 @@ if (existsSync(asuntosDir)) {
       nota('arranque de software incompleto', settings,
         `el asunto declara perfil de software pero su settings no es \`plantilla-settings-coordinador-software.json\` — le falta el comando que entra al runtime`);
     }
+  }
+}
+
+// --- 15. los enlaces RELATIVOS de markdown tambien resuelven ------------
+// La regla 2 verifica los `[[wikilinks]]` y por eso el grafo del metodo tiene CERO rotos. Pero los
+// enlaces markdown normales -- `[texto](../ruta.md)` -- no los miraba nadie, y ahi vive el 62 % del
+// corpus: los contenedores de asunto. Medido el 2026-08-31 al escribir esta regla: 554 enlaces
+// relativos y **10 rotos**, todos en asuntos, sin que nadie lo supiera.
+//
+// Y el patron de los 10 explica por que hacia falta: casi todos apuntan a ficheros que la HIGIENE
+// borro correctamente -- prompts cumplidos, plantillas retiradas --. O sea que el kit tenia una
+// regla que manda borrar el efimero y ninguna que avisara de los enlaces que ese borrado dejaba
+// colgados. Una pieza correcta creando trabajo invisible para otra.
+//
+// Sale del informe de RAG y grafos (2026-08-31) como el punto 1 de "que copiar sin adoptar nada":
+// extender al resto del vault la puerta determinista que el marco comun ya tenia. Se implementa
+// como regla propia y NO con un comprobador externo, que era la otra via: cero dependencias
+// nuevas, mismo formato de hallazgo, y falla en rojo igual que las otras catorce.
+const ENLACE_MD = /(?<!!)\[[^\]\n]*\]\(([^)\s]+)\)/g;
+for (const f of md) {
+  // Fuera los bloques de codigo Y los literales de una linea: `[texto](archivo.md)` escrito entre
+  // acentos graves es un EJEMPLO DE SINTAXIS, no un enlace. La primera version solo quitaba los
+  // bloques y denuncio justo eso en la plantilla del contenedor de asunto -- el fichero que
+  // ENSENA a escribir enlaces relativos --. Es la cuarta vez esta semana que una pieza nueva
+  // repite un criterio que el kit ya tenia resuelto (la regla 2 usa `sinLiterales` desde siempre):
+  // un criterio resuelto en un sitio no esta resuelto en el kit hasta que se aplica donde se
+  // vuelve a necesitar.
+  const texto = sinLiterales(readFileSync(f, 'utf8').replace(/```[\s\S]*?```/g, ''));
+  for (const m of texto.matchAll(ENLACE_MD)) {
+    const crudo = m[1].trim();
+    // Fuera: web, correo, anclas del propio fichero y esquemas raros. Solo se juzga lo local.
+    if (/^(https?:|mailto:|#|<)/.test(crudo)) continue;
+    const rel = decodeURIComponent(crudo.split('#')[0].split('?')[0]);
+    if (!rel) continue;                                   // enlace solo a un ancla: no es ruta
+    const destino = resolve(dirname(f), rel);
+    if (existsSync(destino)) continue;
+    // Segunda oportunidad por NORMALIZACION UNICODE: en este arbol hay al menos un nombre con
+    // tilde donde `find` y `git ls-files` ya discrepan (NFC contra NFD). Sin esto, la regla
+    // denunciaria un enlace que el sistema de ficheros SI resuelve.
+    const dir = dirname(destino);
+    let existePorNombre = false;
+    try {
+      const base = basename(destino);
+      existePorNombre = readdirSync(dir).some(
+        (n) => n.normalize('NFC') === base.normalize('NFC'));
+    } catch { /* el directorio tampoco existe: es un roto de verdad */ }
+    if (existePorNombre) continue;
+    const linea = texto.slice(0, m.index).split('\n').length;
+    nota('enlace relativo colgado', f, `\`${crudo}\` no resuelve (linea ${linea}) — o el fichero se borro y el enlace se quedo, o la ruta esta mal`);
   }
 }
 
