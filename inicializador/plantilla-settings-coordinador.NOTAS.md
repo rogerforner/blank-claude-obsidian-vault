@@ -66,6 +66,16 @@ Qué protege esta plantilla, y por qué cada cosa:
   - *Alcance real, dicho sin adornos:* esto ataja la **invocación directa** del binario, que es la vía por la que se usaría. No es un sandbox: no cubre que alguien lo envuelva en un script con otro nombre. Sirve para lo que tiene que servir — **que ninguna sesión lo lance por iniciativa propia creyendo que hace lo correcto** —, no para detener a quien quiera saltárselo a conciencia.
 - **`sudo` / `su` / `rm -rf` / `git config --global`** — suelo de seguridad mínimo.
 
+## `node` se concede, porque sin él un coordinador NO PUEDE CERRAR
+
+**El método le exige a todo coordinador correr dos scripts** —el verificador del kit y el DoD— y **este perfil no concedía `node`**. Una regla que la barrera impedía cumplir.
+
+**Cómo se descubrió, el 2026-08-31:** se lanzó una sesión acotada de coordinador para arreglar unos enlaces rotos. Hizo el trabajo, y al ir a comprobarlo **le denegaron `node ../../_meta/verificar-kit.mjs` siete veces seguidas**. Terminó pidiendo aprobación para ejecutar el verificador de su propio kit, y **cerró sin commitear porque no podía comprobar nada**.
+
+**Y lo que lo hacía invisible:** el otro asunto del vault **se lo había añadido por su cuenta**, en silencio y con buen criterio. Así que la mitad del vault podía cerrar su DoD y la otra mitad no, **y nadie lo sabía porque el que podía nunca se quejó**. → *La divergencia de un perfil no siempre es deriva: a veces es el síntoma de que la plantilla se quedó corta.*
+
+**Por qué conceder `node:*` entero es aceptable, y no una excepción incómoda:** porque **el `allow` no es la barrera** —concede, no restringe— y lo que de verdad protege son los `deny`, que siguen intactos: no escribe en `_meta/`, ni en `general/`, ni en `inicializador/`; no sale a la red; no publica; no lee secretos. **Acotar el `allow` a rutas concretas no habría añadido ni una pizca de seguridad y sí habría vuelto a fallar** el día que un script del kit cambiara de sitio.
+
 ## Este perfil es un SUELO: el asunto lo endurece, y eso NO es deriva
 
 **La copia que vive en un contenedor puede y debe apartarse de esta plantilla**, y conviene decirlo porque una comparación mecánica lo leería como desviación. Lo legítimo es **hacia el lado duro**:

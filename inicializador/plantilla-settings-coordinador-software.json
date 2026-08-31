@@ -21,6 +21,8 @@
       "Bash(stat:*)",
       "Bash(git:*)",
       "PowerShell(git:*)",
+      "Bash(node:*)",
+      "PowerShell(node:*)",
       "Bash(docker:*)",
       "PowerShell(docker:*)",
       "Bash(podman:*)",

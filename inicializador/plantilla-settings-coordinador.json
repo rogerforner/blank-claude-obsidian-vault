@@ -20,7 +20,9 @@
       "Bash(file:*)",
       "Bash(stat:*)",
       "Bash(git:*)",
-      "PowerShell(git:*)"
+      "PowerShell(git:*)",
+      "Bash(node:*)",
+      "PowerShell(node:*)"
     ],
     "deny": [
       "Write(//**/general/**)",
