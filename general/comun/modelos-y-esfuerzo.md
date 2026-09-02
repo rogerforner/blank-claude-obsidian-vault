@@ -53,7 +53,7 @@ caduca: 2026-11-30
 
 **Lo que hay que retener de esta tabla, y no es el ranking:**
 
-- **Haiku 4.5 no tiene parámetro de esfuerzo.** Usa un presupuesto de razonamiento fijo. Cualquier frase del tipo *"Haiku a `low`"* es incorrecta: no hay nada que poner. `[TERCERO]`, fuente única — pendiente de segunda fuente.
+- **Haiku 4.5 no tiene parámetro de esfuerzo.** Usa un presupuesto de razonamiento fijo. Cualquier frase del tipo *"Haiku a `low`"* es incorrecta: no hay nada que poner. `[TERCERO]` **+ comprobado por el director probándolo el 2026-09-02** — el pendiente de segunda fuente queda **cerrado**, y con la mejor de las posibles: una prueba en la máquina.
 - **Haiku no se compensa con configuración.** Índice 30 frente a 55 de Sonnet 5: para razonamiento hay que **subir de modelo**, no de nivel. Su sitio es la ejecución paralela, los subagentes y el volumen.
 - **Haiku es el único que no llega a 1M** de contexto (200K), y el único con salida limitada a 64K.
 - **Fable cuesta el doble que Opus 5** por token, y **consume hasta el 50 % del límite semanal**.
@@ -73,18 +73,21 @@ caduca: 2026-11-30
 
 ### Opus 5 — curva completa
 
-| Nivel | Índice | Tokens consumidos |
-|---|---|---|
-| `low` | 52 | 12M |
-| `medium` | 59 | 29M |
-| `high` | **61** | 52M |
-| `xhigh` | **63** | 76M |
-| `max` | **63** *(sin ganancia)* | 100M *(+30 % de tokens)* |
+| Nivel | Índice | Tokens | **Coste por tarea** |
+|---|---|---|---|
+| `low` | 52 | 12M | **$0,43** |
+| `medium` | **58,6** | 29M | **$0,72** |
+| `high` | 61,5 | 52M | $1,23 |
+| `xhigh` | **62,5** | 76M | $1,80 |
+| `max` | 63,1 | 100M | $2,34 |
 
-**Las dos lecturas que gobiernan nuestro reparto:**
+**Las tres lecturas que gobiernan nuestro reparto:**
 
-1. **El salto grande está de `low` a `medium`: +7 puntos.** El grueso de la calidad se consigue pronto.
-2. **De `xhigh` a `max` no se gana nada y se gasta un 30 % más.** El punto dulce de Opus 5 es **`high`/`xhigh`**.
+1. **El salto grande está de `low` a `medium`: +6,6 puntos por 29 céntimos.** El grueso de la calidad se consigue pronto y barato.
+2. **De `xhigh` a `max`: 0,6 puntos por $0,54 más.** Es nada. **El punto dulce es `xhigh`, y muchas veces `high` basta.**
+3. **El tramo caro es el de arriba:** de `medium` a `max` se pagan **$1,62 más por 4,5 puntos**.
+
+> **Corrección del 2026-09-02.** La versión anterior decía que `xhigh` y `max` **empataban en 63**. Era **efecto del redondeo** de la lectura del 24-ago: con decimales, `max` saca 0,6 puntos. **La conclusión operativa no cambia** —`max` sigue sin compensar— pero el dato fino sí, y "empatan" era más fuerte de lo que el número permite.
 
 ### Fable 5.1 — curva completa
 
@@ -103,9 +106,17 @@ caduca: 2026-11-30
 
 ### El dato que decide entre subir esfuerzo y subir modelo
 
-> **Sonnet 5 a `max` (55) queda por debajo de Opus 5 a `high` (61).**
+> **Sonnet 5 a `max` (55, $1,72) queda por debajo de Opus 5 en `medium` (58,6, $0,72) — y cuesta MÁS DEL DOBLE por tarea.**
 
-**Subir el esfuerzo de un modelo menor no salva la brecha de tamaño en razonamiento duro.** Y al revés: **un modelo mayor a esfuerzo medio suele ser mejor compra que uno menor a máximo**, también en coste por tarea. Regla práctica:
+**El motivo es la verbosidad, y es lo que lo hace contraintuitivo:** Sonnet en `max` genera **300M de tokens** contra los **29M** de Opus en `medium`. La verbosidad es lo que se paga, así que el modelo "barato" a tope resulta ser **peor y más caro** que el caro a media máquina.
+
+> **REGLA: Sonnet se usa en esfuerzo bajo o medio, que es donde de verdad es barato. En cuanto una tarea pide subirle el esfuerzo, la respuesta es Opus en esfuerzo bajo — no Sonnet en esfuerzo alto.**
+
+**Rigor sobre este dato, porque decide filas de la tabla:** de Sonnet 5 solo está publicado `max`; `high` y `xhigh` figuran como N/A. **En calidad la conclusión se sostiene igual** —si su techo ya pierde contra Opus a `medium`, `high` también pierde—, **pero en coste solo está medido el extremo**: Sonnet a `high` podría salir más barato que Opus a `medium`, y eso no lo sabemos.
+
+**Y la excepción honesta:** en pruebas **agénticas de trabajo de oficina** hay evidencia de que Sonnet 5 a esfuerzo alto **iguala a Opus 4.8** — no a Opus 5. La conclusión general se sostiene en el índice compuesto y en razonamiento científico o factual, que es donde la brecha no se cierra con configuración.
+
+Regla práctica de fondo:
 
 > **Sube el ESFUERZO cuando el cuello de botella es pensar. Sube de MODELO cuando el cuello de botella es saber o escribir bien.**
 
@@ -193,7 +204,7 @@ caduca: 2026-11-30
 | **Razonamiento duro** (cálculo, deducción, ciencia) | Opus 5 | `high`/`xhigh` | No se suple con Sonnet a `max`: 55 frente a 61 |
 | **Escribir doctrina o documentación** | Opus 5 | `high` | Gana el conocimiento y la redacción, no más razonamiento. `max` arriesga sobrepensar |
 | **Investigar con herramientas** | Opus 5 | `xhigh` | La búsqueda agéntica y el uso repetido de herramientas se benefician del esfuerzo alto |
-| **Fase de análisis** (refutar premisas) | Sonnet 5 | **`high`** | Es trabajo sensible a inteligencia: `high` es el suelo. **Cambia respecto de lo anterior** |
+| **Fase de análisis** (refutar premisas) | **Opus 5** | **`medium`** | **Corregido el 02-sep, segunda vez en dos días.** Es detección de errores, no generación: pide capacidad. Y la regla de arriba lo cierra — **Opus a `medium` supera a Sonnet a tope costando menos de la mitad** |
 | **Ejecutar volumen** (transcribir, tabular) | Sonnet 5 | `medium` | El contrato ya fija el resultado; subir esfuerzo solo añade tokens |
 | **Implementación mecánica y acotada** | Sonnet 5 | `low`/`medium` | Patrón obvio: subir esfuerzo no mejora y **puede empeorar** |
 | **Traducir o revisar textos** | Sonnet 5 | `medium` | Tarea de leer y redactar: el esfuerzo no compensa |
@@ -201,7 +212,7 @@ caduca: 2026-11-30
 | **Subagente de lectura** | Haiku 4.5 | **— (no admite)** | Devuelve resumen acotado sin quemar el contexto principal |
 | **Brief para el chat web** | el capaz | `xhigh` | Allí no hay perfil: se elige a mano. `max` tampoco ahí |
 
-**Lo que cambió respecto de la práctica anterior:** la **fase de análisis sube de `medium` a `high`**. El motivo: su entregable es **refutar las premisas de quien encarga el trabajo**, que es exactamente el tipo de tarea sensible a inteligencia para la que la documentación fija `high` como suelo. La ejecutora de **volumen** se queda en `medium`.
+**Lo que cambió, y por qué cambió DOS VECES en dos días.** El 01-sep la fase de análisis subió de Sonnet `medium` a Sonnet `high`, razonando que refutar premisas es trabajo sensible a inteligencia. **Correcto el razonamiento, equivocado el destino:** con el coste por tarea delante, subirle el esfuerzo a Sonnet es justo lo que no hay que hacer — **la respuesta era cambiar de modelo, no de nivel**. Queda en **Opus 5 a `medium`**, que rinde más y cuesta menos. *(La ejecutora de **volumen** se queda en Sonnet `medium`: ahí el contrato ya fija el resultado y no hay que subir nada.)*
 
 ---
 
