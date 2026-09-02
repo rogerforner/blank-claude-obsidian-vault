@@ -17,15 +17,46 @@ Todo lo necesario para **abrir, relevar y cerrar** sesiones sobre este vault: la
 | Coordinador general y de asunto | Opus 5 | `high` | `.claude/settings.json` de su carpeta |
 | Consultor | Sonnet 5 | `medium` | `plantilla-settings-consultor.json` |
 | Ejecutora | Sonnet 5 | `medium` | **`--settings inicializador/plantilla-settings-ejecutora.json`** (o `-codigo` si toca código) |
-| Sus subagentes | Haiku 4.5 | — | ninguno: **heredan el de la sesión que los lanza** |
+| **Ejecutora de ANÁLISIS** (la que refuta premisas) | Sonnet 5 | **`high`** — se sube en el lanzamiento con `--effort high` | el mismo de ejecutora |
+| Sus subagentes | Haiku 4.5 | **— (no admite esfuerzo)** | ninguno: **heredan el de la sesión que los lanza** |
 
 > **La columna del perfil es nueva (2026-08-27) y arregla algo que estaba roto en silencio: no tener perfil no significa correr sin permisos, significa correr con los del de al lado.** Hasta esa fecha no existía perfil de ejecutora no-código, así que una tanda lanzada desde la raíz del vault heredaba el del **coordinador general**: el modelo caro en vez del de volumen —esta misma tabla decía Sonnet y corría Opus—, el canal entre sesiones **abierto** cuando la regla dice que las ejecutoras lo tienen cerrado, y sin denegación sobre `general/`. **El perfil se pasa en el lanzamiento con `--settings`**, no se copia a ningún sitio: una ejecutora no vive en una carpeta, nace y muere con su tanda.
 
-**Tres cosas que conviene que sepas:**
+> **Qué modelo y qué esfuerzo pide cada situación concreta → [modelos y esfuerzo](../general/comun/modelos-y-esfuerzo.md).** Ahí está la tabla completa con su evidencia, las curvas de rendimiento por nivel y lo que cuesta cada gesto. **Ese documento se refresca por tandas periódicas** conforme salen modelos nuevos, y caduca solo: cuando vence, el kit sale en rojo y la sesión siguiente se entera al arrancar. Esta guía dice **qué hacer**; aquel dice **por qué, y con qué respaldo**.
 
-- **`high` ya es el valor por defecto**, así que "ponerlo" es no tocar nada. **Ya no se arranca en `max` ni en `ultracode`**: el fabricante dice que añaden coste significativo con ganancias pequeñas y que a veces sobrepiensan, y entre los extremos de la escalera hay del orden de **2,7× de coste**. Subir un rol a `xhigh` exige antes una prueba propia que demuestre que ahí gana algo.
-- **Si eliges otra cosa a mano, gana tu elección** — pero solo esa sesión, y **elígela antes de empezar**: cambiar de modelo o de esfuerzo a mitad reprocesa el contexto entero.
-- **La única excepción son los briefs**, porque se ejecutan en el chat web y allí no hay `settings.json`: esos van con **el modelo capaz a `xhigh`**, que es el punto que el fabricante recomienda para investigación con búsqueda. `max` tampoco ahí.
+### El esfuerzo, en corto
+
+**`high` es el suelo, no el techo.** Es el valor por defecto, así que "ponerlo" es no tocar nada. La regla en una línea:
+
+> **Sube el ESFUERZO cuando el cuello de botella es pensar. Sube de MODELO cuando el cuello de botella es saber o escribir bien.**
+
+| Situación | Modelo | Esfuerzo |
+|---|---|---|
+| Coordinar la jornada, varias tandas | Opus 5 | `high` |
+| **Auditar o revisar a fondo**, investigar con herramientas | Opus 5 | **`xhigh`** |
+| Razonamiento duro (cálculo, deducción) | Opus 5 | `high`/`xhigh` |
+| Escribir doctrina o documentación | Opus 5 | `high` |
+| **Refutar premisas** (fase de análisis) | Sonnet 5 | **`high`** |
+| Volumen, traducción, implementación acotada | Sonnet 5 | `medium` (o `low` si es muy mecánico) |
+| Subagente de lectura | Haiku 4.5 | **no admite esfuerzo** |
+| Brief para el chat web | el capaz | `xhigh` |
+
+**Cinco cosas que conviene que sepas:**
+
+- **`max` no se usa, y ahora hay número:** en Opus 5, `xhigh` y `max` **empatan** en rendimiento y `max` gasta un 30 % más de tokens. Además, en tareas simples o de salida estructurada **subir el esfuerzo puede EMPEORAR el resultado** — está documentado: el modelo se distrae con lo irrelevante.
+- **`xhigh` ya no exige prueba propia para auditar e investigar.** Antes se pedía porque no había respaldo publicado; ahora hay curva completa (`high` 61 → `xhigh` 63 en Opus 5). Para **auditoría exhaustiva e investigación con herramientas, `xhigh` es la elección**.
+- **Escribir `max` en un `settings.json` NO funciona y no avisa:** el esquema solo admite `low`/`medium`/`high`/`xhigh`, y `max` se ignora en silencio arrancando en `high`. *(Comprobado el 2026-09-02: ninguno de nuestros siete perfiles lo declara. No estamos en ese fallo.)*
+- **Si eliges otra cosa a mano, gana tu elección** — pero solo esa sesión, y **elígela antes de empezar**: cambiar de modelo **o de esfuerzo** a mitad reprocesa el contexto entero. En una sesión de 150k eso es **entre 12 y 20 veces** el coste de un turno normal.
+- **Para una subtarea barata NO cambies de modelo: lanza un subagente.** Hay contraejemplo del fabricante: a 100k de contexto, cambiar al modelo barato para una pregunta fácil sale **el doble de caro** que dejar que responda el que ya está caliente.
+
+### `/clear`, `/compact` y `/rewind` — la regla de una línea
+
+> **`/clear` entre tareas, `/compact` dentro de una tarea.**
+
+- **`/clear` no cuesta nada**: no envía petición. Es el gesto por defecto **al cambiar de tarea**, y sale más barato que arrastrar el contexto anterior aunque esté cacheado — porque lo arrastrado **se re-lee, y se re-factura, en cada turno siguiente**.
+- **`/compact`** resume el historial. Barato si la caché está caliente; **caro si llevas rato parado**. Úsalo **dentro de la misma tarea** cuando el contexto se llene. Al reanudar una sesión vieja, `/clear` sale más barato.
+- **`/rewind`** abandona un camino que no llevaba a nada, volviendo a un punto ya cacheado. Mejor que compactar para eso.
+- **Y lo que corrige la intuición contraria:** dos horas seguidas en una sesión suelen costar **menos** que partir el mismo trabajo en cuatro sesiones, porque cada arranque en frío paga la reescritura completa. **El disparador de reset no es "llevo mucho abierto": es "tarea terminada".**
 
 **Y lo que no hace falta escribir:** no le expliques al agente su rol, ni le enumeres las reglas, ni le digas dónde está. Todo eso lo carga de la carpeta. Un prompt largo explicando el rol no añade nada y se contradice con lo que ya lee.
 
