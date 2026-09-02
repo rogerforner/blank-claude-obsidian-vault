@@ -84,7 +84,7 @@ caduca: 2026-11-30
 **Las tres lecturas que gobiernan nuestro reparto:**
 
 1. **El salto grande está de `low` a `medium`: +6,6 puntos por 29 céntimos.** El grueso de la calidad se consigue pronto y barato.
-2. **De `xhigh` a `max`: 0,6 puntos por $0,54 más.** Es nada. **El punto dulce es `xhigh`, y muchas veces `high` basta.**
+2. **De `xhigh` a `max`: 0,6 puntos por $0,54 más.** Es nada. **El punto dulce es `xhigh`, y muchas veces `high` basta. `max` no se usa** — decisión del director del 2026-09-02, ahora con su número: **medio dólar por tarea a cambio de seis décimas de punto**.
 3. **El tramo caro es el de arriba:** de `medium` a `max` se pagan **$1,62 más por 4,5 puntos**.
 
 > **Corrección del 2026-09-02.** La versión anterior decía que `xhigh` y `max` **empataban en 63**. Era **efecto del redondeo** de la lectura del 24-ago: con decimales, `max` saca 0,6 puntos. **La conclusión operativa no cambia** —`max` sigue sin compensar— pero el dato fino sí, y "empatan" era más fuerte de lo que el número permite.
@@ -142,7 +142,11 @@ Regla práctica de fondo:
 
 **Cambiar cualquiera de los dos reprocesa el contexto entero.** No hay diferencia de coste entre cambiar de modelo y cambiar de esfuerzo.
 
-**[A CONFIRMAR] La excepción:** en **Opus 5, Fable 5.1 y Mythos 5.1** existe un cambio de esfuerzo **por mensaje** (beta) que **preserva la caché**. **No está comprobado si eso llega a las sesiones de este vault o es solo del lado API** — y como la API está prohibida aquí, la diferencia decide la respuesta. **Hasta confirmarlo, la regla operativa no se relaja: se fija el esfuerzo al arrancar y no se toca.**
+**La excepción que NO se va a usar, y por qué se cierra en vez de comprobarse.** En Opus 5, Fable 5.1 y Mythos 5.1 se describe un cambio de esfuerzo **por mensaje** (beta) que preservaría la caché. Nunca se comprobó si llega a nuestras sesiones o es solo del lado API — y la API está prohibida aquí.
+
+> **DECISIÓN DEL DIRECTOR (2026-09-02): no se comprueba y no se usa. El esfuerzo NO se cambia a media sesión, en ningún modelo.** Si hace falta otro esfuerzo: **se pide el relevo, se hace `/clear` y se arranca de nuevo** con el que toque.
+
+**El argumento es de diseño, no de coste, y es el que cierra el caso:** una excepción que depende de la versión del cliente, de un modelo concreto y de una beta **es una regla que a veces se cumple y a veces no** — y las que a veces no se cumplen son las que fallan el día que importa. **Trabajar siempre igual gana a trabajar óptimamente a veces.** Además el gesto alternativo es barato de verdad: `/clear` **no cuesta nada** y el estado no vive en el contexto, vive en ficheros que la sesión nueva relee. *(Esto elimina un pendiente permanente y una fuente de error; a cambio se paga, muy de vez en cuando, un arranque en frío.)*
 
 ### 3.2 Lo que cuesta, en números
 

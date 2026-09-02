@@ -20,7 +20,24 @@ La sintaxis de lanzamiento no está aquí: vive en la tabla "Ejecución" del `CL
 - **`/clear` no cuesta nada**: no envía petición. En cambio, **arrastrar el contexto anterior se re-lee y se re-factura en CADA turno siguiente**, así que el coste de una sesión crece de forma **cuadrática con el número de turnos**. En nuestra propia medición, **el 97 % del trabajo de una jornada se ejecutó por encima de 150k de contexto**, con la lectura de caché tres órdenes de magnitud por encima de la salida.
 - **Pero el disparador correcto no es "llevo dos horas"**: es **"he terminado la tarea"**. Con la caché caliente, dos horas seguidas en la misma tarea salen **más baratas** que partirlas en cuatro sesiones, porque cada arranque en frío paga la reescritura completa del prefijo. La regla es: **`/clear` entre tareas, `/compact` dentro de una tarea.** Y `/rewind` para abandonar un camino que no llevaba a nada.
 - **Cambiar de modelo a media sesión recomputa la petición entera**: cada modelo tiene su propia caché. En una sesión de 150k son **12-20 veces el coste de un turno normal**. Y el contraejemplo que rompe la intuición: **bajar a un modelo barato para una pregunta tonta sale MÁS caro** que dejar que la conteste el que ya está cargado. Si necesitas algo barato, **lanza un subagente**, no cambies el modelo del bucle.
-- **Cambiar el esfuerzo cuesta exactamente lo mismo que cambiar de modelo**, porque la caché está indexada por los dos. **[A CONFIRMAR]** existe un cambio de esfuerzo *por mensaje* en Opus 5 que preservaría la caché, pero está descrito como beta del lado de la API — y **aquí la API está prohibida**. **Hasta comprobarlo en nuestra propia sesión, la regla no se relaja: el esfuerzo se fija al arrancar.**
+- **El esfuerzo tampoco se cambia a media sesión, y esto ya no es cautela: es decisión.** Cuesta lo mismo que cambiar de modelo, porque la caché está indexada por los dos. Se describe una excepción por mensaje en algunos modelos, pero **depende de la versión, del modelo y de una beta** — o sea, una regla que a veces se cumple. **Trabajar siempre igual gana a trabajar óptimamente a veces.** Si necesitas otro esfuerzo: **pide el relevo, `/clear`, y arranca de nuevo con el que toque.** Es barato: `/clear` no cuesta nada y **el estado no vive en el contexto, vive en ficheros**.
+
+### Por qué aquí `/clear` no da miedo
+
+Porque **el estado no vive en el contexto de ninguna sesión: vive en ficheros versionados**, y la sesión que arranca los relee. Los que lo sostienen, y son estos cuatro:
+
+| Fichero | Qué guarda |
+|---|---|
+| `_meta/cola-pendientes.md` | lo abierto y lo cerrado, con su porqué |
+| `_meta/trabajo-en-curso.md` *(y el de cada asunto)* | una línea por frente vivo, con dueño y artefacto |
+| `_meta/bitacora.md` | lo que se aprendió, para que no se repita |
+| `_meta/decisiones-abiertas.md` | lo que espera decisión del director |
+
+**Y no hace falta acordarse de abrirlos: el disparador de arranque los vuelca solo**, junto con la fecha sellada, el veredicto del verificador y si la sesión anterior cerró su DoD.
+
+> **[POR COMPROBAR, y cuesta cinco segundos]** El disparador está declarado **sin filtro de evento**, así que debería correr también tras un `/clear` — pero eso **no se ha verificado aquí**. La comprobación es trivial: haz `/clear` y mira si vuelve a aparecer el bloque que empieza por `[FECHA]`. **Si NO aparece**, entonces tras un `/clear` la sesión se queda sin fecha, sin saber si el kit está en rojo y sin ver los frentes abiertos — y habría que pedirle explícitamente que relea el estado.
+
+*(Nota para quien venga de otro vault de esta misma plantilla: aquí **no hay `estado.json` ni `estado.mjs`**. Ese mecanismo es de otro árbol; el equivalente son los cuatro ficheros de arriba.)*
 
 ### La escalera por esfuerzo, con lo que cuesta cada escalón
 
