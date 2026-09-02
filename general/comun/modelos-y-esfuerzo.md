@@ -229,7 +229,17 @@ caduca: 2026-11-30
 
 Dos cosas quedan **abiertas para el director**, con su coste declarado:
 
-1. **`ultracode`.** Uno de los informes lo recomienda para coordinación de jornada larga, con un argumento estructural: no da más inteligencia por turno que `xhigh`, pero **reparte el trabajo en varios contextos limpios**, lo que ataca tres fallos conocidos de una sola ventana —abandonar tareas largas a medias, autoevaluarse con indulgencia y perder el hilo al compactar—. **Choca de frente con el veto de [[modelo_por_tarea]] a la orquestación multiagente automática**, que es justo lo que habilita. Fuente única y de comunidad. **Es decisión, no actualización de dato.**
+1. **`ultracode`.** Es `xhigh` **más permiso permanente para que la sesión reparta trabajo en varios contextos limpios**. No da más inteligencia por turno; lo que aporta es orquestación, y ataca tres fallos conocidos de una sola ventana: abandonar tareas largas a medias, autoevaluarse con indulgencia y perder el hilo al compactar.
+
+   **NO choca con el veto de [[modelo_por_tarea]], y conviene no confundirlos:** lo vetado ahí es el **fan-out masivo** (del orden de mil subagentes, por cuota prohibitiva), y la regla que acompaña al veto es *"baja concurrencia: 1 coordinador + 1-2 ejecutoras"*. Repartir una revisión en tres o cuatro lectores que mueren al terminar **cae dentro de esa regla, no fuera**.
+
+   **Evidencia propia, que vale más que la de comunidad porque es de aquí.** El 2026-09-01 y 02 se trabajó con `ultracode` en el coordinador general y se lanzaron cuatro repartos de 2 a 4 agentes de lectura. Dos resultados concretos: **tres auditores adversariales cazaron cuatro cifras estructurales mal** en un documento que el coordinador ya daba por bueno y a punto de salir de la máquina; y **dos agentes de análisis evitaron dos errores de forma** —poner un documento nuevo donde habría dejado el kit en rojo, y enlazarlo de modo que la plantilla publicada quedara en rojo—. **Coste medido de esos cuatro repartos: 1,70 M de tokens de subagentes.**
+
+   **Criterio, entonces, y no una prohibición:**
+   - **Rinde** en auditoría y revisión amplia, en la fase de análisis que refuta premisas, y en cualquier trabajo donde **la verificación independiente valga más que el ahorro**.
+   - **No rinde** en tareas de un solo paso ni en la coordinación ordinaria del día: ahí solo añade coste de orquestación.
+   - **No persiste en el perfil** (es de sesión), así que se activa a mano — y **activarlo a media sesión es un cambio de esfuerzo, con su reescritura de caché**. Se decide al abrir, como todo lo demás.
+
 2. **Fable 5.1.** Lidera el índice con 66 frente a los 63 de Opus 5, **pero no es la mejor compra**: Opus 5 a `xhigh` da 63 a **mitad de tarifa** y sin el enrutado de seguridad de §3.4. **[A CONFIRMAR]** si Fable 5.1 hereda el tope del 50 % del semanal que tiene Fable 5 — sin ese dato no se puede escribir ninguna regla operativa sobre ella.
 
 ---
