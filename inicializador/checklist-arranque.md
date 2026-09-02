@@ -57,7 +57,10 @@ Pasos para inicializar la coordinación de un asunto nuevo. Lo hace el director 
 
 Que el asunto **nazca con las comprobaciones puestas** es mucho más barato que añadirlas cuando ya hay veinte documentos y un plazo encima.
 
-- **Declara el perfil** en el charter. Cuatro perfiles, y de cada uno hereda qué es bloqueante:
+- **Declara el perfil** en el charter — **y PODA la tabla de los otros tres en el mismo gesto.** Esa tabla es **ayuda de decisión, no contenido del charter**: una vez elegido, sus tres filas restantes se leen en cada arranque sin aportar nada. Deja el encabezado con el perfil elegido, un párrafo de qué es bloqueante en él, y una línea entre paréntesis diciendo por qué se descartan los otros. Y quita la nota condicional del pack `codigo/` si el perfil no es el de software.
+  > **No es cosmética: sin podarla, el asunto NACE EN ROJO.** La tabla cita la ruta del pack `codigo/`, y ese literal es uno de los dos detonantes de la regla 14 del verificador — que entonces exige una ficha de emplazamiento de runtime a un asunto que no tiene código. *(Descubierto al inicializar el tercer asunto del vault, el 2026-09-02. Se arregla aquí, en el checklist, y no en el charter de ese asunto: parchear el suyo le habría servido a él y **el siguiente habría tropezado igual** — que es la misma lección que dejó el falso positivo de esta regla el 28-ago.)*
+
+  Cuatro perfiles, y de cada uno hereda qué es bloqueante:
   - **trámite con terceros** — manda el **plazo** y el **registro de entrada/salida**; nada se da por presentado sin acuse.
   - **obra o proyecto propio** — manda el **producto entregable** (el plano, el presupuesto, la memoria) y su cotejo con la realidad medida.
   - **seguimiento periódico** — manda la **cadencia** y que las cifras cuadren periodo a periodo (cuentas, mantenimiento, renovaciones).
