@@ -15,6 +15,8 @@ Un escaneo transcrito a texto es un **documento nuevo**, no el original. Se gene
 
 Documentación de consulta, **sin narrativa histórica ni identificadores de bloques de trabajo** ([[docs_sin_fases]]): quien la lea dentro de un año necesita saber cómo está el asunto, no por qué fases pasó. El histórico está en git y en la cola.
 
+> **Con una excepción, y es la carpeta [`decisiones/`](decisiones/README.md):** ahí sí entra el **porqué** — qué se descartó y por qué—, porque remitirlo solo al histórico de cambios supone que siempre habrá quien lo lea. **Lo que sigue fuera de todo `docs/` es la narrativa de PROCESO**, no la razón de la decisión ([[docs_sin_fases]] v1.1).
+
 **Enlaces internos:** markdown relativo (`[texto](archivo.md)`), **no** wikilinks — estos documentos se consultan también fuera de Obsidian, donde los wikilinks no renderizan.
 
 ## Al arrancar
