@@ -70,7 +70,6 @@
       "PowerShell(Copy-Item:*)",
       "PowerShell(Invoke-WebRequest:*)",
       "PowerShell(Invoke-RestMethod:*)",
-      "Write(//**/general/**)",
       "Edit(//**/general/**)",
       "Read(~/.ssh/**)",
       "Read(~/.aws/**)",

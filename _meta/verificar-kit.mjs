@@ -74,6 +74,9 @@ for (const f of md.filter(esCore)) {
 // --- 4. portabilidad: ni rutas de maquina ni nombres ajenos -------------
 // Exige un SEGMENTO REAL despues de Users/home: "C:\Users\PD\..." es una fuga,
 // pero "C:\Users\…" escrito como patron de busqueda es documentacion, no una ruta.
+// Esta regla NO exime lo citado entre acentos graves, a diferencia de las 8 y 13: una ruta de
+// maquina citada sigue filtrando el usuario y la maquina. Para citar un ejemplo se escribe con
+// marcador (`/home/<usuario>/`, `/Users/<usuario>/`), que no casa con SEG y la regla no caza.
 // Los .json de inicializador/ (perfiles de settings, p. ej. plantilla-settings-*.json) no son
 // .md y sin esto la regla nunca los mira: una ruta de maquina colada en un perfil de permisos
 // pasaria desapercibida. No es opcional (tanda repo-fuera, D6).

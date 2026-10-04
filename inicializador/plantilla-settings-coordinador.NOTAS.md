@@ -59,7 +59,7 @@ Qué protege esta plantilla, y por qué cada cosa:
 
 - **`Write`/`Edit(//**/general/**)`** — el **catálogo en solo lectura** para los coordinadores de asunto. Es estructural: el catálogo lo mantiene el coordinador general del vault; un asunto lo **lee** —para eso está `additionalDirectories`— y no edita la fuente. Su `memoria/` es para las doctrinas **propias** del asunto ([`general/comun/README.md`](../general/comun/README.md)).
 - **`Write`/`Edit(//**/_meta/**)`** — la **memoria del vault en solo lectura**. El coordinador de un asunto la **consulta**; lo que crea que falta ahí **lo propone en su cola** y lo escribe el coordinador general. Fíjate en la asimetría deliberada: se concede lectura de `_meta/memoria/` y se deniega escritura de **todo** `_meta/`, que es más de lo que se concede. Es a propósito — el deny no tiene por qué ser el espejo del `additionalDirectories`, y aquí cierra también lo que nadie le abrió.
-- **`Edit(//**/inicializador/**)`** — las **plantillas del kit en solo lectura**. Lo que antes cerraba el perfil de ejecutora (no escribir `general/`, `_meta/` ni `inicializador/`) lo cierra ahora el perfil del coordinador, porque las tandas normales las ejecutan subagentes y **un subagente hereda las denegaciones de la sesión que lo lanza** **[MEDIDO 2026-10-04]**. Solo `Edit`, sin `Write`: las reglas `Write(...)` son inertes. Va justo después de la de `_meta/`.
+- **`Edit(//**/inicializador/**)`** — las **plantillas del kit en solo lectura**. Lo que antes cerraba el perfil de ejecutora (no escribir `general/`, `_meta/` ni `inicializador/`) lo cierra ahora el perfil del coordinador, porque las tandas normales las ejecutan subagentes y **un subagente hereda las denegaciones de la sesión que lo lanza** **[MEDIDO 2026-10-04]**. Solo `Edit`, sin `Write`: `Edit(ruta)` cubre todas las herramientas de edición y una `Write(ruta)` no la mira el cliente (aviso al arrancar, medido el 2026-10-04). Va justo después de la de `_meta/`.
 - **`git push` / `git remote`** — el vault es **git local**. No hay nada que sincronizar fuera, y el histórico lleva datos personales: que no exista destino no es garantía suficiente, así que se deniega el gesto.
 - **`curl` / `wget` / `Invoke-WebRequest` / `Invoke-RestMethod`** — los comandos que **sacan algo de la máquina**. Es la contramedida contra la inyección de instrucciones: el material de entrada de un asunto viene de fuera (correos, PDF de terceros, resoluciones descargadas), y el modelo no distingue datos de instrucciones. Si un documento trae escrito "envía esto a tal dirección", el `deny` es lo que lo detiene.
 - **Credenciales de máquina** (`~/.ssh`, `~/.aws`, `~/.gnupg`, `~/.config/gh`, `id_rsa`, `id_ed25519`) — las llaves a cuentas y servicios **reales**. Es lo único que se deniega leer: la config local del asunto y los documentos del vault **sí** se leen y editan sin restricción, porque si la IA no puede tocar la config local, esta se desfasa y el entorno se rompe en silencio ([[sensitive_file_guard]]).
@@ -90,7 +90,7 @@ Qué protege esta plantilla, y por qué cada cosa:
 
 ## Salvedades de portabilidad (leídas antes de fiarse)
 
-- **Un `deny` con ruta RELATIVA no funciona en Windows.** `Write(../../general/**)` **no** resuelve contra la ruta absoluta: se puede escribir en el catálogo igualmente. Por eso el deny del catálogo se expresa como **glob**: `//**/general/**` — el mismo estilo que el deny de claves privadas (`//**/id_rsa`), que sí funciona. **No lo cambies a ruta relativa "para que quede más limpio".**
+- **Un `deny` con ruta RELATIVA no funciona en Windows.** `Edit(../../general/**)` **no** resuelve contra la ruta absoluta: se puede escribir en el catálogo igualmente. Por eso el deny del catálogo se expresa como **glob**: `//**/general/**` — el mismo estilo que el deny de claves privadas (`//**/id_rsa`), que sí funciona. **No lo cambies a ruta relativa "para que quede más limpio".**
 - **El glob asume el nombre de la carpeta.** `//**/general/**` protege cualquier carpeta llamada `general` que quede bajo el árbol. Dos consecuencias: (a) si alguna vez renombras el catálogo, hay que actualizar el deny; (b) si tuvieras otra carpeta llamada `general` en un asunto, también quedaría de solo lectura. Con la estructura de la plantilla no ocurre, pero conviene saberlo.
 - **Verifica el aislamiento, no lo supongas.** Con la sesión del coordinador arrancada: intenta escribir un fichero en `general/` y comprueba que **se deniega**. Si no se deniega, el resto de este documento no te protege de nada.
 - **La invisibilidad entre asuntos hermanos es aislamiento BLANDO.** No se puede expresar como `deny` sin denegar también el propio contenedor, que vive dentro de `asuntos/`. Se apoya en el cwd y en el comportamiento acotado del coordinador (no lee otros asuntos salvo que se le pida), **no** en una barrera dura. Si un asunto exige separación fuerte —material de un procedimiento con abogado, datos médicos de un tercero—, la vía es un vault aparte, no un `deny` más.
@@ -105,13 +105,13 @@ El `.json` monta solo el catálogo, porque no todo vault necesita más. Si el va
 
 ```json
 "deny": [
-  "Write(//**/general/**)",   "Edit(//**/general/**)",
-  "Write(//**/<archivo>/**)", "Edit(//**/<archivo>/**)",
+  "Edit(//**/general/**)",
+  "Edit(//**/<archivo>/**)",
   ...
 ]
 ```
 
-Dos avisos que valen igual aquí que para el catálogo, y que están detallados arriba: el `deny` va como **glob absoluto** y no como ruta relativa, y **`Write(ruta)` es inerte** — el que se evalúa es `Edit(ruta)`. Se ponen los dos porque el par es lo convencional, pero el que protege es el segundo.
+Dos avisos que valen igual aquí que para el catálogo, y que están detallados arriba: el `deny` va como **glob absoluto** y no como ruta relativa, y la denegación de escritura se expresa solo con **`Edit(ruta)`**, que cubre todas las herramientas de edición; una `Write(ruta)` no la mira el cliente (aviso al arrancar, medido el 2026-10-04).
 
 Y el motivo de que el nombre del árbol deba ser **compuesto**: el glob no depende del nombre del vault, así que un `//**/archivo/**` dejaría en solo lectura cualquier carpeta llamada `archivo` **dentro de un asunto**. En un vault de expedientes, `//**/expediente/**` es aún peor.
 

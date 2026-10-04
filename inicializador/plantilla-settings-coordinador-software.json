@@ -31,9 +31,7 @@
       "PowerShell(kubectl:*)"
     ],
     "deny": [
-      "Write(//**/general/**)",
       "Edit(//**/general/**)",
-      "Write(//**/_meta/**)",
       "Edit(//**/_meta/**)",
       "Edit(//**/inicializador/**)",
       "Bash(git push:*)",

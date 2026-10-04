@@ -82,5 +82,5 @@ Cuando el árbol se comparte entre el host y el runtime (montaje, carpeta compar
 
 ## Cómo se lee esta ficha
 
-- **Si no existe, o le falta algún punto de los siete de arriba:** lo primero que hace el coordinador del asunto es **preguntarlo al director**, no trabajar a ciegas. Detalle del prompt: `_meta/guia-arranque-sesiones.md` § "Arrancar un coordinador de asunto de software".
+- **Si no existe, o le falta algún punto de los siete de arriba:** lo primero que hace el coordinador del asunto es **preguntarlo al director**, no trabajar a ciegas. El prompt con que el director arranca esta sesión está en `_meta/guia-arranque-sesiones.md` § "Coordinador de asunto de software"; es del director, porque el perfil del asunto no alcanza `_meta/`.
 - **Si existe:** se lee y se **confirma que sigue siendo cierta** antes de tocar nada (una ruta que cambió de sitio, un contenedor que ya no corre) — no se da por buena solo porque está escrita.
