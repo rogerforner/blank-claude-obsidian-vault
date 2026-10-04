@@ -81,7 +81,7 @@ Que el asunto **nazca con las comprobaciones puestas** es mucho más barato que 
 
 ## 7. Lanzar el coordinador y saludar
 
-- El director lanza la sesión de Claude Code con **cwd en `asuntos/<asunto>/`**, en el modo de permisos que declara el `CLAUDE.md` raíz del vault: no lo decide este checklist y no se reabre por asunto ([[libertad-tecnica-del-agente]]).
+- El director lanza la sesión de Claude Code con **cwd en `asuntos/<asunto>/`**, en el modo de permisos que declara el `CLAUDE.md` raíz del vault: no lo decide este checklist y no se reabre por asunto.
 - El coordinador lee el charter + las doctrinas instaladas y **saluda** con su plan de arranque.
 - **(Opcional) Sesión consultor de solo lectura:** si el asunto se beneficia de consultas paralelas sin gastar el contexto del coordinador, instálala desde [plantilla-consultor.md](plantilla-consultor.md) + [plantilla-settings-consultor.json](plantilla-settings-consultor.json) ([[sesion_consultor_paralelo]], [[estructura_contenedor_asunto]]).
 - Modelo de trabajo tras el arranque: **coordina, no ejecuta** — todo trabajo que escriba o transforme material del asunto sigue el ciclo de tandas: el subagente `planificador` hace el plan, un subagente `ejecutora` hace cada tanda y el coordinador la comprueba y commitea; ejecutarlo en la sesión del coordinador le agota el contexto ([[ciclo_de_tandas]], [[orquestacion_sesiones_por_herramienta]]).
