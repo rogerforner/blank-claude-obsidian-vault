@@ -41,6 +41,8 @@ Pasos para inicializar la coordinación de un asunto nuevo. Lo hace el director 
 - Crea tu **`asuntos/<asunto>/.claude/settings.local.json`** (gitignored) con las **rutas de esta máquina** que el asunto necesite en `additionalDirectories` (la carpeta donde el escáner deja los PDF, la unidad externa de copias). Distintas por máquina, no se versionan. Plantilla en [plantilla-settings-coordinador.NOTAS.md](plantilla-settings-coordinador.NOTAS.md).
 - **Verifica el aislamiento antes de fiarte de él:** que el coordinador escribe en su contenedor, que lee `general/` pero **no puede escribirlo**, y que no anda por otros asuntos. Las excepciones conocidas de este mecanismo —en Windows, la regla que debería bloquear el acceso por ruta relativa no funciona; y que un asunto no vea a otro es una separación blanda, no una pared— están explicadas en las NOTAS. Compruébalo, no lo supongas.
 
+- Copia también las tres definiciones de agente de `inicializador/` a `asuntos/<asunto>/.claude/agents/`: `plantilla-agente-planificador.md` como `planificador.md`, `plantilla-agente-ejecutora.md` como `ejecutora.md` y `plantilla-agente-ejecutora-mecanica.md` como `ejecutora-mecanica.md`. Las copias son idénticas a la plantilla y no llevan nada propio del asunto: la ruta del plan la da el encargo. El motivo de que sean idénticas es que una sesión de asunto carga sus agentes y también los de la raíz, y con el mismo nombre gana el del asunto sin avisar (medido el 2026-10-04), así que una copia que diverge cambia el comportamiento sin que nadie lo vea. Compruébalo con `cmp` contra la plantilla.
+
 ## 5. Evaluar herramientas y fijar el mínimo de doctrinas
 
 - Sigue [guia-eleccion-tooling.md](guia-eleccion-tooling.md): haz inventario de lo disponible y de las piezas del catálogo `general/` aplicables a este asunto; aplica los cinco criterios de adopción; instala solo lo aplicable.
@@ -49,7 +51,7 @@ Pasos para inicializar la coordinación de un asunto nuevo. Lo hace el director 
 
 ## 6. Fijar cómo se comprueba el material y qué se entrega fuera
 
-- **Comprueba pronto que el material se puede trabajar de verdad**: que los escaneos son legibles y están completos (no falta la página 3), que el PDF abre, que la hoja de cálculo cuadra con los justificantes, que las fechas de los sellos son las que crees. Un escaneo ilegible o un lote incompleto **condiciona todo lo demás**, igual que un plazo mal apuntado. La comprobación va en un **prompt para una sesión ejecutora** (coordinar ≠ ejecutar: no la corres tú ni con subagentes); si algo no cuadra, se reporta como **hallazgo** y sube a lo primero de la cola.
+- **Comprueba pronto que el material se puede trabajar de verdad**: que los escaneos son legibles y están completos (no falta la página 3), que el PDF abre, que la hoja de cálculo cuadra con los justificantes, que las fechas de los sellos son las que crees. Un escaneo ilegible o un lote incompleto **condiciona todo lo demás**, igual que un plazo mal apuntado. La comprobación sigue el ciclo de tandas ([[ciclo_de_tandas]]): el `planificador` hace el plan, una `ejecutora` hace cada tanda y tú la compruebas y commiteas (coordinar ≠ ejecutar: no la corres en tu sesión); `claude -p` solo si hace falta otra raíz u otro perfil; si algo no cuadra, se reporta como **hallazgo** y sube a lo primero de la cola.
 - **Declara qué se entrega fuera y a quién**: correo, registro, gestoría, aseguradora, organismo. Toda entrega fuera es **puerta humana** — el agente prepara el envío y para ahí. Deja escrito en el charter quién firma, por qué canal se presenta y qué acuse hay que guardar.
 - **Git local:** un commit por hito con mensaje que se entienda dentro de un año, sin coautoría de la IA ([[sin_coautor_commits]]). No hay destino fuera de esta máquina; el histórico es tuyo y de nadie más.
 
@@ -79,10 +81,10 @@ Que el asunto **nazca con las comprobaciones puestas** es mucho más barato que 
 
 ## 7. Lanzar el coordinador y saludar
 
-- El director lanza la sesión de Claude Code con **cwd en `asuntos/<asunto>/`**, sin el flag de permisos amplios salvo que la tanda toque masivamente `.claude/` o los hooks ([[sensitive_file_guard]]).
+- El director lanza la sesión de Claude Code con **cwd en `asuntos/<asunto>/`**, en el modo de permisos que declara el `CLAUDE.md` raíz del vault: no lo decide este checklist y no se reabre por asunto ([[libertad-tecnica-del-agente]]).
 - El coordinador lee el charter + las doctrinas instaladas y **saluda** con su plan de arranque.
 - **(Opcional) Sesión consultor de solo lectura:** si el asunto se beneficia de consultas paralelas sin gastar el contexto del coordinador, instálala desde [plantilla-consultor.md](plantilla-consultor.md) + [plantilla-settings-consultor.json](plantilla-settings-consultor.json) ([[sesion_consultor_paralelo]], [[estructura_contenedor_asunto]]).
-- Modelo de trabajo tras el arranque: **coordina, no ejecuta** — todo trabajo que escriba o transforme material del asunto va en **prompts para sesiones ejecutoras** (los subagentes del coordinador, solo lectura); ejecutar en la sesión del coordinador le agota el contexto ([[orquestacion_sesiones_por_herramienta]]).
+- Modelo de trabajo tras el arranque: **coordina, no ejecuta** — todo trabajo que escriba o transforme material del asunto sigue el ciclo de tandas: el subagente `planificador` hace el plan, un subagente `ejecutora` hace cada tanda y el coordinador la comprueba y commitea; ejecutarlo en la sesión del coordinador le agota el contexto ([[ciclo_de_tandas]], [[orquestacion_sesiones_por_herramienta]]).
 
 ## Al cerrar el arranque
 

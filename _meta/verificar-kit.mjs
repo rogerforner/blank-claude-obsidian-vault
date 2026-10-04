@@ -169,6 +169,8 @@ const RETIRADAS = [
     motivo: 'es la misma politica retirada dicha con otras palabras: el catalogo se LEE y memoria/ es para lo propio del asunto' },
   { frase: 'Haiku redacta los commits', desde: '2026-08-12',
     motivo: 'ningun mecanismo lo implementa, y cambiar de modelo cuesta un cache miss completo' },
+  { frase: 'subagentes son solo de lectura', desde: '2026-10-04',
+    motivo: 'los subagentes ejecutan tandas (ciclo de tandas); los de solo lectura se nombran como tales' },
 ];
 const sinCitas = (l) => l.replace(/"[^"\n]*"/g, '').replace(/[«“][^»”\n]*[»”]/g, '');
 // El enfasis se quita ANTES de buscar la frase retirada. Sin esto, escribir `se **instala por
@@ -425,6 +427,36 @@ for (const f of md) {
     if (existePorNombre) continue;
     const linea = texto.slice(0, m.index).split('\n').length;
     nota('enlace relativo colgado', f, `\`${crudo}\` no resuelve (linea ${linea}) — o el fichero se borro y el enlace se quedo, o la ruta esta mal`);
+  }
+}
+
+// --- 16. los agentes de cada contenedor son copia idéntica de su plantilla ---
+// Cada `<contenedor>/.claude/agents/<x>.md` (la raiz y cada `asuntos/<asunto>/`) tiene que ser
+// identico byte a byte a `inicializador/plantilla-agente-<x>.md`. Las copias derivan sin avisar,
+// el mismo fallo que persiguen las reglas 7 y 11, y aqui sale mas caro: una sesion de asunto
+// carga sus agentes Y los de la raiz, y con el mismo nombre GANA el del asunto sin avisar
+// (medido el 2026-10-04). O sea que una copia que diverge cambia el comportamiento de la
+// ejecutora sin que nadie lo vea. Un agente sin plantilla de ese nombre tambien es hallazgo:
+// es una definicion que no viene del kit. Que un contenedor no tenga `.claude/agents/` no lo es.
+const contenedores = [RAIZ];
+const dirAsuntos = join(RAIZ, 'asuntos');
+if (existsSync(dirAsuntos)) {
+  for (const e of readdirSync(dirAsuntos)) {
+    const d = join(dirAsuntos, e);
+    if (statSync(d).isDirectory()) contenedores.push(d);
+  }
+}
+for (const c of contenedores) {
+  const dirAg = join(c, '.claude', 'agents');
+  if (!existsSync(dirAg)) continue;
+  for (const e of readdirSync(dirAg).filter((n) => n.endsWith('.md'))) {
+    const f = join(dirAg, e);
+    const plantilla = join(RAIZ, 'inicializador', `plantilla-agente-${e}`);
+    if (!existsSync(plantilla)) {
+      nota('agente sin plantilla', f, `no existe inicializador/plantilla-agente-${e}: una definicion de agente que no viene del kit`);
+    } else if (!readFileSync(f).equals(readFileSync(plantilla))) {
+      nota('agente distinto de su plantilla', f, `difiere de inicializador/plantilla-agente-${e} — la copia se vuelve a sacar de la plantilla, no se edita a mano`);
+    }
   }
 }
 

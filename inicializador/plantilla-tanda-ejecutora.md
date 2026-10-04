@@ -1,59 +1,42 @@
 # Plantilla de tanda ejecutora — especificaciones grandes y autónomas
 
-> **Para qué.** La palanca de mayor retorno para reducir el trasiego manual **no es automatizar el transporte, es hacer las tandas más grandes y autónomas**: una especificación bien cerrada reduce a la vez los **relevos** y las **preguntas**. Esta plantilla es el **contrato** entre el coordinador y la sesión ejecutora. Rellena, **borra este bloque** y entrega. Formato: [[formato_prompts_markdown_limpio]]; frases en una línea continua, saltos solo en la estructura.
+> **Para qué.** Una especificación bien cerrada reduce a la vez los relevos y las preguntas, y rinde más que automatizar el transporte. Esta plantilla es el **contrato** de una tanda del plan: la entrada que el coordinador pasa al subagente `ejecutora` (o `ejecutora-mecanica` si la tanda es literal), dentro del ciclo de [[ciclo_de_tandas]]. Rellena, **borra este bloque** y entrega. Formato: [[formato_prompts_markdown_limpio]]; frases en una línea continua, saltos solo en la estructura.
 >
 > **Regla de oro:** si la ejecutora tiene que **preguntar algo**, es que faltaba en la especificación. Cada pregunta que recibas es *feedback* para mejorar la siguiente tanda.
 >
 > **Y esta especificación se escribe LIGERA, no exhaustiva.** Un plan rígido empeora las tareas dinámicas —cuando un paso sorprende a mitad, el plan estático no se adapta—, y un plan tan detallado que llena el contexto **degrada al propio agente**. Ligero significa: pasos, criterio de aceptación por paso y diagnóstico previo; nada más para una tarea pequeña. El detalle de más no es prudencia, es coste.
 
-## ANULACIÓN DE ROL — este bloque va PRIMERO y se copia tal cual
+## Anulación de rol: vive en la definición del agente
 
-> **Déjalo literal en la especificación. No lo resumas, no lo muevas al final y no lo des por sobreentendido.** No es formalismo: sin él, la tanda se puede perder entera.
-
-```text
-No eres el coordinador de este asunto. Eres una SESIÓN EJECUTORA con un contrato cerrado.
-El CLAUDE.md que acabas de cargar está escrito para el coordinador y NO se te aplica:
-la instrucción de "coordinar y proteger tu contexto" y la de "delegar el trabajo voluminoso"
-son SUYAS, no tuyas.
-- NO lanzas subprocesos, ni otra ejecutora, ni `claude -p`.
-- NO usas subagentes.
-- Que el trabajo sea voluminoso NO es motivo para delegarlo: es el motivo por el que existes.
-Tu trabajo es HACER lo que dice esta spec, con tus propias manos, en esta misma sesión.
-```
-
-**De dónde sale, con su factura.** Una ejecutora lanzada correctamente —enraizada en el contenedor, como manda la doctrina— **cargó el `CLAUDE.md` del asunto, leyó "COORDINAS Y PROTEGES TU CONTEXTO… el trabajo voluminoso lo delegas", concluyó que su tanda era voluminosa e intentó lanzar OTRA ejecutora**. No hizo nada de lo encargado y **devolvió `success`**. Coste medido: **1,11 USD y una pasada en vacío** *(caso real de este vault, 2026-08-14)*.
-
-**Y la lección de fondo, que vale más allá de este bloque: dos reglas correctas del kit se pisaban entre sí.** "El directorio de trabajo es el contrato" manda enraizar la hija en el contenedor; "los ficheros de contexto se acumulan hasta tu carpeta" hace que ahí dentro se cargue un fichero que dice *"eres el coordinador"*. Las dos siguen siendo verdad. **Lo que no funciona es confiar en que llamarla "ejecutora" en la especificación baste: el `CLAUDE.md` pesa más que un rótulo**, porque llega antes y con más autoridad. **Un rol solo se anula anulándolo explícitamente.**
-
-**Repítelo en el prompt de lanzamiento, no solo en la especificación.** Son dos sitios a propósito: la especificación la lee cuando abre el fichero; el prompt lo tiene delante desde el primer token.
+La anulación del rol de coordinador ya está en la definición del subagente (`plantilla-agente-ejecutora.md`), que es lo que carga la ejecutora; no se copia en cada contrato. El porqué: una ejecutora enraizada en el contenedor cargó el `CLAUDE.md` del coordinador, concluyó que su tanda era voluminosa e intentó lanzar otra ejecutora; no hizo nada de lo encargado y devolvió `success`, con un coste de 1,11 USD *(caso real de este vault, 2026-08-14)*. Llamarla "ejecutora" no basta, porque el `CLAUDE.md` llega antes y pesa más que un rótulo: un rol solo se anula anulándolo explícitamente. Con `claude -p` el prompt de lanzamiento tiene que repetirlo (ver el anexo).
 
 ## Setup
 
-**Working dir: `{{RUTA_ABSOLUTA}}`** — el **cwd real del proceso**, no una frase de este prompt: normalmente el contenedor del asunto. **La ejecutora se lanza DENTRO de él** (`cd "{{RUTA_ABSOLUTA}}" && claude -p …`), porque el cwd decide qué `CLAUDE.md` y qué configuración de proyecto se cargan, qué hooks y permisos aplican y **dónde busca por defecto**: enraizarla en el sitio equivocado le da las reglas de otro asunto, deja sus hooks sin disparar y la manda a buscar donde no está lo que busca. Lo que esté **fuera** de ese directorio se le pasa con **`--add-dir`** (solo para LEER) o **no lo ve**. → [[orquestacion_sesiones_por_herramienta]]
+**Working dir:** el del coordinador, que el subagente `ejecutora` hereda; la carpeta y los permisos de quien lo lanza son los suyos. Si la tanda necesita otra raíz u otro perfil, no cabe en un subagente: ver el anexo de `claude -p`. → [[orquestacion_sesiones_por_herramienta]]
 
-**Dónde vive este contrato:** esta especificación y su fichero de plan viven **dentro del working dir** — la hija se enraíza donde tiene que **escribir**, y el plan tiene que nacer donde ella puede escribirlo. Ninguno de los dos se versiona: son material de trabajo y **se borran al cerrar la tanda** ([[convencion_organizacion_carpeta_trabajo]]); el commit por **pathspec** ya impide que se cuelen.
+**Dónde vive este contrato:** el plan y esta especificación viven **dentro del working dir**. El plan se versiona mientras vive, porque tiene que sobrevivir a `/clear` y a los relevos, y se retira con `git rm` al cerrar el trabajo ([[ciclo_de_tandas]], [[convencion_organizacion_carpeta_trabajo]]).
 
-**Fase: `{{análisis | ejecución}}`** — si es ejecución y la tanda lleva análisis, **Plan de referencia:** `plan-tanda-{{NOMBRE}}.md`. *(Ojo: el `Plan mode` de abajo es el modo del CLI y **no** es esto; la fase de análisis es una **ejecutora aparte con entregable escrito**.)*
+**Fase: `{{análisis | ejecución}}`** — si es ejecución y la tanda lleva análisis, **Plan de referencia:** `plan-tanda-{{NOMBRE}}.md`.
 
-Modelo: `{{MODELO}}`. Effort: `{{EFFORT}}`. **Los dos salen de la tabla rol → modelo → esfuerzo de [[modelo_por_tarea]]; aquí solo se copian, no se decide de nuevo.** **Fíjalos al arrancar y no los cambies**: el cambio obliga a reprocesar el contexto entero desde cero, porque se pierde la caché que hasta entonces ahorraba tiempo y cuota. Plan mode: `{{SÍ/NO}}`. Git: local, un commit por hito, por pathspec.
+**Quién la ejecuta: `ejecutora`, o `ejecutora-mecanica` si la tanda es literal y no pide criterio.** El modelo, el esfuerzo y el tope de turnos los fija la definición del agente ([`plantilla-agente-ejecutora.md`](plantilla-agente-ejecutora.md)), no este contrato, y no se cambian a mitad: el cambio pierde la caché. La elección sale de [[modelo_por_tarea]]. Git: local, un commit por hito, por pathspec.
 
-*(Si el material que hay que manejar roza el vocabulario de la seguridad informática —contraseñas, cifrado, credenciales, control de accesos— usa **Opus 5**: los clasificadores de seguridad pueden enrutar la petición a otro modelo, y el cambio de modelo rompe el hilo de trabajo. → [[modelo_por_tarea]])*
+## Fase de análisis: el planificador (si la tanda la lleva)
 
-## Fase de análisis (si la tanda la lleva)
+Esta fase la hace el subagente `planificador`, según el ciclo de [[ciclo_de_tandas]]; su plan parte el trabajo en tandas y cada una de ellas es un contrato como este.
 
 **Cuándo la lleva:** si la tanda **toca varios ficheros**, **estrena una forma de trabajo** que el asunto no tiene, o se apoya en **premisas sobre material que no has abierto tú**. Si no la lleva, escríbelo aquí: **"tanda de fase única declarada"** y por qué — saltársela es legítimo; saltársela en silencio, no.
 
 **Si la tanda EDITA CÓDIGO, "fase única declarada" no existe: nunca se salta.** El pack `codigo/` lo hace incondicional ([`general/comun/packs/codigo/README.md`](../general/comun/packs/codigo/README.md) § "Plan antes de tocar código") — la excepción que el resto de este párrafo permite para otro tipo de material **no aplica aquí**, sea cual sea el tamaño de la tanda.
 
-**Contrato de la ejecutora de análisis:** **no modifica material, no commitea y deja el historial intacto.** Su **único** entregable de escritura es `plan-tanda-{{NOMBRE}}.md` en el working dir, con estos cinco apartados:
+**Contrato del planificador:** **no modifica material, no commitea y deja el historial intacto.** Su **único** entregable de escritura es `plan-tanda-{{NOMBRE}}.md`, con estos apartados:
 
 1. **Verificación en fuente primaria de CADA premisa de esta especificación, con el comando ejecutado y su salida.** No "se ha comprobado que": el comando y lo que devolvió. → [[verificacion_fuente_primaria]]
 2. **Premisas de la especificación que resultan FALSAS**, listadas explícitamente. Es el apartado que hace útil el plan; **si está vacío, dilo vacío**.
 3. **Inventario de lo que va a tocar**, con el perímetro.
 4. **Decisiones que la especificación dejó abiertas sin darse cuenta** y hay que cerrar antes de empezar.
-5. **Orden de pasos y riesgos**, incluido qué hacer si un paso falla a mitad.
+5. **Tabla de tandas, orden de pasos y riesgos**, incluido qué hacer si un paso falla a mitad.
 
-**Y luego lo importante, que es tuyo:** lee el plan, **corrige esta especificación** con lo que haya destapado, y **solo entonces** lanza la ejecución. El plan no existe para que la ejecutora se organice: existe para que **tú arregles la especificación antes de que cueste trabajo**. Si no vas a leerlo, no lances la fase.
+**Y luego lo importante, que es tuyo:** lee el plan, **corrige tu especificación** con lo que haya destapado, y **solo entonces** lanza la primera tanda. El plan existe para que **tú arregles la especificación antes de que cueste trabajo**. Si no vas a leerlo, no lances la fase.
 
 **Comprueba que fue read-only de verdad** (un comando, y llevas la cuenta): `git status --short` muestra solo el fichero de plan, y `HEAD` no se ha movido.
 
@@ -138,112 +121,61 @@ La ejecutora **ejecuta estos comandos y reporta el output literal** antes de cer
 
 ## Reporta al cerrar
 
-**Límite del informe: `{{N}}` líneas.** *(Campo obligatorio, no adorno.)* Lo que devuelve una sesión hija **entra íntegro en el contexto de quien la lanzó**: el aislamiento protege del ruido intermedio —tus lecturas, tus descartes— pero no de un informe verboso. Un informe sin límite no es un ahorro, es un rodeo. Si no cabe en el límite, **el detalle va a un fichero** y el informe lo referencia. → [[orquestacion_sesiones_por_herramienta]]
+**Límite del informe: 25 líneas como mucho.** Lo que devuelve una sesión hija entra íntegro en el contexto de quien la lanzó: el aislamiento protege del ruido intermedio, pero no de un informe verboso. Si no cabe, el detalle va a un fichero y el informe lo referencia. → [[orquestacion_sesiones_por_herramienta]]
 
-Dentro de ese límite: qué has hecho y **dónde** (ficheros y commits). El **output literal** de los comandos de la definition of done. Los criterios de aceptación, **uno por uno**, con la evidencia de que se cumplen. Lo que **NO** has hecho y por qué. Hallazgos y decisiones que tomaste tú. Y si algo de la especificación estaba mal o faltaba, **dilo explícitamente**: es lo que mejora la siguiente tanda.
+Dentro de ese límite: la salida de `git status --short`, el output literal del comando de comprobación, los criterios de aceptación uno por uno con su evidencia, lo que no has hecho y por qué, y si algo de la tanda estaba mal o faltaba, dicho explícitamente: es lo que mejora la siguiente tanda. **No commitea: commitea el coordinador**, por pathspec, tras revisar el diff.
 
-**Y una línea de constancia al arrancar:** con qué **modelo** estás corriendo de verdad. Sirve para saber después con qué se hizo un trabajo, sobre todo si un clasificador te cambió el modelo por el camino.
-
-> **Ojo con el ESFUERZO, que no es simétrico** *(medido el 2026-08-21)*. **Una ejecutora headless NO puede declarar su esfuerzo real:** `/status` es un comando **del cliente**, no una herramienta, así que desde dentro no hay nada que lo exponga — y el perfil del fichero **no lo dice tampoco**, porque un `--effort` del lanzamiento lo pisa sin dejar rastro visible. *(Caso real: una tanda razonó, correctamente y con el fichero delante, que corría a `high`, cuando el lanzamiento le había pasado `max`.)* **Consecuencia práctica: no le pidas a la ejecutora que declare su esfuerzo — es un criterio que no puede cumplir por comando, y lo que devuelva será una deducción, no una medición.** Quien lo sabe es **quien lanza**, así que la constancia la deja **él** al anotar la tanda.
+Una línea de constancia al arrancar: con qué modelo estás corriendo de verdad. El modelo y el esfuerzo los fija la definición del agente, no el contrato; la ejecutora no puede declarar su esfuerzo desde dentro (`/status` es un comando del cliente), así que no se le pide como criterio.
 
 ---
 
-## Variante headless (para que la lance el coordinador, sin trasiego del director)
+## Anexo: cuando la tanda tiene que ser `claude -p`
 
-Cuando la tanda está bien cerrada, el coordinador puede **lanzarla él mismo** y recoger el resultado sin intermediario ([[orquestacion_sesiones_por_herramienta]]). El contrato es este mismo fichero; la ejecutora escribe su informe en un `.md` y el coordinador lee solo el extracto. El trabajo ocurre en un **proceso aparte con contexto limpio**, así que "coordinar ≠ ejecutar" se mantiene intacto.
+El camino normal es el subagente `ejecutora` ([[ciclo_de_tandas]]). Se recurre a `claude -p` solo si la tanda necesita **otra raíz**, **otro perfil** o es el plan B. El trabajo ocurre en un proceso aparte con contexto limpio, y la ejecutora escribe su informe en un `.md` ([[orquestacion_sesiones_por_herramienta]]).
 
-**El `cd`/`--cd` del lanzamiento no es decorativo:** es lo que fija el working dir del § Setup — sin él, la hija se enraíza donde estés tú.
-
-Esto de aquí abajo es **sintaxis**: cómo se lanza la ejecutora.
+**El `cd` del lanzamiento es lo que fija el working dir**: sin él, la hija se enraíza donde estés tú. **Una sesión `claude -p` no carga la definición del agente**, así que no trae la anulación de rol del coordinador y el prompt tiene que repetirla. Texto corto, tomado de `plantilla-agente-ejecutora.md`: "Eres la ejecutora de una tanda. Las reglas comunes de los `CLAUDE.md` que has cargado también son tuyas; las que dicen que coordinas, que delegas o que proteges tu contexto son del coordinador. Que la tanda sea larga no es motivo para delegarla: es el motivo por el que existes."
 
 | Necesidad | Claude Code |
 |---|---|
 | Lanzar la ejecutora | `cd "<ruta>" && claude -p "<prompt>"` |
-| Informe a fichero | `--output-format json` |
-| **Nombre de la sesión** (así la reconoces en el listado y puedes dirigirte a ella) | `--name "<nombre>"` |
+| Perfil (se pasa siempre) | `--settings inicializador/plantilla-settings-ejecutora.json` |
+| Modo de permisos | `--permission-mode acceptEdits` |
+| Informe de la tanda | `--verbose --output-format stream-json` |
+| Nombre de la sesión | `--name "<nombre>"` |
 | Directorio adicional (solo para LEER) | `--add-dir` |
-| Fase de análisis, solo lectura | `--settings inicializador/plantilla-settings-ejecutora.json` **y NO modo plan** — el read-only se comprueba al volver, no se impone: en modo plan la fase de análisis **no puede escribir su propio plan** |
-| Fase de ejecución | perfil por defecto del destino |
 | Tope de turnos y de gasto | `--max-turns`, `--max-budget-usd` |
 
-**Primero, la de análisis** (si la tanda la lleva). Único entregable: el fichero de plan.
-
 ```bash
-cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "No eres el coordinador de este asunto: el CLAUDE.md que vas a cargar es suyo y no se te aplica. NO lances subprocesos ni otra ejecutora, NO uses subagentes, y que el trabajo sea voluminoso no es motivo para delegarlo. Analiza la tanda descrita en <spec>.md. NO modifiques material, NO commitees, deja el historial intacto. Tu UNICO entregable de escritura es plan-tanda-<nombre>.md, con los cinco apartados que pide la spec" \
-  --name "analisis-<nombre>" \
-  --add-dir "<solo lo que tenga que LEER fuera de su cwd>" \
-  --allowedTools "Read,Grep,Glob" \
-  --permission-mode dontAsk \
-  --max-turns 65 --max-budget-usd 8.00 \
-  --output-format json
-```
-
-**Al volver, antes de nada:** `git status --short` (solo el fichero de plan) y `git rev-parse HEAD` (sin mover).
-
-> **Tres trampas medidas al volver, y las tres hacen que una tanda vacía parezca buena** *(casos reales, 2026-08-14 y 2026-08-20)*:
->
-> - **`subtype: success` NO significa trabajo hecho.** Es el veredicto del **runner**, no del modelo: una ejecutora que no hizo nada de lo encargado devolvió `success` igual. **El verde falso puede venir de la tubería y no del trabajo.** Lo que lo destapó fue un `wc -c` **desde fuera**, no su informe — que ni llegó a existir. **Comprueba el efecto en el disco, no el código de salida.**
-> - **[Y AL VOLVER, quien lanzó lo COMPRUEBA POR COMANDO, no leyendo]** `node _meta/comprobar-tanda.mjs <salida.json> <entregable>`. Mira lo que importa —que el informe no venga vacío, que la tanda no haya muerto por un límite, que no declare ella misma que no pudo, y sobre todo **que el entregable esté en el disco**— en vez de fiarse del código de salida. **Sale de dos casos reales del mismo día:** una tanda que devolvió éxito sin poder entregar, y el fallo del sector documentado de que **agotar la cuota devuelve éxito con salida vacía**. Una investigación de agosto de 2026 sobre orquestadores encontró que **ninguna herramienta del mercado detecta eso**. Verde aquí significa *"produjo algo"*, **no** *"es correcto"*: eso lo sigue diciendo leer el informe.
->
-> - **[REGLA, 2026-08-27] Si la sesión no puede escribir su entregable, PARA Y DILO — no lo dejes donde caiga.** Es el caso que faltaba por escribir y se vivió entero: una tanda de extracción arrancó en modo plan sin que nadie lo pidiera, **hizo la investigación completa, gastó su presupuesto y no pudo entregar**. Lo hizo bien: paró en seco, dijo dónde había quedado el trabajo y por qué. Lo que **no** se hace es fingir que salió bien ni dar por entregado un fichero que está en otro sitio. **Y para el que lanza, la contrapartida: comprueba el disco, no el código de salida** — aquella tanda devolvió éxito.
->
-> - **Fija el modo de permisos EXPLÍCITAMENTE al lanzar.** No des por hecho el que traiga por defecto: en esa misma tanda no se pasó ninguno y salió en modo plan. Una ejecutora que tiene que escribir se lanza con `--permission-mode acceptEdits`, y el perfil se pasa con `--settings inicializador/plantilla-settings-ejecutora.json` para que no herede el del coordinador — que es más amplio y trae el canal entre sesiones abierto.
->
-> - **El modo plan DESVÍA el entregable.**> - **El modo plan DESVÍA el entregable.** Si lanzas la fase de análisis con `--permission-mode plan` para tener barrera real de solo lectura, la hija puede **escribir su plan en `~/.claude/plans/`** en vez de devolverlo, y lo que te llega es una frase diciendo *"está en el plan"* — con el contenido fuera del working dir y recuperable solo del transcript. **Si quieres un fichero de una sesión en modo plan, dale permiso de escritura acotado a ese fichero o recoge la salida por redirección.** No des por hecho que el entregable aparecerá donde lo pediste.
->
-> - **`--output-format json` no emite NADA hasta que la tanda termina** *(medido el 2026-08-20)*. Si el watchdog la corta, no te queda **ni un byte**: ni informe, ni error, ni rastro de por dónde iba — solo un fichero de cero bytes y diez minutos perdidos. **Para cualquier tanda que pueda pasar de unos minutos, usa `--verbose --output-format stream-json`**, que escribe evento a evento: así ves que avanza y, si hay que matarla, conservas el trabajo hasta ahí. El JSON de una sola pieza vale para tandas cortas y para poco más.
-> - **Y el watchdog que manda es el MÁS CORTO de los dos.** Si tu llamante corta a los 10 minutos, poner 15 en el `timeout` no sirve de nada. Cuando la tanda pueda ser larga, **lánzala en segundo plano** y deja que el watchdog sea el tuyo.
-
-Lee el plan, **corrige la especificación**, y entonces:
-
-```bash
-cd "<RUTA_ABSOLUTA_DEL_WORKING_DIR>" && claude -p "No eres el coordinador de este asunto: el CLAUDE.md que vas a cargar es suyo y no se te aplica. NO lances subprocesos ni otra ejecutora, NO uses subagentes, y que el trabajo sea voluminoso no es motivo para delegarlo: es el motivo por el que existes. Ejecuta con tus propias manos la tanda descrita en <spec-ya-corregida>.md, apoyandote en plan-tanda-<nombre>.md. Escribe tu reporte en informe-tanda.md" \
+cd "<RUTA_DEL_WORKING_DIR>" && claude -p "<anulación de rol, texto de arriba>. Ejecuta la tanda descrita en <spec>.md. Escribe tu reporte en informe-tanda.md" \
   --name "ejecucion-<nombre>" \
+  --settings inicializador/plantilla-settings-ejecutora.json \
+  --permission-mode acceptEdits \
   --add-dir "<solo lo que tenga que LEER fuera de su cwd>" \
-  --allowedTools "Read,Edit,Bash(git add:*),Bash(git commit:*)" \
-  --permission-mode dontAsk \
   --max-turns 300 --max-budget-usd 60.00 \
-  --output-format json
+  --verbose --output-format stream-json > salida.jsonl
 ```
 
-### Ponle nombre a la tanda: `--name`
+Los topes son una referencia medida: pon los tuyos con margen del 100% sobre tu línea base, porque una tanda murió por `error_max_budget_usd` con el techo ajustado y morir a mitad sale más caro que el margen. Cada lanzamiento cuesta unos 42.000 tokens fijos aunque no haga nada.
 
-**Verificado en fuente el 2026-08-17.** Una sesión lanzada con `-p` **enlaza su buzón igual que una interactiva**, así que **aparece en el listado de sesiones y es direccionable**. Y lo que la nombra es `--name`: *"a session answers to the name you set with the `/rename` command or the `--name` flag"*. Sin nombre, el sistema le pone uno derivado de la carpeta, que con varias tandas del mismo asunto es indistinguible.
+**Nombre.** `--name` hace la sesión reconocible en el listado y reanudable por nombre; sin él, varias tandas del mismo asunto son indistinguibles. Las ejecutoras llevan `crossSessionInbound: "refuse"` a propósito, para que la tanda siga siendo verificable contra su especificación. Nombrar no abre el buzón, y el precio es ir a buscar el resultado al disco.
 
-**Para qué sirve de verdad aquí**, que no es lo que parece a primera vista:
-
-- **Para reconocerla.** Con dos o tres tandas en vuelo, el listado sin nombres no dice cuál es cuál.
-- **Para dirigirte a ella**, si alguna vez lanzas una tanda que sí deba escuchar.
-- **Y para reanudarla por nombre** en vez de por identificador.
-
-> **Pero ojo, que aquí hay una decisión de método que NO cambia:** las ejecutoras de este kit llevan `crossSessionInbound: "refuse"` **a propósito** — se rigen por un contrato cerrado, y una tanda que acepta mensajes a mitad deja de ser verificable contra su especificación. Ponerle nombre **no** la abre: solo la hace identificable. **Nombrar y escuchar son cosas distintas, y aquí queremos la primera sin la segunda.**
-
-**El coste de esa decisión, ahora que se puede medir:** existe un mecanismo para que una sesión **avise cuando queda inactiva** —útil para no ir preguntando si la tanda terminó— y **con `refuse` no llega**, porque los controles de entrada se le aplican igual que a un mensaje. Se asume: el precio de que la tanda sea verificable es que hay que ir a buscar su resultado, que es justo lo que ya hace el coordinador comprobando el disco.
-
-**Los techos.** Los de arriba son una **referencia medida**, no constantes — pon los tuyos con **margen del 100% sobre tu propia línea base**. Una tanda real **murió por `error_max_budget_usd`** con el techo demasiado ajustado, y morir a mitad sale más caro que el margen. `--max-budget-usd` es un **cortacircuito nominal, no un cargo**: sin `ANTHROPIC_API_KEY` lo que se consume es ventana de suscripción. Para una tanda mecánica y pequeña, 30 turnos siguen bastando: cada lanzamiento cuesta **~42.000 tokens fijos** aunque no haga nada, y eso se paga **por lanzamiento, no por trabajo hecho**.
-
-### Una lista de permitidos **CONCEDE, no restringe**
-
-**Es aditiva, no una lista blanca exclusiva**, y que el modo de permisos no pregunte (`--permission-mode dontAsk`) significa *"no preguntes"*, **no** *"deniega lo no listado"*. Medido, no supuesto: una sesión hija lanzada con `--allowedTools "Read"` (sin `Bash`) **ejecutó Bash igualmente**. Se sigue pasando la opción porque **documenta la intención**, pero **no la cuentes como barrera**.
-
-**Lo que SÍ protege:** las **deny rules del `settings.json` del directorio destino** — la hija las respeta y **no las puede saltar**; aguantan incluso bajo el flag de permisos amplios. Son la única barrera real, y **lo que quieras impedir, exprésalo como DENY, nunca como ausencia del allow**. Dato medido (2026-08-10): el `settings.json` de un proyecto se resuelve por el **directorio de trabajo exacto**, **sin heredar del directorio padre** — una sesión enraizada más adentro del árbol (p. ej. en un `repo/` dentro del contenedor) **no** hereda las deny rules puestas más arriba; si necesita las suyas, van **en su propio directorio**, o queda más abierta que su padre en vez de más protegida.
-
-**Lo que protege de verdad, por orden:**
-
-1. **Las deny rules** del `settings.json`, por ruta.
-2. **Los cortacircuitos duros** — `--max-turns`/`--max-budget-usd`.
-3. **Los hooks previos a la herramienta** (`PreToolUse`) — corren al margen del modo de permisos.
-4. **El watchdog/timeout del llamante.**
+> **Trampas medidas al volver; todas hacen que una tanda vacía parezca buena** *(casos reales, 2026-08-14, 08-20 y 08-27)*:
+>
+> - **`subtype: success` no significa trabajo hecho.** Es el veredicto del runner, no del modelo: una ejecutora que no hizo nada de lo encargado devolvió `success`, y agotar la cuota devuelve éxito con salida vacía. **Comprueba el efecto en el disco, no el código de salida**, y por comando: `node _meta/comprobar-tanda.mjs <salida.json> <entregable>`. Verde significa "produjo algo", no "es correcto": eso lo dice leer el informe.
+> - **Si la sesión no puede escribir su entregable, que pare y lo diga**, en vez de dejarlo donde caiga. Una tanda arrancó en modo plan sin que nadie lo pidiera, hizo la investigación completa, gastó su presupuesto y no pudo entregar.
+> - **Fija el modo de permisos al lanzar**, no des por hecho el que traiga por defecto, y pasa siempre el perfil con `--settings`: sin él hereda el del coordinador, más amplio, con el canal entre sesiones abierto.
+> - **El modo plan desvía el entregable.** Con `--permission-mode plan` la hija puede escribir su plan en `~/.claude/plans/` en vez de devolverlo. Si quieres un fichero de una sesión en modo plan, dale permiso de escritura acotado a ese fichero o recoge la salida por redirección.
+> - **`--output-format json` no emite nada hasta que la tanda termina** *(medido el 2026-08-20)*: si el watchdog la corta, no queda ni un byte. Para una tanda que pueda pasar de unos minutos, usa `--verbose --output-format stream-json`.
+> - **El watchdog que manda es el más corto de los dos.** Si tu llamante corta a los 10 minutos, poner 15 en el `timeout` no sirve. Si la tanda puede ser larga, lánzala en segundo plano.
+> - **Una lista de permitidos concede, no restringe** *(medido: una hija con `--allowedTools "Read"` ejecutó Bash igualmente)*. Lo que protege son las deny rules del `settings.json` del directorio destino, que se resuelve por el directorio de trabajo exacto y no hereda del padre; después, `--max-turns`/`--max-budget-usd`, los hooks `PreToolUse` y el watchdog. Lo que quieras impedir, exprésalo como deny.
 
 ### Antes de usarla, comprueba
 
-- **Que la sesión del agente está autenticada, y compruébalo en el propio agente, no en la tuya.** Es lo **primero**, porque sin ello **no se lanza nada** y es un fallo que la sesión padre no ve venir: tú puedes estar trabajando con normalidad y el binario del agente **no tener sesión guardada**, porque se autentican por vías distintas. Se comprueba con `claude auth status`, que responde en JSON y no es interactivo; se arregla con `claude auth login`, que **sí** lo es — y por tanto **lo hace el director**, no el agente. *(Medido el 2026-08-10: `claude auth status` devolvía `loggedIn: false` mientras la sesión del coordinador funcionaba sin problema. La tanda murió en **1,3 segundos con 0 tokens** y `Failed to authenticate`, sin escribir una línea de su entregable. Fallar rápido y barato es la suerte de este caso; no cuentes con ella.)*
-- Que **`ANTHROPIC_API_KEY` NO está definida**, ni como variable de entorno ni en un **`.env` bajo el directorio de trabajo**: si lo está, Claude Code la prioriza sobre la suscripción y **factura por API en silencio**.
-- Que la barrera del destino está puesta: el `.claude/settings.json` del directorio destino con sus **deny rules** (ver [plantilla-settings-coordinador.json](plantilla-settings-coordinador.json)) — los originales del asunto, los almacenes de credenciales de la máquina, el catálogo `general/` en solo lectura, y los comandos que sacan algo fuera.
-- Que pones los cortacircuitos: `--max-turns` y `--max-budget-usd`.
-- Que hay un **timeout/watchdog en el llamante**: hay *silent-freeze* documentado al lanzar `claude -p` desde procesos de larga vida.
-- **Entradas grandes por ruta de fichero**, nunca por stdin.
-- **Baja concurrencia: 1-2 ejecutoras**, no un enjambre. Un enjambre reduce el trabajo útil semanal de una persona sola.
+- **Que la sesión del agente está autenticada, y compruébalo en el propio agente, no en la tuya.** Sin ello no se lanza nada y la sesión padre no lo ve venir, porque se autentican por vías distintas. Se comprueba con `claude auth status` (JSON, no interactivo); se arregla con `claude auth login`, que es interactivo y lo hace el director. *(Medido el 2026-08-10: `loggedIn: false` mientras la sesión del coordinador funcionaba; la tanda murió en 1,3 segundos con 0 tokens.)*
+- Que **`ANTHROPIC_API_KEY` no está definida**, ni como variable de entorno ni en un `.env` bajo el directorio de trabajo: si lo está, Claude Code la prioriza sobre la suscripción y factura por API en silencio.
+- Que la barrera del destino está puesta: el `.claude/settings.json` con sus deny rules (ver [plantilla-settings-coordinador.json](plantilla-settings-coordinador.json)).
+- Que pones los topes y un timeout o watchdog en el llamante: hay *silent-freeze* documentado al lanzar `claude -p` desde procesos de larga vida.
+- Entradas grandes por ruta de fichero, nunca por stdin, y baja concurrencia: 1-2 ejecutoras, no un enjambre.
 
 ## Nota de trazabilidad
 

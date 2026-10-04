@@ -2,6 +2,8 @@
 
 Perfil para la **sesión ejecutora de un asunto que NO es de software**: la que transcribe un lote, tabula facturas, redacta el escrito largo, barre un árbol de ficheros o produce un informe de análisis. Para las que tocan código propio está `plantilla-settings-ejecutora-codigo.NOTAS.md`, que añade el gestor de paquetes y no trae las denegaciones del kit.
 
+**Desde el ciclo nuevo, este perfil queda para las sesiones `claude -p`**: las que necesitan otra raíz, otro perfil, o sirven de plan B. Las tandas normales las ejecutan subagentes `ejecutora` (Sonnet) lanzados por el coordinador, uno por tanda, con el ciclo de `ciclo_de_tandas`; esos subagentes heredan las denegaciones del perfil del coordinador, no las de este fichero.
+
 **Se activa con `--settings <ruta>` al lanzar la tanda**, no copiándolo a ningún `.claude/`. Una ejecutora no vive en un contenedor: nace, hace su trabajo y muere.
 
 ## Por qué existe, y qué agujero cierra

@@ -43,7 +43,7 @@ Guarda el inventario en `coordinacion/referencia/reconocimiento-<fecha>.md` (doc
 ## 2. Crear el contenedor estándar (= checklist-arranque pasos 1, 3, 4, 5)
 
 - Contenedor `asuntos/<asunto>/` desde la plantilla; **slug = nombre corto y estable del asunto**. Aunque dos asuntos compartan protagonista o inmueble, **un contenedor estándar por asunto** ([[estructura_contenedor_asunto]]).
-- Charter + `CLAUDE.md` + configuración del agente + `settings.local.json` (rutas de esta máquina, gitignored).
+- Charter + `CLAUDE.md` + configuración del agente (`.claude/settings.json` y las tres definiciones de `.claude/agents/`, copiadas de las plantillas como en el paso 4 del checklist de arranque) + `settings.local.json` (rutas de esta máquina, gitignored).
 - Doctrinas del mínimo común por copia, registrando su `version`. Si el asunto trae una casuística nueva para el catálogo, **generaliza la doctrina al catálogo** y luego instálala ([[mejora_continua_del_kit]]).
 
 ## 3. Traer la documentación (copiar al vault, adaptar)
@@ -73,9 +73,9 @@ Material que ya venía organizado con método (frontmatter, un nombrado propio d
 
 - Define los vínculos en ambos sentidos (el asunto dependiente enlaza al que le da origen; el origen lista en su README los que lo consumen) con **rutas relativas**. Documenta el acoplamiento —importes que viajan de uno a otro, fechas que fijan plazos, un mismo perito o un mismo contrato— **citando el documento fuente, sin copiar la cifra**. Convención en [[estructura_contenedor_asunto]] § Cross-links.
 
-## 5. Dejar ordenado el origen — **prompt para una sesión ejecutora** (no lo ejecutas tú)
+## 5. Dejar ordenado el origen — **una tanda de `ejecutora`, o `claude -p` si el origen está fuera del vault** (no lo ejecutas tú)
 
-Redacta el prompt (coordinar ≠ ejecutar) que: (1) deja en la carpeta de origen un **puntero al vault** por el nombre del vault, no por ruta absoluta, para que dentro de un año se sepa dónde está lo bueno; (2) **retira los duplicados** de lo ya traído, dejando los originales donde el director quiera conservarlos; (3) unifica nombres de fichero con fecha delante (`2026-03-14-resolucion.pdf`) para que ordenen solos.
+El trabajo sigue el ciclo de tandas ([[ciclo_de_tandas]]): el planificador hace el plan, una `ejecutora` hace cada tanda y tú la compruebas y commiteas (coordinar ≠ ejecutar). La carpeta de origen suele vivir fuera del vault, es decir, en otra raíz, y esa tanda va por `claude -p` según el anexo de [plantilla-tanda-ejecutora.md](plantilla-tanda-ejecutora.md). La tanda tiene que: (1) deja en la carpeta de origen un **puntero al vault** por el nombre del vault, no por ruta absoluta, para que dentro de un año se sepa dónde está lo bueno; (2) **retira los duplicados** de lo ya traído, dejando los originales donde el director quiera conservarlos; (3) unifica nombres de fichero con fecha delante (`2026-03-14-resolucion.pdf`) para que ordenen solos.
 
 **Antes de versionar nada — escaneo del material entrante.** Barato, y evita algo irreversible:
 

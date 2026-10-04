@@ -2,7 +2,7 @@
 name: Formato markdown limpio en prompts
 description: Los prompts .md para sesiones operativas usan markdown limpio (# heading 1, solo headings, sin envoltorio ``` exterior, sin separadores ASCII, sin tiempos ni metadiscurso) para que el director los copie íntegros.
 type: convention
-version: 1.1
+version: 1.3
 index_summary: >-
   Prompts `.md`: `#` heading 1, solo headings, sin envoltorio ``` exterior, sin separadores ASCII, sin tiempos ni metadiscurso. **SIN EMOJIS con ámbito acotado (v1.2)**: se exige y se verifica en el **catálogo, las plantillas, los ficheros de reglas e identidad** (`CLAUDE.md`, `README.md`, charters, índices) y en lo que se **entrega fuera** — estados como etiquetas `[OK]`/`[PENDIENTE]`, el énfasis lo da el markdown. **En las zonas de trabajo (cola, bitácora, estudios, coordinación, informes, chat) NO se persiguen** y no se gasta un token en quitarlos. Flechas, matemáticos y dibujo de árboles **no** son emojis en ninguna parte; limpieza siempre oportunista, nunca dedicada.
 ---
@@ -18,7 +18,7 @@ Los prompts `.md` que el coordinador redacta para sesiones operativas usan **mar
 5. **Bloques de código internos sí** pueden usar ` ``` ` (comandos de shell, json, texto literal a copiar…).
 6. **SIN tiempos estimados** en el cuerpo: eso es para reportar al director, no para el agente.
 7. **SIN metadiscurso** sobre el coordinador, sobre cómo se redactó el prompt, ni sobre otras sesiones paralelas. El agente no lo necesita.
-8. El prompt se **pega íntegro en Plan Mode**.
+8. El prompt se **entrega como encargo a un subagente o se pega en la sesión**.
 
 ## Estructura típica
 
@@ -54,7 +54,22 @@ Las preferencias de presentación documental son **fuertes y operativas**: captu
 
 - **Documentos existentes:** se limpian **de forma oportunista al editarlos**, sin churn dedicado — también en la zona donde la regla se exige. **Nunca una pasada dedicada a quitar emojis.**
 
+## Cómo se le escribe a un modelo actual
+
+Estas pautas salen de la documentación de la API y están **medidas en Opus 4.5/4.6, no en 5.5**: la propia página avisa de que hay que verificarlas en cada modelo, y para 5.5 no hay una prueba equivalente. Se aplican como punto de partida y se comprueban con el modelo que toque.
+
+- **Di qué hacer y por qué, con redacción normal.** Los modelos recientes responden más a la indicación del sistema y se sobreactivan con el énfasis: donde antes se escribía una alarma en mayúsculas con un "debes", basta "usa esta herramienta cuando…". Dar el motivo les permite aplicar la regla a casos que el texto no previó; una prohibición absoluta sin motivo solo se obedece al pie de la letra.
+- **Escribe imperativos literales.** Siguen las instrucciones con precisión: "¿puedes sugerir cambios?" produce sugerencias, no cambios. En un contrato de tanda se escribe "edita", "escribe el plan en tal fichero". Un encargo de solo lectura lo declara como prohibición explícita, no como cortesía.
+- **Cierra la tanda cuando el trabajo pedido esté hecho.** Sonnet 5.5 añade tests, documentación y ficheros pequeños en todos los niveles de esfuerzo, más cuanto más alto. Para las tandas sirve este párrafo: "cuando el trabajo pedido esté hecho y comprobado, informa y para; no añadas funciones, pruebas, ficheros, documentación ni refactorizaciones que no se pidieron, y menciónalo al final". Protege además la regla de commitear solo los ficheros propios.
+- **No encargues revisores que nadie ha pedido.** En esfuerzo alto lanza subagentes revisores por su cuenta; indicar que no lo haga salvo que se pida una revisión redujo el coste en un tercio. Si la revisión hace falta, se pide por su nombre.
+- **Nombra las paradas que se quieren, solo en ejecución desatendida.** En un `claude -p` sin nadie delante, el modelo puede cerrar el turno con texto y el bucle lo toma por final, o preguntar antes de terminar. Se le dice qué paradas son legítimas (la puerta humana) y cuáles no, y el cierre se trata como informe. En coordinación interactiva no se añade: ahí quien está delante sí puede contestar, y el párrafo estorba.
+- **Pide consultar la fuente aunque haya seguridad.** Un modelo en esfuerzo bajo da por hecho un cambio sin ejecutar la prueba, o responde de memoria donde una lectura habría detectado novedades. Una línea como "abre el fichero aunque estés seguro de lo que dice" encaja con la regla de fuente primaria. Conviene quitar las frases del tipo "minimiza las llamadas a herramientas", que empujan al mismo error.
+- **Regula el razonamiento con el nivel de esfuerzo.** Bajar el esfuerzo reduce el pensamiento con más fiabilidad que cualquier frase del prompt, y a Sonnet pedirle que piense menos no se lo reduce de forma fiable. Por eso no se escribe "piensa menos" ni "piensa con cuidado": lo primero no funciona y lo segundo, en Opus 5.5, sobra.
+- **A Fable se le pide esfuerzo `high` y edición quirúrgica.** Narra menos entre herramientas, escribe prosa más densa y tiende a reescribir ficheros enteros; con `xhigh` o `max` puede redactar el entregable en el razonamiento y repetirlo después. Se le indica que edite solo la parte que cambia y se le deja el esfuerzo en `high`.
+- **Pide el formato en positivo.** Las instrucciones de formato en negativo funcionan peor que describir lo que se quiere: se escribe "responde en prosa corrida" y no "sin viñetas".
+- **No edites `CLAUDE.md` ni los hooks a mitad de una tanda larga.** Cambiar el sistema o las herramientas a mitad de sesión invalida la caché y los bloques de pensamiento, que solo valen en la conversación que los produjo. Los cambios de reglas se hacen entre tandas.
+
 Relacionada: [[feedback_prompt_delivery]], [[prompts_rutas_absolutas_fuera_del_working_dir]], [[minimizar_askuserquestion_agente_operativo]], [[docs_sin_fases]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v1.2 (2026-08-12):** la regla SIN EMOJIS pasa de "todo lo escrito" a un **ámbito acotado** por decisión del director — se exige y se verifica en el catálogo, las plantillas, los ficheros de reglas e identidad y lo que se entrega fuera; **en las zonas de trabajo ya no se persigue**, porque limpiarlas costaba más contexto y cuota de lo que aportaba, y un emoji en un informe de tanda ponía en rojo el kit entero. **v1.1 (2026-08-01):** añadida la regla **SIN EMOJIS** en todo lo escrito: estados como etiquetas de texto, el énfasis lo da el markdown, y flechas, matemáticos y dibujo de árboles NO son emojis. Limpieza oportunista, sin churn dedicado. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
+> Pieza de catálogo `general/comun/doctrinas/`. **v1.3 (2026-10-04):** sección nueva "Cómo se le escribe a un modelo actual", con las pautas de la documentación de la API para los modelos 5.5 (medidas en Opus 4.5/4.6), y la regla 8 pasa a "se entrega como encargo a un subagente o se pega en la sesión". El `version: 1.1` del frontmatter estaba atrasado respecto a la v1.2 de este mismo pie, y queda corregido. **v1.2 (2026-08-12):** la regla SIN EMOJIS pasa de "todo lo escrito" a un **ámbito acotado** por decisión del director — se exige y se verifica en el catálogo, las plantillas, los ficheros de reglas e identidad y lo que se entrega fuera; **en las zonas de trabajo ya no se persigue**, porque limpiarlas costaba más contexto y cuota de lo que aportaba, y un emoji en un informe de tanda ponía en rojo el kit entero. **v1.1 (2026-08-01):** añadida la regla **SIN EMOJIS** en todo lo escrito: estados como etiquetas de texto, el énfasis lo da el markdown, y flechas, matemáticos y dibujo de árboles NO son emojis. Limpieza oportunista, sin churn dedicado. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
 > Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.

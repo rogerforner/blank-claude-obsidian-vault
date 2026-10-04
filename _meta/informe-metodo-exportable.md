@@ -43,15 +43,15 @@ La cola de pendientes de un proyecto: **40 KB**. La bitácora: **30 KB**. Al sup
 
 ### 1.3 Coordinar no es ejecutar
 
-Quien coordina **protege su contexto**: lee, decide, redacta encargos y verifica. El trabajo voluminoso va a **sesiones aparte con contrato escrito**, en procesos con contexto limpio.
+Quien coordina **protege su contexto**: lee, decide, redacta encargos y verifica. El trabajo voluminoso va a **agentes aparte con contrato escrito**: subagentes con contexto propio que ejecutan cada tanda y la comprueban, mientras quien coordina revisa el diff y commitea.
 
 Y el matiz que casi nadie tiene en cuenta: **lo que devuelve un subagente entra íntegro en el contexto de quien lo lanzó**. El aislamiento protege del ruido intermedio —sus lecturas, sus descartes—, **no de un informe verboso**. Un subagente que lee ochenta mil tokens y escribe tres mil te cuesta esos tres mil.
 
 **Consecuencia práctica:** el ahorro no está en delegar, está en **acotar el entregable**. Todo encargo dice cuántas líneas y qué forma tiene lo que vuelve. Un subagente sin límite de salida no es un ahorro, es un rodeo.
 
-### 1.4 Toda tanda no trivial va en dos fases
+### 1.4 Toda tanda no trivial empieza por un plan
 
-Primero una sesión de **análisis de solo lectura** cuyo único producto es un fichero de plan que enumera **las premisas falsas de la especificación**. Ese plan lo lee quien escribió la especificación, y con él la corrige. Después se ejecuta contra la especificación ya corregida.
+Primero un agente planificador, de solo lectura, cuyo único producto es un fichero de plan que enumera **las premisas falsas de la especificación** y trocea el trabajo en tandas por bloques. Ese plan lo lee quien escribió la especificación, y con él la corrige. Después se ejecuta tanda a tanda contra la especificación ya corregida, parando al cerrar cada bloque. Son tres agentes: planificador, ejecutora y ejecutora mecánica (para lo mecánico y de volumen).
 
 **El dato que lo justifica:** en una tanda preparada con cuidado, con el inventario medido comando a comando, la fase de análisis encontró **ocho premisas falsas y nueve decisiones que la especificación dejaba abiertas sin darse cuenta**. Las ocho eran de quien escribió la especificación.
 
@@ -149,6 +149,14 @@ Descartar bien vale tanto como adoptar bien, y **ahorra la tentación de reinten
 - **Registros telegráficos para ahorrar tokens.** No superan a pedir brevedad, y degradan la prosa. Inaceptable cuando el producto es un escrito que leerá un tercero.
 - **Partir el fichero de reglas en importaciones.** No aligera: los importados se cargan enteros. Lo que sí aligera son las reglas por ruta — con la salvedad de que **una regla que debe cumplirse siempre no puede vivir ahí**.
 - **Automatizar el acceso a un servicio controlando un navegador con la sesión iniciada.** Existen herramientas maduras que lo hacen y funcionan. **Chocan con las condiciones de uso** y el riesgo que declaran sus propios autores es la suspensión de la cuenta. De aquí sale un criterio general: **un mecanismo de integración se evalúa por tres cosas, y la tercera se olvida siempre — que funcione, que no exija credenciales de programador, y que esté permitido.**
+- **Servidor externo de memoria persistente.** Se reabre si aparece uno que no consuma tokens de arranque medibles y que compruebe validez, no solo edad. Hoy ninguno comprueba validez.
+- **Consolidación automática de memoria.** Se reabre si deja un registro auditable dentro del árbol, con registro de cambio por cada modificación.
+- **Cambiar de sustrato.** Se reabre si deja de haber una herramienta que lea Markdown en disco, o si el fabricante deja de soportar ficheros de instrucciones por directorio.
+- **Convertir el catálogo de reglas a un formato con campos.** Se reabre si el verificador necesita comprobar algo del contenido de una regla y no de su estructura.
+- **Un enganche que reinyecte las reglas de un proyecto al detectar la compactación.** Se reabre si se mide un caso en que quitar el ámbito a esas reglas, que es lo que recomienda la documentación, sea inviable por tamaño.
+- **Un buzón asíncrono nuevo entre sesiones.** Se reabre si el aviso por campo en el fichero de estado, más el enganche de arranque, falla en un caso medido.
+- **Instalar una herramienta de terceros para generar índices.** Se reabre si el script propio pasa de 100 líneas.
+- **Un detector automático de degradación de sesión.** Se reabre si alguien publica instrumentación reproducible. Hoy no existe, y la señal humana es la mejor disponible.
 
 ---
 
@@ -160,7 +168,7 @@ Por relación entre esfuerzo y beneficio, si el vault de destino ya está en mar
 2. **El entregable acotado en cada encargo a una sesión hija.** Una línea por encargo.
 3. **Un verificador con las reglas que ya tenga sentido allí**, aunque empiece con tres. Su valor no es encontrar cosas raras: es **parar a quien escribió la regla**.
 4. **Los techos y el digest del fichero de reglas.**
-5. **Las dos fases en las tandas no triviales.** Cuesta una sesión extra y paga sola.
+5. **El plan antes de las tandas, en las no triviales.** Cuesta un agente extra y se paga solo.
 6. **La higiene con limpieza al arrancar.**
 
 **Y lo último, no lo primero:** las tablas de modelos, las integraciones y cualquier cosa que dependa de un producto concreto. Caducan, y adoptarlas antes que lo estructural es optimizar el sitio equivocado.

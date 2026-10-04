@@ -29,6 +29,7 @@
       "Edit(//**/general/**)",
       "Write(//**/_meta/**)",
       "Edit(//**/_meta/**)",
+      "Edit(//**/inicializador/**)",
       "Bash(git push:*)",
       "Bash(git remote:*)",
       "PowerShell(git push:*)",
@@ -75,6 +76,6 @@
   },
   "env": {
     "CLAUDE_CODE_DISABLE_FAST_MODE": "1",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "haiku"
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   }
 }

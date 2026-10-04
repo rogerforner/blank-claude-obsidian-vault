@@ -2,7 +2,7 @@
 name: Convención de organización de la carpeta de trabajo
 description: La carpeta de coordinación mantiene en su raíz solo lo activo y lo vivo. Handoffs y buffers son LOCALES (gitignored, nunca se versionan); los prompts ejecutados y los briefs con informe se versionan en vuelo y se BORRAN al cumplir (git rm; git conserva el histórico). No se acumulan ficheros obsoletos. Y lo que se lee entero en cada arranque —cola, bitácora— tiene TECHO escrito, igual que el CLAUDE.md: 40.960 y 30.720 bytes de `wc -c`, comparados sin convertir.
 type: convention
-version: 2.9
+version: 3.0
 index_summary: >-
   Raíz solo con lo activo/vivo; prompts/briefs ejecutados se BORRAN (git es el histórico); handoffs y buffers son locales/gitignored; hook `SessionStart` que es el **ritual de arranque** —borra lo **superado por su serie** y lo **caducado a los 14 días**, **sella la fecha del sistema** y **ejecuta el verificador avisando solo si sale en rojo**— (sin lo segundo, un handoff con nombre único no se borraba nunca). **Lo que se lee entero en cada arranque tiene TECHO**: **40.960 bytes** la cola de un asunto, **30.720** la bitácora, comparados contra `wc -c` sin convertir, y lo cerrado baja al histórico (en bytes y no en líneas: 620 líneas de párrafo denso son 197 KB) — el `CLAUDE.md` ya lo tenía y los ficheros de estado no, que es como una cola llegó a costar 53.000 tokens por arranque. **Resumir TARDE produce desfase**: la conclusión sube a la cola en el mismo commit que genera el dato, o el fichero de estado deja de contar el estado — y eso no lo arregla podar. En un asunto en ejecución las palancas se agotan y se puede llegar al 97 % legítimamente; **entonces no se sube el techo, se decide qué se cierra**. Los originales no son efímeros: no se borran.
 ---
@@ -17,11 +17,13 @@ La carpeta de coordinación de un asunto (`asuntos/<asunto>/coordinacion/`) se m
 - **`tmp-otros-actual.md`** — buffer sobreescribible *(local, gitignored)*.
 - `README.md` y **`referencia/`** (docs vivas: glosarios, plantillas, datos de contacto del asunto).
 - Los **resultados**: escritos, informes, síntesis (viven en `docs/`, `estudios/`, o la cola).
+- En `_meta/`, el **plan de tandas** mientras vive: se versiona hasta que se cumple la última tanda.
 
 **Se borra (git es el histórico):**
 - El **prompt ya ejecutado**, cerrada su tanda y capturado el resultado (commits + entrada en `cola-pendientes.md`). **No se archiva: se borra.**
 - El **brief**, cuando ya existe su informe.
 - Cualquier **handoff superado** por uno nuevo (borrado local; al ser gitignored ya no está en git).
+- En `_meta/`, los **informes cumplidos**, una vez rescatado lo que solo vive en ellos (D6 del método 5.5): no hace falta conservarlos todos, porque lo que mantiene el método al día es vigilar los modelos y las guías de Claude, no el archivo de informes.
 
 **Nunca se borra:** un **original** recibido o emitido (escaneo, resolución, acuse, factura). No es efímero: es prueba. Vive en `docs/` y es intocable ([[estructura_contenedor_asunto]]).
 
@@ -52,7 +54,7 @@ La cola de pendientes, el charter y la bitácora **no son efímeros**: se conser
 Dos categorías de efímero, con tratamiento de git distinto:
 
 - **Locales — NUNCA se versionan (gitignored).** Handoffs (`handoff-*.md`) y el buffer `tmp-otros-actual.md`. Son de **uso puntual** y por máquina/sesión: el handoff sirve solo hasta arrancar la siguiente sesión y **el director comunica cuándo generar uno**; el buffer es papel de borrador. No aportan al histórico. Patrón en el `.gitignore` raíz del vault: `/_meta/handoff-*.md` y `**/coordinacion/handoff-*.md` para los handoffs, `**/tmp-otros-actual.md` para el buffer. **El patrón de los handoffs va anclado a las dos carpetas donde vive lo efímero, y no como comodín amplio**: un `**/handoff-*.md` capturaba también `_meta/memoria/handoff-*.md` y dejaba una memoria invisible para git desde que se escribía. **Un patrón de higiene no debe poder tragarse contenido.** *(La PLANTILLA `inicializador/plantilla-handoff.md` SÍ se versiona — no empieza por `handoff-`.)*
-- **Versionados en vuelo, borrados al cumplir (`git rm`).** Prompts (`prompt-*.md`) y briefs. Se versionan mientras están abiertos y se **borran al cerrar** la tanda; git conserva el histórico.
+- **Versionados en vuelo, borrados al cumplir (`git rm`).** Prompts (`prompt-*.md`) y briefs. Se versionan mientras están abiertos y se **borran al cerrar** la tanda; git conserva el histórico; lo mismo vale para los informes de `_meta/`, que se retiran tras el rescate.
 
 > **No basta con borrar el fichero del disco para "dejar de versionar" un handoff** ya versionado: hay que sacarlo del tracking (`git rm`) y que el patrón del `.gitignore` lo cubra. Lo nuevo, al estar gitignored desde el inicio, no ensucia git.
 
@@ -80,6 +82,7 @@ Nunca bloquea el arranque (exit 0). La limpieza es, por tanto, **ritual de arran
 
 Buffer **exclusivo** de texto que el director pega como respuesta a la pregunta de un asistente. No es canal de instrucciones (eso va en el chat) ni panel de estado. Sobreescribible; si no hay pregunta pendiente, queda vacío.
 
+> v3.0 (2026-10-04): en `_meta/`, los informes cumplidos se retiran tras rescatar lo que solo vive en ellos (D6 del método 5.5), y el plan de tandas se versiona mientras vive (tanda C6).
 > v2.0 (2026-06-08): se sustituye el archivado en `cerrados/` por **borrado** (git es el histórico). Mantener los directorios sin ficheros obsoletos.
 > v2.1 (2026-06-09): se distingue **local/gitignored** (handoffs, buffers — nunca se versionan) de **versionado-y-borrado** (prompts, briefs). Añadidos al `.gitignore` raíz `**/handoff-*.md`.
 > v2.8 (2026-08-23): el hook de arranque deja de hacer solo higiene y pasa a ser el **ritual de arranque** completo: además de borrar y avisar, **sella la fecha del sistema** y **ejecuta el verificador**, avisando solo si sale en rojo. Sale del informe de continuidad entre sesiones: la pieza que faltaba frente a arneses comparables era correr una comprobación básica **antes** de empezar, no al cerrar.

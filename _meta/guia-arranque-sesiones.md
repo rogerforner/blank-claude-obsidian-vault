@@ -10,17 +10,18 @@ La sintaxis de lanzamiento no está aquí: vive en la tabla "Ejecución" del `CL
 
 - En terminal: `cd <ruta>` y luego `claude`.
 - En la app: abre esa carpeta como directorio de trabajo.
-
 **Y tres cosas que NO hay que hacer:** no le expliques su rol ni le enumeres las reglas —todo eso lo carga de la carpeta, y un prompt largo explicándoselo **compite** con lo que ya ha leído—; **no cambies de modelo a media sesión**; y **empieza cada tarea nueva con `/clear`**.
+
+**Al arrancar, comprueba en la cabecera de la sesión el modelo y el esfuerzo.** El alias de modelo puede haber cambiado y el esfuerzo no se hereda de la sesión anterior. Con `effortLevel: "high"` en el perfil, Opus 5.5 arranca en `high` (medido el 2026-10-04); lo que se lee en la cabecera es lo que corre, y es el sitio donde se comprueba.
 
 ### Por qué `/clear` entre tareas, y por qué no cambiar de modelo
 
-**[Informe de modelos del 2026-09-02.]**
+**[Informe de modelos del 2026-09-02, refrescado el 2026-10-04.]**
 
 - **`/clear` no cuesta nada**: no envía petición. En cambio, **arrastrar el contexto anterior se re-lee y se re-factura en CADA turno siguiente**, así que el coste de una sesión crece de forma **cuadrática con el número de turnos**. En nuestra propia medición, **el 97 % del trabajo de una jornada se ejecutó por encima de 150k de contexto**, con la lectura de caché tres órdenes de magnitud por encima de la salida.
 - **Pero el disparador correcto no es "llevo dos horas"**: es **"he terminado la tarea"**. Con la caché caliente, dos horas seguidas en la misma tarea salen **más baratas** que partirlas en cuatro sesiones, porque cada arranque en frío paga la reescritura completa del prefijo. La regla es: **`/clear` entre tareas, `/compact` dentro de una tarea.** Y `/rewind` para abandonar un camino que no llevaba a nada.
 - **Cambiar de modelo a media sesión recomputa la petición entera**: cada modelo tiene su propia caché. En una sesión de 150k son **12-20 veces el coste de un turno normal**. Y el contraejemplo que rompe la intuición: **bajar a un modelo barato para una pregunta tonta sale MÁS caro** que dejar que la conteste el que ya está cargado. Si necesitas algo barato, **lanza un subagente**, no cambies el modelo del bucle.
-- **El esfuerzo tampoco se cambia a media sesión, y esto ya no es cautela: es decisión.** Cuesta lo mismo que cambiar de modelo, porque la caché está indexada por los dos. Se describe una excepción por mensaje en algunos modelos, pero **depende de la versión, del modelo y de una beta** — o sea, una regla que a veces se cumple. **Trabajar siempre igual gana a trabajar óptimamente a veces.** Si necesitas otro esfuerzo: **pide el relevo, `/clear`, y arranca de nuevo con el que toque.** Es barato: `/clear` no cuesta nada y **el estado no vive en el contexto, vive en ficheros**.
+- **El esfuerzo tampoco se cambia a media sesión, y esto ya no es cautela: es decisión.** En la API, cambiar el esfuerzo entre peticiones invalida la caché; solo el cambio por mensaje, en beta, la conserva. Para Claude Code hay quien dice que en los modelos 5.5 la conserva, pero **ninguna sesión de este vault lo ha medido**, así que no se da por cierto. **El motivo no depende de cómo salga esa medición:** una excepción que depende de la versión del cliente, del modelo y de una beta es una regla que a veces se cumple, y las que a veces no se cumplen fallan el día que importa. **Trabajar siempre igual gana a trabajar óptimamente a veces.** Si necesitas otro esfuerzo: **pide el relevo, `/clear`, y arranca de nuevo con el que toque.** Es barato: `/clear` no cuesta nada y **el estado no vive en el contexto, vive en ficheros**. Lo mismo vale para el fichero de reglas, los hooks y las herramientas: se cambian entre tandas, no dentro de una. Detalle y fuentes en [modelos y esfuerzo](../general/comun/modelos-y-esfuerzo.md), §3.
 
 ### Por qué aquí `/clear` no da miedo
 
@@ -35,57 +36,52 @@ Porque **el estado no vive en el contexto de ninguna sesión: vive en ficheros v
 
 **Y no hace falta acordarse de abrirlos: el disparador de arranque los vuelca solo**, junto con la fecha sellada, el veredicto del verificador y si la sesión anterior cerró su DoD.
 
-> **[POR COMPROBAR, y cuesta cinco segundos]** El disparador está declarado **sin filtro de evento**, así que debería correr también tras un `/clear` — pero eso **no se ha verificado aquí**. La comprobación es trivial: haz `/clear` y mira si vuelve a aparecer el bloque que empieza por `[FECHA]`. **Si NO aparece**, entonces tras un `/clear` la sesión se queda sin fecha, sin saber si el kit está en rojo y sin ver los frentes abiertos — y habría que pedirle explícitamente que relea el estado.
+> **[MEDIDO 2026-10-04] El hook de arranque corre también tras un `/clear`**: al hacerlo vuelve a salir el bloque que empieza por `[FECHA]`, con el veredicto del verificador y los frentes abiertos. Lo que `/clear` no recarga son las definiciones de agente de una carpeta `.claude/agents/` creada después de arrancar, ni un `CLAUDE.md` cambiado: para eso, sesión nueva.
 
 *(Nota para quien venga de otro vault de esta misma plantilla: aquí **no hay `estado.json` ni `estado.mjs`**. Ese mecanismo es de otro árbol; el equivalente son los cuatro ficheros de arriba.)*
 
 ### La escalera por esfuerzo, con lo que cuesta cada escalón
 
-**[Índice independiente, leído el 2026-09-02.]**
+**[Índice independiente v4.3.2, leído entre el 2026-09-22 y el 09-29. Escala distinta de la de septiembre: no se compara con ella.]** Resumen de tres filas por modelo; la curva completa, con `low` y `max` y el origen de cada dato, está en [modelos y esfuerzo](../general/comun/modelos-y-esfuerzo.md), §2.
 
 | Variante | Índice | Coste por tarea |
 |---|---|---|
-| Opus 5 · `max` | 63,1 | $2,34 |
-| Opus 5 · `xhigh` | 62,5 | $1,80 |
-| Opus 5 · `high` | 61,5 | $1,23 |
-| **Opus 5 · `medium`** | **58,6** | **$0,72** |
-| Opus 4.8 · `max` | 57 | — |
-| **Sonnet 5 · `max`** | **55** | **$1,72** |
-| Opus 5 · `low` | 52 | $0,43 |
+| Opus 5.5 `xhigh` | 56,0 | $3,46 |
+| Opus 5.5 `high` | 53,6 | $1,82 |
+| **Opus 5.5 `medium`** | **51,2** | **$1,34** |
+| Sonnet 5.5 `high` | 46,7 | $1,08 |
+| **Sonnet 5.5 `medium`** | **40,7** | **$0,59** |
+| Sonnet 5.5 `low` | 35,8 | $0,41 |
 
-**Lo que hay que leer aquí, porque invierte una intuición cara:** **Sonnet 5 a tope no alcanza a Opus 5 en `medium`** — y cuesta **más del doble por tarea**. El motivo es la **verbosidad**: Sonnet en `max` genera 300M de tokens contra los 29M de Opus en `medium`, y la verbosidad es lo que se paga.
+**Lo que hay que leer aquí:** para igualar a Opus 5.5 en `medium`, Sonnet 5.5 necesita `xhigh`, y eso sale **1,7 veces más caro** que usar Opus. Para igualar a Opus 5.5 en `high` necesita `max`, a **4,1 veces**. El motivo es la verbosidad, que se concentra arriba: Sonnet 5.5 en `max` es el que más tokens gasta de los medidos. `max` de Opus 5.5 tampoco compensa: de `xhigh` a `max` son 1,6 puntos por 2,52 $ más.
 
-> **Regla: Sonnet se usa en esfuerzo bajo o medio, que es donde de verdad es barato. En cuanto una tarea pide subirle el esfuerzo, la respuesta es Opus en esfuerzo bajo — no Sonnet en esfuerzo alto.**
+> **Regla: Sonnet 5.5 se usa en `low`, `medium` o `high`, que es donde de verdad es barato; no en `xhigh` ni en `max`. Si una tarea pide más, la respuesta es Opus 5.5, no Sonnet a tope.** Para pensar más se sube de modelo, no de esfuerzo.
 
-**Y el tramo caro de Opus es el de arriba:** de `medium` a `max` se pagan **$1,62 más por 4,5 puntos**. De `xhigh` a `max`, **0,6 puntos por $0,54** — o sea, nada. **El punto dulce es `xhigh`, y muchas veces `high` ya basta.**
-
-*(Sonnet 5 solo está evaluado en `max`; sus niveles `high` y `xhigh` figuran como N/A. La conclusión de calidad se sostiene igual —si su techo ya pierde, `high` también—, pero **en coste solo está medido el extremo**. Y la tabla se lee **por fila**: el esfuerzo no es una escala comparable entre familias.)*
-
-**Una excepción honesta al "Sonnet a tope no llega":** en pruebas **agénticas de trabajo de oficina**, hay evidencia de que Sonnet 5 a esfuerzo alto **iguala a Opus 4.8** — no a Opus 5. La conclusión general se sostiene en el índice compuesto y en razonamiento científico o factual, que es donde la brecha no se cierra con configuración.
+*(La tabla se lee por fila: el esfuerzo no es una escala comparable entre familias. Mide precio de API, no consumo de cuota. Y en trabajo de conocimiento largo hay empate técnico entre los dos modelos, medido en inglés.)*
 
 ### Qué modelo y qué esfuerzo, por situación
 
-**Sube el ESFUERZO cuando el cuello de botella es pensar. Sube de MODELO cuando el cuello de botella es saber o escribir bien.** Y **subir el esfuerzo no siempre mejora**: en tareas simples o de patrón obvio está documentado que **empeora** — el modelo se distrae con lo irrelevante.
+**Sube el ESFUERZO cuando el cuello de botella es pensar. Sube de MODELO cuando el cuello de botella es saber o escribir bien.** Y **subir el esfuerzo no siempre mejora**: en tareas simples o de patrón obvio está documentado que **empeora**, porque el modelo se distrae con lo irrelevante. Con Sonnet 5.5 está medido en `max`.
+
+Resumen de la tabla de [modelos y esfuerzo](../general/comun/modelos-y-esfuerzo.md), §5, que es la fuente y tiene también la escalada a Fable:
 
 | Situación | Modelo | Esfuerzo | Por qué |
 |---|---|---|---|
-| Coordinar la jornada, varias tandas | **Opus 5** | **`high`** | Coherencia de horizonte largo. `ultracode` **solo** el día que la verificación independiente valga más que el ahorro |
-| Auditar o revisar algo amplio, sin dejarse nada | **Opus 5** | **`xhigh`** | Cobertura y razonamiento multi-paso: aquí el esfuerzo **sí** compensa |
-| Investigar con herramientas | **Opus 5** | **`xhigh`** | Búsqueda agéntica y llamadas repetidas sí se benefician |
-| Escribir doctrina o documentación | **Opus 5** | **`high`** | Gana el conocimiento y la redacción, no más tokens de razonamiento |
-| **Refutar premisas** (fase de análisis) | **Opus 5** | **`medium`** | **Corregido el 02-sep.** Es detección de errores, no generación: pide capacidad. Y Opus a `medium` **supera a Sonnet a tope costando menos** |
-| Volumen, traducción, revisión de textos | **Sonnet 5** | **`medium`** | Leer y redactar, no razonar en cadena. **Si pide más esfuerzo, sube a Opus `low`** |
-| Implementación mecánica y acotada | **Sonnet 5** | **`low`/`medium`** | Patrón obvio y salida estrecha: subir esfuerzo no mejora y puede empeorar |
-| Consultor de solo lectura | **Sonnet 5** | **`medium`** | Sesión aparte que no toca la caché del coordinador |
-| Subagente de lectura | **Haiku 4.5** | **— (no admite `effort`)** | Devuelve resumen sin quemar el contexto del principal. Índice **30**, muy por debajo de Sonnet: sirve para **leer y resumir, no para razonar**, y eso **no se compensa con configuración** |
-| Brief para el chat web | el capaz | **`xhigh`** | Allí no hay perfil: se elige a mano. `max` tampoco ahí |
+| Coordinar la jornada, varias tandas | Opus 5.5 | `high` | Coherencia de horizonte largo. Se fija al arrancar y no se cambia |
+| Auditar o revisar a fondo, investigar con herramientas | Opus 5.5 | `xhigh` | Cobertura y búsqueda agéntica: aquí el esfuerzo sí compensa. `max` no |
+| Escribir doctrina o método | Opus 5.5 | `high` | Gana el conocimiento y la redacción, no más razonamiento |
+| Planificar una tanda no trivial (refutar premisas) | subagente `planificador` | Opus; el esfuerzo es el de la sesión | Detectar errores pide capacidad. Sin `effort:` en su definición hereda el de la sesión |
+| Ejecutar un plan revisado | subagente `ejecutora` | Sonnet 5.5, `medium` | El contrato ya fija el resultado; subir esfuerzo solo añade tokens |
+| Mecánica: cambios literales, copiar, mover | subagente `ejecutora-mecanica` | Sonnet 5.5, `low` | Patrón obvio: subir esfuerzo no mejora y puede empeorar |
+| Consultor de solo lectura | Sonnet 5.5 | `medium` | Leer y contestar, pidiéndole que consulte el fichero aunque esté seguro |
+| Brief para el chat web | el capaz | `xhigh` | Allí no hay perfil: se elige a mano. `max` tampoco ahí |
 
 > **Detalle completo, curvas por modelo y origen de cada dato → [modelos y esfuerzo](../general/comun/modelos-y-esfuerzo.md).** Ese documento **se refresca por tandas periódicas** conforme salen modelos nuevos, y **caduca solo**: cuando vence, el kit sale en rojo y la sesión siguiente se entera al arrancar.
 
 **Dos avisos que ahorran disgustos:**
 
-- **`ultracode` no es un sexto nivel de esfuerzo:** es `xhigh` **más permiso permanente para que la sesión reparta trabajo en varios agentes**. Solo se activa por sesión y **se pierde al reiniciar**. No rinde en tareas de un solo paso ni en la coordinación ordinaria; **rinde donde la verificación independiente vale más que el ahorro** — auditoría amplia, refutar premisas. *(No choca con el veto del kit: lo vetado es el fan-out de mil subagentes, no repartir una revisión entre tres lectores desechables.)*
-- **Ni `max` ni `ultracode` se pueden dejar escritos en la configuración.** Si alguien pone `effortLevel: "max"` en un `settings.json`, **se degrada en silencio** —a `high` o a `medium` según la versión— y la sesión cree correr en `max` sin correr en `max`. *(Comprobado el 2026-09-02: ninguno de nuestros siete perfiles lo declara, así que no nos afecta.)*
+- **`ultracode` está vetado salvo decisión del director.** No es un sexto nivel de esfuerzo: es `xhigh` más orquestación de subagentes en paralelo, y no se guarda como `effortLevel`. Activarlo a media sesión es un cambio de esfuerzo, así que se decide al abrir. Los motivos y cuándo rinde, en [modelos y esfuerzo](../general/comun/modelos-y-esfuerzo.md), §7. `/fast` también está vetado: cambia de modelo, rompe la caché y se paga desde créditos de uso.
+- **No se deja `max` escrito en ningún perfil.** El esquema del perfil admitía hasta `xhigh`, y poner `max` no daba error: arrancaba en `high` o en `medium` según la versión, y la sesión creía correr en `max` sin correrlo. Además no compensa. *(Comprobado el 2026-09-02: ninguno de nuestros siete perfiles lo declara.)*
 
 ### Y lo que ya no eliges tú
 
@@ -95,10 +91,12 @@ Desde el **2026-08-12** el modelo y el esfuerzo van escritos en el `settings.jso
 |---|---|
 | Coordinador general y de asunto | `.claude/settings.json` de su carpeta |
 | Consultor | `plantilla-settings-consultor.json` |
-| Ejecutora | `--settings inicializador/plantilla-settings-ejecutora.json` (o `-codigo` si toca código) |
-| Sus subagentes | ninguno: **heredan el de la sesión que los lanza** |
+| Subagente `planificador` | `.claude/agents/planificador.md`: modelo Opus fijado en su definición; hereda el perfil de la sesión que lo lanza |
+| Subagente `ejecutora` | `.claude/agents/ejecutora.md`: Sonnet 5.5 en `medium` fijado en su definición; hereda el perfil de la sesión |
+| Subagente `ejecutora-mecanica` | `.claude/agents/ejecutora-mecanica.md`: Sonnet 5.5 en `low` fijado en su definición; hereda el perfil de la sesión |
+| `claude -p` (otra raíz, otro perfil o plan B) | el perfil siempre, con `--settings inicializador/plantilla-settings-ejecutora.json` (o `-codigo` si toca código); es un proceso aparte con contexto limpio, pero hereda el entorno del llamante (por eso ninguna clave de API en él) y, sin `--settings`, el perfil de su carpeta |
 
-> **La columna del perfil arregló algo que estaba roto en silencio: no tener perfil no significa correr sin permisos, significa correr con los del de al lado.** Hasta el 2026-08-27 no existía perfil de ejecutora no-código, así que una tanda lanzada desde la raíz heredaba el del **coordinador general**: modelo caro, canal entre sesiones abierto y sin denegación sobre `general/`.
+> **La columna del perfil arregló algo que estaba roto en silencio: no tener perfil no significa correr sin permisos, significa correr con los del de al lado.** Hasta el 2026-08-27 no existía perfil de ejecutora no-código, así que una tanda lanzada desde la raíz heredaba el del **coordinador general**: modelo caro, canal entre sesiones abierto y sin denegación sobre `general/`. Los subagentes heredan lo mismo: por eso el perfil de la sesión que los lanza importa, y por eso su modelo y su esfuerzo se fijan en la definición y no en el prompt.
 
 **Si eliges otra cosa a mano, gana tu elección** — pero solo esa sesión, y **elígela antes de empezar**.
 
@@ -111,7 +109,7 @@ Desde el **2026-08-12** el modelo y el esfuerzo van escritos en el `settings.jso
 | Arrancar el coordinador de un asunto **de software** | `asuntos/<slug>/` | [↓](#coordinador-de-asunto-de-software) |
 | Arrancar un **consultor** de solo lectura | la del asunto, o la raíz | [↓](#consultor-de-solo-lectura) |
 | **Relevar** una sesión que se queda sin contexto | la misma | [↓](#relevar-una-sesión) |
-| Encargar **trabajo voluminoso** | la del coordinador | [↓](#trabajo-voluminoso-el-coordinador-no-lo-ejecuta) |
+| Encargar **un trabajo** (ciclo de tandas) | la del coordinador | [↓](#encargar-un-trabajo-ciclo-de-tandas) |
 | Poner el vault en una **máquina nueva** | — | [↓](#máquina-nueva) |
 
 **El modelo de sesiones es siempre el mismo:** una de coordinador general en la raíz y **una independiente por asunto**. El vault es la memoria compartida — el estado vivo está en los ficheros, no en el contexto de ninguna sesión. Por eso relevar no pierde nada, y por eso dos sesiones abiertas a la vez no se estorban.
@@ -171,7 +169,9 @@ La condición del final es la que hace útil la respuesta: **sin ella, un consul
 
 ## Relevar una sesión
 
-Dos pasos: **le pides el handoff a la sesión que se acaba, y abres una nueva con la MISMA carpeta que lo lee.**
+**El caso normal no necesita handoff.** Se relevan las sesiones entre bloques, cuando el plan ya está al día en el vault: el coordinador cierra el bloque, commitea y escribe el prompt de relevo de la sección "Plantilla del prompt de relevo" de [[ciclo_de_tandas]]. Ese prompt se pega en una sesión nueva con la misma carpeta, y no se copia aquí para que no haya dos versiones. Lo que tiene que sobrevivir ya está en el plan, la cola y los commits.
+
+**El handoff queda para cuando la sesión muere a mitad de bloque**, sin haber llegado a un punto de parada. Entonces son dos pasos: **le pides el handoff a la sesión que se acaba, y abres una nueva con la MISMA carpeta que lo lee.**
 
 **No esperes al aviso de contexto.** La señal temprana es cualitativa: cuando la sesión empieza a **repreguntar cosas ya decididas, a reabrir asuntos cerrados o a perder el hilo** de por qué se hizo algo, **ya está cerca**. En ese momento el handoff todavía sale bien escrito; veinte mil tokens después, no.
 
@@ -193,15 +193,15 @@ Retomas esta sesión desde un handoff. Lee el handoff más reciente de tu carpet
 
 ---
 
-## Trabajo voluminoso: el coordinador no lo ejecuta
+## Encargar un trabajo (ciclo de tandas)
 
-Transcribir un lote de escaneos, tabular cuarenta facturas, redactar un escrito largo, generar el documento maquetado: eso va a una **sesión ejecutora** con contexto limpio, y **la lanza el coordinador él mismo**. No hace falta que hagas de transporte.
+Cuando el trabajo no es trivial (toca varios ficheros, estrena una forma de trabajo o se apoya en premisas sin comprobar), el coordinador lo hace con el ciclo de [[ciclo_de_tandas]]: planifica primero con el subagente `planificador`, ejecuta después con el subagente `ejecutora` en tandas pequeñas y para al cerrar cada bloque. Los subagentes son del propio coordinador, así que no hace falta que hagas de transporte. `claude -p` queda para otra raíz u otro perfil.
 
 ```
-Esto es voluminoso: prepáralo como tanda ejecutora con su contrato y lánzala tú, acotada, y luego dime la conclusión y qué has verificado. No me traigas el resultado completo.
+Esto no es trivial: planifícalo con el planificador, enséñame las premisas falsas y la tabla de tandas, y ejecútalo por bloques parando al cerrar cada uno
 ```
 
-Lo que el coordinador tiene que respetar al lanzarla —topes, una o dos como máximo y nunca un enjambre, comprobar antes que la sesión está autenticada por cuenta y no por clave— está en el `CLAUDE.md` y en el contrato de tanda. **No es cosa tuya acordarte.**
+Lo que el coordinador tiene que respetar al lanzar —el plan antes de las tandas, la comprobación de cada una y la parada al cerrar el bloque— está en la doctrina y en el contrato de tanda. No es cosa tuya acordarte.
 
 ---
 

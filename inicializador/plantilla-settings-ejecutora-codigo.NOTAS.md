@@ -2,6 +2,8 @@
 
 Perfil nuevo (tanda `repo-fuera`, R3/D5). **Nace pensado para el repositorio externo**, no para una ruta dentro del vault: el asunto lo instala donde vive el código, según registre `docs/emplazamiento-runtime.md` (`inicializador/plantilla-emplazamiento-runtime.md`).
 
+Sigue siendo el caso normal de `claude -p`, porque el código vive fuera del vault y un subagente no puede trabajar con otra raíz ni con otro perfil (ver `ciclo_de_tandas`).
+
 ## Por qué hace falta este perfil (regla 3 y 4 del contrato)
 
 El vault exige que **ninguna edición de código ocurra sin plan previo, incondicional y sin excepción declarable** (ver `general/comun/packs/codigo/README.md` § "Plan antes de tocar código" y `inicializador/plantilla-tanda-ejecutora.md`), pero **una vez que el plan existe**, la sesión que lo ejecuta necesita **permisos amplios sobre el repositorio** para no perder tiempo pidiendo aprobación en cada fichero tocado — regla 3 del contrato de esta tanda: *"amplio sobre el repositorio, no sobre la máquina"*. Sin este perfil, cada asunto de software tendría que construir su propio equilibrio entre autonomía y seguridad desde cero, y lo haría distinto cada vez.

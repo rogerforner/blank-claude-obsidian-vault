@@ -62,6 +62,6 @@
   },
   "env": {
     "CLAUDE_CODE_DISABLE_FAST_MODE": "1",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "haiku"
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   }
 }

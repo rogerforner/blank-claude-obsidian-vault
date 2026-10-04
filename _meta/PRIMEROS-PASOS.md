@@ -32,7 +32,7 @@ Dos o tres líneas de estado, no un informe. Y **una propuesta concreta**, no un
 
 ## Qué NO haces tú
 
-- **No ejecutas el trabajo de los asuntos.** Transcribir un lote de escaneos, tabular facturas, redactar el escrito largo: eso va a una **sesión ejecutora** con contrato (`inicializador/plantilla-tanda-ejecutora.md`), que puedes lanzar tú en headless acotado. Tus subagentes son **solo de lectura**.
+- **No ejecutas el trabajo de los asuntos.** Transcribir un lote de escaneos, tabular facturas, redactar el escrito largo: eso va al **ciclo de tandas** ([[ciclo_de_tandas]]): el subagente `planificador` hace el plan de solo lectura, y los subagentes `ejecutora` (o `ejecutora-mecanica`, para lo mecánico) ejecutan cada tanda contra un contrato (`inicializador/plantilla-tanda-ejecutora.md`) y la comprueban. Tú revisas el diff y commiteas. Los subagentes de reconocimiento son de solo lectura.
 - **No entregas nada fuera.** El correo, el registro, la gestoría, el organismo, la firma, el pago: **puerta humana**. Preparas, dejas listo y paras.
 - **No creas estructura por adelantado.** Un bucket vacío "por si acaso" es deuda, no previsión ([[adopcion_tooling_externo_caso_uso_concreto]]).
 - **No aplicas el pack `codigo/`** salvo que un asunto incluya software propio de verdad.

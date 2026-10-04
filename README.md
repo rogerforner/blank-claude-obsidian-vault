@@ -83,7 +83,7 @@ Ese ciclo es explícito y tiene sitio propio en la estructura:
 
 Por eso las doctrinas del catálogo llevan un pie con su historial de versiones, y por eso muchas frases del kit vienen con una cifra al lado. Un par de ejemplos que verás citados dentro:
 
-- Una sesión ejecutora cargó el fichero de reglas del coordinador, se creyó coordinadora, decidió que su trabajo era voluminoso e **intentó delegarlo en otra sesión**. No hizo nada de lo encargado y **devolvió éxito**. Coste: 1,11 USD y una pasada en vacío. De ahí salió el bloque de **anulación de rol** que hoy encabeza todo contrato de tanda.
+- Una ejecutora lanzada como sesión aparte cargó el fichero de reglas del coordinador, se creyó coordinadora, decidió que su trabajo era voluminoso e **intentó delegarlo en otra sesión**. No hizo nada de lo encargado y **devolvió éxito**. Coste: 1,11 USD y una pasada en vacío. De ahí salió el bloque de **anulación de rol** que hoy encabeza todo contrato de tanda. Un subagente hereda lo mismo —las reglas de la sesión que lo lanza—, así que su definición le dice qué es y qué no hace.
 - Una lista de herramientas permitidas resultó ser **aditiva**: una sesión lanzada sin permiso de shell ejecutó shell igualmente. De ahí salió la regla de que **lo que quieras impedir se expresa como denegación explícita**, nunca como ausencia de permiso.
 - Una comprobación de "no se ha perdido nada" comparaba un recuento sobre datos que otro proceso estaba usando en vivo: **cambiaron solos en 11 segundos** y frenaron una tanda sin que nada estuviera roto. De ahí salió la regla de comprobar la **identidad** de lo que quieres proteger, no su contenido volátil.
 
@@ -174,18 +174,18 @@ El modelo es de **sesiones independientes**, cada una abierta desde la carpeta q
 | **Coordinador general** | raíz del vault | Mantiene el kit, inicializa asuntos, lleva la cola y las decisiones abiertas. | No trabaja dentro de ningún asunto. |
 | **Coordinador de asunto** | `asuntos/<slug>/` | Lleva **su** asunto: estado, plazos, prompts, verificación. | No ejecuta el trabajo voluminoso, y no ve los demás asuntos. |
 | **Consultor** | la del asunto, o la raíz | Responde dudas factuales citando fichero y línea, en modo de solo lectura. | No edita, no decide, no deduce lo que no está escrito. |
-| **Sesión ejecutora** | el contenedor del asunto | Hace el trabajo voluminoso con contexto limpio, contra un contrato cerrado. | No coordina, no delega, no lanza otras sesiones. |
-| **Subagentes** | dentro de una sesión | Reconocimiento y lectura en paralelo. **Siempre de solo lectura.** | No escriben nada. |
+| **Subagente `ejecutora`** | dentro de la sesión del coordinador | Hace una tanda con contexto limpio, contra un contrato cerrado. La `ejecutora-mecanica` hace las tandas literales. | No coordina, no delega, no lanza otros agentes, no commitea, no cruza puertas humanas. |
+| **Subagentes `planificador` y de reconocimiento** | dentro de la sesión del coordinador | El planificador (Opus) escribe el plan de tandas; los de reconocimiento leen en paralelo y están **limitados a solo lectura**. | El planificador solo escribe `plan-tanda-*.md`; los de reconocimiento no escriben nada. |
 
-**La regla que sostiene todo el modelo: coordinar no es ejecutar.** Si el coordinador se pone a transcribir cuarenta facturas, se queda sin contexto a mitad y hay que relevarlo — y entonces el asunto avanza a base de relevos en vez de a base de trabajo. El trabajo voluminoso va a un **proceso aparte con contexto limpio**.
+**La regla que sostiene todo el modelo: coordinar no es ejecutar.** Si el coordinador se pone a transcribir cuarenta facturas, se queda sin contexto a mitad y hay que relevarlo — y entonces el asunto avanza a base de relevos en vez de a base de trabajo. El trabajo voluminoso va a un **subagente con contexto limpio**, tanda a tanda; el ciclo está en `general/comun/doctrinas/ciclo_de_tandas.md`.
 
-**Y el reparto de modelos va por rol, no por gusto:** el modelo capaz para coordinar y para lo difícil, el modelo de volumen para las tandas grandes, el barato para subagentes y mecánica. Van fijados en el `settings.json` de cada perfil, **no elegidos a mano al arrancar**: una regla que depende de que alguien se acuerde de tocar un desplegable no es una regla. *(Los nombres concretos de modelo caducan rápido; están en la doctrina `modelo_por_tarea`, que es la pieza más volátil del catálogo a propósito.)*
+**Y el reparto de modelos va por rol, no por gusto:** el modelo capaz (Opus, esfuerzo `high`) para coordinar y para planificar; Sonnet para las tandas, en esfuerzo `medium`, o `low` en las literales (`ejecutora-mecanica`). Haiku ya no se usa. Van fijados en el `settings.json` de cada perfil y en la definición de cada subagente, **no elegidos a mano al arrancar**: una regla que depende de que alguien se acuerde de tocar un desplegable no es una regla. Modelo y esfuerzo no se cambian a mitad de sesión, porque cambiarlos obliga a reprocesar todo el contexto; si una subtarea pide otro modelo, se lanza un subagente. *(Los nombres concretos de modelo caducan rápido; están en la doctrina `modelo_por_tarea`, que es la pieza más volátil del catálogo a propósito.)*
 
 ---
 
 ## 7. El flujo de trabajo completo
 
-Este es el corazón del método, y el orden importa: **primero se investiga, después se planifica, y solo entonces se lanza el trabajo.** Cada fase existe para que la siguiente no se haga a ciegas.
+Este es el corazón del método, y el orden importa: **primero se investiga, después se planifica, y solo entonces se lanzan las tandas.** Cada fase existe para que la siguiente no se haga a ciegas.
 
 ### Fase 0 — El brief, antes de arrancar nada
 
@@ -239,46 +239,46 @@ Cuando hay que hacer trabajo de verdad, el coordinador escribe un **contrato**, 
 
 **Y la especificación se escribe ligera, no exhaustiva.** Un plan rígido empeora las tareas que sorprenden a mitad, y un plan tan detallado que llena el contexto degrada al propio agente. El detalle de más no es prudencia, es coste.
 
-### Fase 3 — La ejecutora de análisis, y por qué existe
+### Fase 3 — El planificador, y por qué existe
 
-**Toda tanda no trivial va en DOS sesiones ejecutoras.** La primera no ejecuta nada: **analiza**.
+**Todo trabajo no trivial pasa por un plan antes de las tandas.** El coordinador escribe un encargo corto y lanza el subagente `planificador` (Opus), que **no ejecuta nada**: planifica.
 
-Es de **solo lectura** —no modifica material, no hace commits, deja el historial intacto— y su **único** entregable de escritura es un fichero: **`plan-tanda-<nombre>.md`**, con cinco apartados:
+Solo puede escribir un fichero, **`plan-tanda-<nombre>.md`**, y deja el historial intacto. El plan trae:
 
-1. **Verificación en fuente primaria de CADA premisa de la especificación**, con el comando ejecutado y su salida literal. No *"se ha comprobado que"*: el comando y lo que devolvió.
-2. **Las premisas de la especificación que resultan FALSAS**, listadas explícitamente. Si está vacío, se dice vacío.
+1. **Verificación en fuente primaria de CADA premisa del encargo**, con el comando ejecutado y su salida literal. No *"se ha comprobado que"*: el comando y lo que devolvió.
+2. **Las premisas del encargo que resultan FALSAS**, listadas explícitamente. Si está vacío, se dice vacío.
 3. **Inventario de lo que va a tocar**, con el perímetro.
-4. **Decisiones que la especificación dejó abiertas sin darse cuenta.**
-5. **Orden de pasos y riesgos**, incluido qué hacer si un paso falla a mitad.
+4. **Decisiones que el encargo dejó abiertas sin darse cuenta.**
+5. **La tabla de tandas** y, por cada tanda, los ficheros, el cambio, el criterio de aceptación, el comando que la comprueba y qué hacer si un paso falla a mitad.
 
 **Y aquí está la razón de todo el mecanismo, que es lo que más se malinterpreta:**
 
-> **El plan no existe para que la ejecutora se organice. Existe para que TÚ corrijas la especificación antes de que equivocarse cueste trabajo.**
+> **El plan no existe para que la ejecutora se organice. Existe para que TÚ corrijas el encargo antes de que equivocarse cueste trabajo.**
 
-El punto de corrección es **el coordinador leyendo el plan**. Si no vas a leerlo, no lances la fase: te habrás gastado una sesión en generar un fichero que nadie usa.
+El punto de corrección es **el coordinador leyendo el plan**. Si no vas a leerlo, no lances al planificador: te habrás gastado un subagente en generar un fichero que nadie usa. Al volver se comprueba con `git status --short` que solo existe el plan.
 
-**Que se paga sola, medido:** en una poda de una cola de pendientes, la especificación del coordinador mandaba 75 líneas al archivo histórico. La tanda de análisis demostró que **59 de ellas eran plan de ejecución vivo con tareas abiertas**, no material archivable: moverlas habría **escondido trabajo pendiente** de la lectura de arranque. Además rescató **cuatro pendientes** atrapados en secciones que bajaban. Sin esa pasada, la tanda habría salido en verde y mal.
+**Que se paga sola, medido:** en una poda de una cola de pendientes, la especificación del coordinador mandaba 75 líneas al archivo histórico. El análisis demostró que **59 de ellas eran plan de ejecución vivo con tareas abiertas**, no material archivable: moverlas habría **escondido trabajo pendiente** de la lectura de arranque. Además rescató **cuatro pendientes** atrapados en secciones que bajaban. Sin esa pasada, la tanda habría salido en verde y mal.
 
-**Saltársela es legítimo; saltársela en silencio, no.** Si la tanda es pequeña y sabes lo que hay, se declara en la especificación: *"tanda de fase única declarada"*, y por qué.
+**Saltársela es legítimo; saltársela en silencio, no.** Si el trabajo es pequeño y sabes lo que hay, se declara que va sin plan, y por qué.
 
-### Fase 4 — Lanzar la ejecución
+### Fase 4 — Ejecutar las tandas
 
-Con la especificación ya corregida por lo que destapó el plan, se lanza la segunda sesión. **La lanza el coordinador**, no el director: corre en un proceso aparte con contexto limpio, así que *coordinar ≠ ejecutar* se mantiene intacto.
+Con el encargo ya corregido por lo que destapó el plan, el coordinador lanza **una tanda detrás de otra**, cada una a un subagente `ejecutora` (Sonnet) o, si es literal y no pide criterio, `ejecutora-mecanica`. Cada tanda es pequeña, trae su comando de comprobación y un informe corto. Al volver, el coordinador comprueba con `git status --short` que solo cambió lo que la tanda nombraba, corre el comando y **commitea él, por pathspec**. Al cerrar un bloque guarda el estado, escribe el prompt de relevo y para: el ciclo completo está en `general/comun/doctrinas/ciclo_de_tandas.md`.
 
-Lo esencial de la sintaxis, en una línea: **la sesión se lanza dentro del directorio donde tiene que escribir** (`cd "<ruta>" && claude -p "<prompt>"`), lo que solo tiene que leer entra por `--add-dir`, y se ponen cortacircuitos duros de turnos y de gasto.
+Lo que un subagente no puede hacer —trabajar con otra raíz o con otro perfil— va por una sesión aparte. Lo esencial de esa sintaxis, en una línea: **la sesión se lanza dentro del directorio donde tiene que escribir** (`cd "<ruta>" && claude -p "<prompt>"`), lo que solo tiene que leer entra por `--add-dir`, y se ponen cortacircuitos duros de turnos y de gasto.
 
 > **Fuente única:** los comandos completos, con sus opciones y sus techos medidos, están en `inicializador/plantilla-tanda-ejecutora.md` § *Variante headless*, y la traducción necesidad → comando, en la tabla "Ejecución" del `CLAUDE.md`. **No se duplican aquí a propósito**: dos copias de lo mismo derivan en silencio, y esa también es una regla del kit.
 
-**Cuatro trampas medidas, y las cuatro hacen que una tanda mala parezca buena:**
+**Cuatro trampas medidas, y las cuatro hacen que una tanda mala parezca buena** (la 1 y la 4 son de la sesión aparte por `claude -p`; la 2 y la 3 valen también para los subagentes):
 
 1. **El fichero de reglas pesa más que el rótulo.** Una sesión enraizada en el contenedor del asunto carga el fichero de reglas del **coordinador** y se cree coordinadora. Por eso todo contrato empieza con un **bloque de anulación de rol** literal, que va **en el contrato y también en el prompt de lanzamiento** — el contrato lo lee al abrir el fichero; el prompt lo tiene delante desde el primer token.
 2. **`success` no significa que el trabajo se haya hecho.** Ese aviso lo pone el programa que ha ejecutado la sesión, no el modelo que ha razonado sobre la tarea: solo informa de que el proceso terminó sin romperse, no de que hiciera lo que pediste. **Se comprueba mirando los ficheros que debían cambiar**, no ese aviso.
 3. **La lista de herramientas permitidas concede, no restringe.** Es aditiva. Lo que protege de verdad, por orden: las **reglas de denegación** del destino, los **cortacircuitos** de turnos y gasto, los **hooks previos a la herramienta** y el **watchdog** del que lanza.
-4. **El modo plan desvía el entregable.** El modo plan es una forma de arrancar una sesión en la que solo propone lo que haría, sin llegar a hacerlo. Si lanzas la ejecutora así por descuido, en vez de dejar el resultado donde se lo pediste puede guardar su propuesta en una carpeta interna de la herramienta, y lo único que te llega es una frase diciendo que el plan está ahí.
+4. **El modo plan desvía el entregable.** El modo plan es una forma de arrancar una sesión en la que solo propone lo que haría, sin llegar a hacerlo. Si lanzas así por `claude -p` una sesión que debe escribir, en vez de dejar el resultado donde se lo pediste puede guardar su propuesta en una carpeta interna de la herramienta, y lo único que te llega es una frase diciendo que el plan está ahí.
 
 Y antes de lanzar nada, dos comprobaciones que no se saltan: que **la sesión del agente está autenticada por cuenta** (no por clave de programador), y que **no hay ninguna clave de API definida**, ni en el entorno ni en un fichero de entorno del proyecto — si la hay, se factura aparte y en silencio.
 
-**Baja concurrencia: una o dos sesiones, nunca un enjambre.** Todas comparten la misma cuota, así que el paralelismo aquí no es arriesgado: es destructivo.
+**Baja concurrencia: una tanda a la vez sobre el mismo árbol, y como mucho una o dos sesiones aparte, nunca un enjambre.** Todas comparten la misma cuota, así que el paralelismo aquí no es arriesgado: es destructivo.
 
 ### Fase 5 — Verificar
 
@@ -329,9 +329,9 @@ Su primer trabajo es **entender el expediente**: cronología y reconocimiento. Y
 
 > *"La suma de la columna importe de los presupuestos de `docs/presupuestos/` coincide con el total que figura en el escrito"* — no *"revisar que las cuentas cuadran"*.
 
-**6. Sale la ejecutora de análisis.** Devuelve `plan-tanda-transcripcion.md` y encuentra dos premisas falsas: **a un escaneo le falta una página** y uno de los presupuestos está **sin firmar**, así que no sirve como prueba. Eso, en la tanda de ejecución, habría salido a mitad y con el trabajo ya hecho.
+**6. Sale el planificador.** Devuelve `plan-tanda-transcripcion.md`, con la transcripción partida en tandas pequeñas, y encuentra dos premisas falsas: **a un escaneo le falta una página** y uno de los presupuestos está **sin firmar**, así que no sirve como prueba. Eso, en la ejecución, habría salido a mitad y con el trabajo ya hecho.
 
-**7. Corriges el contrato y lanzas la ejecución.** El coordinador la lanza acotada, con sus topes, y recoge un informe corto. La tanda hace el trabajo y **para** ante lo que no le toca: la página que falta es un **hallazgo** que sube a lo primero de la cola, no algo que la ejecutora improvise.
+**7. Corriges el contrato y lanzas las tandas.** El coordinador lanza una `ejecutora` por tanda, una detrás de otra, y recoge un informe corto de cada una. Cada tanda hace su trabajo y **para** ante lo que no le toca: la página que falta es un **hallazgo** que sube a lo primero de la cola, no algo que la ejecutora improvise.
 
 **8. Se verifica.** Los comandos de la definition of done se ejecutan y se reporta su salida literal. Lo que no se puede comprobar por comando —volver a escanear la página que falta— se entrega como **comprobación en campo**, con los pasos exactos.
 
@@ -364,7 +364,7 @@ Su primer trabajo es **entender el expediente**: cronología y reconocimiento. Y
    - **¿Hay un segundo proveedor de IA?** El vault nace con esa llave **apagada** (`_meta/memoria/proveedor-secundario-ia.md`), y se gira a propósito o no está girada.
 5. **Ajusta el `_meta/` a tu ámbito**: el charter, los primeros bloques de la cola y las decisiones abiertas. Llegan **vacíos a propósito**, con su estructura y un ejemplo.
 6. **Inicializa el primer asunto** con [`inicializador/checklist-arranque.md`](inicializador/checklist-arranque.md), o con [`checklist-migracion-existentes.md`](inicializador/checklist-migracion-existentes.md) si ya viene en marcha. La carpeta `asuntos/` **no existe todavía**: aparece con el primero.
-7. **Comprueba que el kit está sano**: `node _meta/verificar-kit.mjs` tiene que salir en **verde**. Comprueba **quince** reglas estructurales —enlaces colgados, índices desincronizados, rutas absolutas de máquina coladas en lo versionado, **datos cuya fecha de caducidad ya venció** y **fechas de estado imposibles, puestas en el futuro**—. **Y no se ajusta el verificador para que pase.**
+7. **Comprueba que el kit está sano**: `node _meta/verificar-kit.mjs` tiene que salir en **verde**. Comprueba sus reglas estructurales —enlaces colgados, índices desincronizados, rutas absolutas de máquina coladas en lo versionado, **datos cuya fecha de caducidad ya venció** y **fechas de estado imposibles, puestas en el futuro**—. **Y no se ajusta el verificador para que pase.**
 
 8. **Cierra cruzando el DoD**: `node _meta/dod.mjs`. El verificador dice si el kit está bien **escrito**; el DoD dice si el trabajo está bien **terminado**, que no es lo mismo — árbol limpio, efímeros ya cumplidos retirados, colas por debajo de su techo, y **documentación al día** (toda doctrina cambiada sube su versión en el mismo commit). Si pasa, sella una huella del **contenido** del árbol: si tocas algo después, el sello caduca solo y la sesión siguiente se entera al arrancar.
 
