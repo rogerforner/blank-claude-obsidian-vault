@@ -41,7 +41,7 @@ Dos asuntos pueden estar acoplados sin ser el mismo asunto: la obra y la reclama
 
 - **Qué NO entra en tu alcance:** *(lista explícita — "la integración de X", "el trato con la aseguradora", "la parte fiscal". Escríbelo aunque parezca obvio: lo que no está escrito se acaba haciendo por iniciativa propia.)*
 - **Cada coordinador hace lo suyo y no ejecuta lo del otro.** Si tu trabajo necesita algo del asunto vecino, **no lo haces tú**: **redactas un prompt o un handoff dirigido a su coordinador** y el director lo lanza. Tampoco es tuyo decidir por él: le pasas el dato y la pregunta, no la conclusión ya tomada.
-- **No puedes verlo, y es a propósito.** Tu aislamiento deja invisibles los demás `asuntos/**`. Así que las referencias cruzadas van **por nombre del asunto**, no por ruta a su contenedor: una ruta que tú no puedes leer no es un enlace, es una promesa rota.
+- **No entras en él, y es a propósito.** Técnicamente puedes leer los demás `asuntos/**` (el aislamiento es de conducta, no barrera), pero no trabajas sobre ellos. Así que las referencias cruzadas van **por nombre del asunto**, no por ruta a su contenedor: ese contenedor lo ordena su coordinador, que puede mover o renombrar sin avisarte, y una ruta a él es una promesa que tú no controlas.
 - **El dato que viaja se etiqueta.** Lo que le pases va marcado como **medido** (quién, cómo, cuándo) o **a confirmar**; un dato de apoyo erróneo sobrevive al viaje y el otro coordinador lo hereda como verificado ([[verificacion_fuente_primaria]]).
 - **Sin acuses de recibo.** Se responde solo si el otro necesita un dato para seguir; la constancia queda en el artefacto, no en un mensaje de cortesía ([[higiene_contexto_y_tokens]]).
 
