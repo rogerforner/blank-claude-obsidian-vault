@@ -2,9 +2,9 @@
 name: Documentación de onboarding sin referencias a fases ni identificadores históricos
 description: La documentación que un nuevo lector consume para entender y empezar (README del asunto, guías operativas, CLAUDE.md) es autocontenida y no menciona fases, identificadores de tanda ni narra el proceso de trabajo; los docs de tracking/histórico interno sí pueden.
 type: doctrine
-version: 1.1
+version: 1.2
 index_summary: >-
-  README/CLAUDE.md/charter autocontenidos, sin identificadores históricos ni narración del proceso; el tracking interno sí puede. **Y una TERCERA clase (v1.1): los docs de DECISIÓN.** El *porqué* deja de vivir solo en el histórico de cambios —que supone que siempre habrá quien lo lea— y entra en `docs/decisiones/`, una ficha numerada por decisión. La distinción: la narrativa de **proceso** sigue fuera, la **razón** entra, con sus alternativas descartadas y **la condición que reabriría el caso**. Se escribe cuando se descarta una alternativa real, no en cada cambio.
+  README/CLAUDE.md/charter autocontenidos, sin identificadores históricos ni narración del proceso; el tracking interno sí puede. **Y una TERCERA clase (v1.1): los docs de DECISIÓN.** El *porqué* deja de vivir solo en el histórico de cambios —que supone que siempre habrá quien lo lea— y entra en `docs/decisiones/`, una ficha numerada por decisión. La distinción: la narrativa de **proceso** sigue fuera, la **razón** entra, con sus alternativas descartadas y **la condición que reabriría el caso**. Se escribe cuando se descarta una alternativa real, no en cada cambio. **Y una CUARTA (v1.2): los docs OPERATIVOS.** El criterio de suficiencia de `docs/` es que el director, sin ninguna IA, pueda operar, mantener y recuperar lo montado: un runbook por cosa montada, con comandos exactos, escrito para quien no estuvo en la sesión y actualizado en la misma tanda que el cambio. Lo que solo está en una conversación no está documentado; los secretos no van, solo dónde están.
 ---
 
 La documentación de **onboarding** debe ser **autocontenida, minimalista y directa**, estilo "de usuario para usuario". Su único objetivo es que alguien que llega de nuevo —el director dentro de seis meses, un familiar, la gestoría, un perito— entienda el asunto y pueda operar rápido. **No es registro histórico ni narración del proceso.**
@@ -45,6 +45,21 @@ Ejemplo: el `README.md` de una reclamación dice *"reclamación por daños de ag
 
 **Y el criterio que lo justifica, en una línea del director:** *la documentación de un asunto tiene que poder seguirla una **persona**, sin IA y sin leer el histórico de cambios.*
 
+### Docs operativos: que una persona sola pueda hacerlo
+
+*(Cuarta clase, añadida el 2026-10-04 por decisión del director: "Es importante la documentación porque es la única manera que si alguna vez he de hacer algo yo sin ayuda de la IA lo pueda hacer.")*
+
+**El criterio de suficiencia de `docs/`:** el director, sin ayuda de ninguna IA, puede operar, mantener y recuperar lo que el asunto ha montado o decidido. Es la única garantía de que el trabajo no depende de que haya una sesión disponible.
+
+**Qué hacer:**
+- **Un runbook en `docs/` por cada cosa montada**, con: qué hay y dónde (máquinas, direcciones, rutas, cuentas por su nombre, nunca sus secretos); cómo se opera en el día a día; cómo se comprueba que funciona; cómo se recupera si se rompe; y los comandos exactos, copiables, con lo que debe salir.
+- **Escribirlo para alguien que no estuvo en la sesión:** sin "como vimos", sin depender de la cola ni del histórico de git para entender un paso.
+- **Lo que solo sabe la IA de la sesión no existe:** si un paso solo está en la conversación o en un informe de tanda, no está documentado.
+- **Actualizarlo en la misma tanda que cambia lo que describe**, y es parte del DoD de esa tanda. La puerta "documentación al día" del DoD común ya lo exige; esta sección dice qué significa "al día".
+- **Los secretos no van en `docs/`:** el runbook dice dónde están y cómo se recuperan.
+
+**Por qué:** un doc que solo se entiende con la IA al lado no sirve el día que la IA no está, que es justo el día que se necesita.
+
 ### Docs de TRACKING / HISTÓRICO INTERNO — sí pueden tener identificadores históricos
 
 Bitácoras, informes de tanda, síntesis de sesiones operativas, memoria del coordinador. Mantienen su nomenclatura histórica, pero **no son lectura de onboarding**; si un README los menciona, debe etiquetarlos como "registro interno, no necesario para empezar".
@@ -60,3 +75,4 @@ Relacionada: [[formato_prompts_markdown_limpio]], [[estructura_contenedor_asunto
 
 > **v1.1 (2026-09-04): entra la tercera clase, los docs de DECISIÓN, a propuesta del director.** Las dos clases originales dejaban el *porqué* fuera de `docs/` y lo remitían al histórico de cambios; eso **supone que siempre habrá quien lea commits**, y este kit ya tiene medido lo contrario — al podar su propia bitácora comprobó que **lo que baja al histórico deja de leerse**, y por eso exige fundir la lección en una regla antes de archivarla. El mismo razonamiento aplica aquí. **No deroga nada:** la narrativa de proceso sigue prohibida; lo que entra es la razón de la decisión con sus alternativas descartadas. *(Y no inventa una práctica: **tres de los cuatro asuntos vivos ya tenían carpeta de decisiones**, cada uno por su cuenta y con nombre distinto, mientras la plantilla no la traía — así que el asunto nuevo nació sin ella. Es el patrón de [[mejora_continua_del_kit]]: se arregla en la plantilla y en la doctrina, no en el contenedor que lo sufrió.)*
 
+> **v1.2 (2026-10-04): entra la cuarta clase, los docs OPERATIVOS**, por decisión del director. No deroga nada: define qué significa "documentación al día" para lo que un asunto monta.
