@@ -211,3 +211,4 @@ Lo que el coordinador tiene que respetar al lanzar —el plan antes de las tanda
 2. Si aún no es un repositorio, inicialízalo.
 3. **Coordinador general y coordinadores de asunto arrancan sin más.** Solo si un asunto lee una carpeta **externa** al vault hay que añadirla al abrir la sesión.
 4. Pide al coordinador general que compruebe el kit: `node _meta/verificar-kit.mjs` tiene que salir en verde.
+5. **Herramientas comunes de usuario.** Viven fuera del vault y hay que reinstalarlas: `npm install -g @playwright/cli@latest` y `playwright-cli install --skills --global`. Se comprueba con `playwright-cli --version`. Detalle y prueba completa en [[herramientas_comunes_de_usuario]].

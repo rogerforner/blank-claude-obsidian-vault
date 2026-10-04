@@ -77,6 +77,10 @@ Qué protege esta plantilla, y por qué cada cosa:
 
 **Por qué conceder `node:*` entero es aceptable, y no una excepción incómoda:** porque **el `allow` no es la barrera** —concede, no restringe— y lo que de verdad protege son los `deny`, que siguen intactos: no escribe en `_meta/`, ni en `general/`, ni en `inicializador/`; no sale a la red; no publica; no lee secretos. **Acotar el `allow` a rutas concretas no habría añadido ni una pizca de seguridad y sí habría vuelto a fallar** el día que un script del kit cambiara de sitio.
 
+## `playwright-cli` se concede, porque es la herramienta común de navegador
+
+Automatizar un navegador es una necesidad de varios asuntos, y la herramienta común es la CLI de Playwright, instalada una vez a nivel de usuario ([[herramientas_comunes_de_usuario]]). Las sesiones del vault van en "Omitir permisos", pero un vault que no lo haga necesita este permiso para no preguntar en cada orden. Como el resto del `allow`, concede y no restringe: el navegador integrado y Claude in Chrome no se listan, porque piden confirmación humana en todos los modos.
+
 ## Este perfil es un SUELO: el asunto lo endurece, y eso NO es deriva
 
 **La copia que vive en un contenedor puede y debe apartarse de esta plantilla**, y conviene decirlo porque una comparación mecánica lo leería como desviación. Lo legítimo es **hacia el lado duro**:

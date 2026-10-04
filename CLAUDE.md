@@ -84,6 +84,7 @@ Lo de arriba es método y no cambia. Esto es sintaxis: cómo se lanza un subagen
 | Sesión de solo lectura | `plantilla-settings-consultor.json` (`defaultMode: plan`) — solo para quien no entrega ficheros: en modo plan la sesión no puede escribir su entregable |
 | Perfil de una sesión `claude -p` | `--settings inicializador/plantilla-settings-ejecutora.json` (o `-codigo` si toca código) |
 | Cuota | `/usage` |
+| Automatizar un navegador | `playwright-cli` (skill de usuario); no el navegador integrado ni Claude in Chrome → [[herramientas_comunes_de_usuario]] |
 | Vetos de facturación | `/fast` (vetado por configuración), `ultracode` (salvo decisión del director) y créditos de uso desactivados (con ellos, Fable en `-p` factura sin preguntar) |
 
 ## Si eres el coordinador general (directorio de trabajo = raíz)

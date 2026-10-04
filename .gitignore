@@ -76,3 +76,6 @@ desktop.ini
 # haria que un sello de otra maquina se leyera aqui como si fuera propio, que es justo la mentira
 # que el sello existe para impedir.
 /.dod-seal.json
+
+# Instantaneas de pagina que escribe Playwright CLI en la carpeta de trabajo.
+**/.playwright-cli/
