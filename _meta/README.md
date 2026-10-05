@@ -10,7 +10,8 @@ La idea de fondo: **el kit no es infraestructura invisible, es un asunto con su 
 - **[charter-coordinador.md](charter-coordinador.md)** — el mandato del coordinador general: qué construir, en qué orden y **dónde parar**.
 - **[cola-pendientes.md](cola-pendientes.md)** — el estado vivo del kit: bloques de trabajo pendientes, en curso y cerrados.
 - **[decisiones-abiertas.md](decisiones-abiertas.md)** — decisiones de diseño aún sin cerrar, cada una con su recomendación; se resuelven **con el director**.
-- **[trabajo-en-curso.md](trabajo-en-curso.md)** — una línea por frente abierto y su dueño. No es la cola: la cola dice qué falta, esto dice **qué hay alguien haciendo ya**. El hook de arranque lo vuelca por contexto en todas las sesiones del vault.
+- **[trabajo-en-curso.md](trabajo-en-curso.md)** — una línea por frente abierto y su dueño. No es la cola: la cola dice qué falta, esto dice **qué hay alguien haciendo ya**. El hook de arranque lo vuelca por contexto en la sesión del general; cada asunto tiene el suyo en `coordinacion/` y ve solo ese.
+- **[tablero-tandas.md](tablero-tandas.md)** — la tabla de tandas viva del plan en curso; se edita con `general/comun/scripts/tablero.mjs` ([[ciclo_de_tandas]]).
 - **[bitacora.md](bitacora.md)** — qué se aprendió al usar el kit y **qué cambio se aplicó** a raíz de ello ([[mejora_continua_del_kit]]).
 - **[plantilla-brief-chat-web.md](plantilla-brief-chat-web.md)** — plantilla de brief para investigar **fuera de esta herramienta**, en el chat web, cuando la pregunta es sobre la forma de trabajar (un modelo nuevo, una herramienta, un método) y no sobre un asunto concreto ([[vigilancia_tecnologica_bajo_demanda]]).
 - **[guia-arranque-sesiones.md](guia-arranque-sesiones.md)** — para el **director**: los prompts que copia y pega para abrir, relevar y cerrar sesiones, organizados por rol y **sin nada que editar** al pegarlos.

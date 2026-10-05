@@ -6,7 +6,7 @@ Prompts, handoffs y briefs del asunto. Convención completa: [[convencion_organi
 
 La raíz solo contiene lo **activo** y lo **vivo**. Lo efímero ya usado **se borra** (git conserva el histórico local; el resultado perdura en `estudios/`, `docs/` o la cola). **Nada de ficheros obsoletos.**
 
-- **Se conserva:** `prompt-<activo>.md` (la tanda en curso), `handoff-coordinador-<fecha>.md` (el vivo), `tmp-otros-actual.md` (buffer), `README.md`, `trabajo-en-curso.md` (**versionado**: una línea por frente abierto, que el hook vuelca al arrancar en todo el vault), y `referencia/` — documentos vivos sin fecha en el nombre: glosario del asunto, contactos del organismo o del perito, calendario de plazos, el reconocimiento inicial del material.
+- **Se conserva:** `prompt-<activo>.md` (la tanda en curso), `handoff-coordinador-<fecha>.md` (el vivo), `tmp-otros-actual.md` (buffer), `README.md`, `trabajo-en-curso.md` (**versionado**: una línea por frente abierto, que el hook te vuelca al arrancar, solo a ti), `tablero-tandas.md` (**versionado**: la tabla de tandas viva del plan en curso), y `referencia/` — documentos vivos sin fecha en el nombre: glosario del asunto, contactos del organismo o del perito, calendario de plazos, el reconocimiento inicial del material.
 - **Se borra (git es el histórico):** el prompt ya ejecutado y cerrada su tanda, el brief cuando ya existe su informe, el handoff superado.
 
 ## Qué se versiona y qué no

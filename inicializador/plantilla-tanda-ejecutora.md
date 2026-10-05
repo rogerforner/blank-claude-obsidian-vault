@@ -34,7 +34,7 @@ Esta fase la hace el subagente `planificador`, según el ciclo de [[ciclo_de_tan
 2. **Premisas de la especificación que resultan FALSAS**, listadas explícitamente. Es el apartado que hace útil el plan; **si está vacío, dilo vacío**.
 3. **Inventario de lo que va a tocar**, con el perímetro.
 4. **Decisiones que la especificación dejó abiertas sin darse cuenta** y hay que cerrar antes de empezar.
-5. **Tabla de tandas, orden de pasos y riesgos**, incluido qué hacer si un paso falla a mitad.
+5. **Tabla de tandas** —con su línea `Paradas`; al empezar a ejecutar pasa al tablero ([[ciclo_de_tandas]])—, **orden de pasos y riesgos**, incluido qué hacer si un paso falla a mitad.
 
 **Y luego lo importante, que es tuyo:** lee el plan, **corrige tu especificación** con lo que haya destapado, y **solo entonces** lanza la primera tanda. El plan existe para que **tú arregles la especificación antes de que cueste trabajo**. Si no vas a leerlo, no lances la fase.
 

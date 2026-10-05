@@ -32,7 +32,7 @@
 // El veredicto esta en el bloque de resumen, y el codigo de salida es 0/1. No lo encadenes con
 // tuberia: `node _meta/dod.mjs` a secas, igual que el verificador.
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { join, dirname, basename } from 'node:path';
@@ -83,7 +83,12 @@ function huella() {
   return { hash: h.digest('hex').slice(0, 16), ficheros: contados };
 }
 
-// --- 1. el kit esta en verde --------------------------------------------
+// --- 1. el kit esta en verde, EN TU AMBITO -------------------------------
+// El verificador sigue mirando el vault entero (lo corre el general entero al mantener el kit),
+// pero esta puerta cuenta SOLO los hallazgos de tu ambito (decision D5 del director, 2026-10-05:
+// cada coordinador ve solo lo suyo). Lo ajeno ni bloquea ni se nombra: ni su numero ni su dueño.
+// Antes el rojo ajeno saltaba a todos "para que llegue a quien puede arreglarlo"; el director lo
+// sustituyo por el canal entre coordinadores, que usa el dueño cuando necesita algo del otro.
 function puertaVerificador() {
   const v = join(RAIZ, '_meta', 'verificar-kit.mjs');
   if (!existsSync(v)) return anota('verificador', true, 'no hay verificador en este arbol (se salta)');
@@ -91,25 +96,12 @@ function puertaVerificador() {
     const salida = execFileSync(process.execPath, [v], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
     anota('verificador', true, salida.trim().split('\n')[0]);
   } catch (e) {
-    const salida = (e.stdout || '').trim().split('\n').filter(Boolean);
-    anota('verificador', false, salida[0] || 'el verificador salio en rojo');
-    // El verificador SIGUE mirando el vault entero y SIGUE bloqueando aunque el hallazgo sea de
-    // otro contenedor, y eso es deliberado: a diferencia de un arbol sucio ajeno -- que no mueve a
-    // nadie mas que a su dueño --, un hallazgo del verificador es el kit REALMENTE incumplido, y
-    // que le salte a un tercero es lo que hace que llegue a quien puede arreglarlo. Paso el
-    // 2026-08-28: un coordinador vio en rojo el charter de OTRO asunto, avisó, y se arregló.
-    // Lo que si cambia es el mensaje: si el hallazgo no es de tu ambito, se te dice de quien es y
-    // que tu trabajo es AVISARLE, no arreglarlo. Un rojo que no dice a quien mueve deja parado al
-    // que lo ve sin activar al que puede actuar.
-    const ajenos = new Set();
-    for (const l of salida.slice(1)) {
-      anota('verificador', false, '   ' + l.trim());
-      const m = l.match(/asuntos\/([^/\s]+)\//);
-      if (m && !esMio(`asuntos/${m[1]}/`)) ajenos.add(m[1]);
-    }
-    if (ajenos.size) {
-      anota('verificador', false, `   → ${[...ajenos].map((a) => `\`${a}\``).join(', ')}: NO es tuyo y no lo toques. Avisa a su coordinador —por el canal si esta vivo, por handoff si no— y dilo en tu informe de cierre.`);
-    }
+    const patron = /^\s*\[[^\]]+\] (\S+) ::/;
+    const propios = (e.stdout || '').split('\n')
+      .filter((l) => patron.test(l) && esMio(l.match(patron)[1]));
+    if (!propios.length) return anota('verificador', true, `en verde para tu ambito (${AMBITO.quien})`);
+    anota('verificador', false, `${propios.length} hallazgo(s) en tu ambito (${AMBITO.quien}):`);
+    for (const l of propios) anota('verificador', false, '   ' + l.trim());
   }
 }
 
@@ -131,27 +123,21 @@ const esMio = (ruta) => AMBITO.prefijo
   ? ruta.startsWith(AMBITO.prefijo)
   : !/^asuntos\/[^/]+\//.test(ruta);
 
-// De quien es una ruta, para poder nombrarlo en el aviso.
-const duenoDe = (ruta) => (ruta.match(/^asuntos\/([^/]+)\//) || [, 'el general'])[1];
-
-// ANOTA SEGUN DE QUIEN SEA. Un hallazgo sobre algo que no es tuyo no puede pedirte una accion que
-// no puedes ejecutar: o se dice de quien es, o no se enseña. La primera version de esto se aplico
-// solo a la puerta de arbol limpio, y las otras cinco se quedaron con la forma vieja -- una de
-// ellas diciendole a un coordinador de asunto "poda antes de escribir largo" sobre un fichero del
-// general. Lo cazo el mismo coordinador, y su argumento es el que manda: *un aviso que no es para
-// ti se aprende a ignorar rapido, y el dia que el 97 % sea el tuyo ya no lo leeras*.
+// ANOTA SOLO LO TUYO. Un hallazgo sobre algo que no es tuyo no puede pedirte una accion que no
+// puedes ejecutar, y un aviso que no es para ti se aprende a ignorar rapido (lo cazo un
+// coordinador el 2026-08-28). Desde la decision D5 (2026-10-05) lo ajeno ni bloquea ni se nombra:
+// ni la ruta ni el dueño. Se calla del todo.
 //   - `bloquea`: si es tuyo, es rojo y la instruccion va dirigida a ti.
-//   - si es ajeno: nunca es rojo, se nombra al dueño y se dice que no es cosa tuya.
 function anotaPorAmbito(puerta, ruta, textoSiMio, { bloquea = true } = {}) {
   if (esMio(ruta)) return anota(puerta, !bloquea, textoSiMio);
-  return anota(puerta, true, `${textoSiMio}  →  no es tuyo, es de \`${duenoDe(ruta)}\`: no lo toques ni lo podes; avisale si le bloquea a el`);
 }
 
 // --- 2. el arbol esta limpio, EN TU AMBITO -------------------------------
 // Cerrar con cambios sin commitear es la forma mas comun de perder trabajo entre sesiones: la
 // siguiente los encuentra sin saber de quien son ni si estaban terminados.
 //
-// PERO SOLO BLOQUEA POR LO TUYO, y esto es una correccion del 2026-08-28. Antes miraba el arbol
+// PERO SOLO BLOQUEA POR LO TUYO, y esto es una correccion del 2026-08-28. Desde la D5 (2026-10-05)
+// lo ajeno solo se cuenta, sin decir de quien es. Antes miraba el arbol
 // ENTERO, asi que con dos sesiones vivas -- que es lo normal, no lo raro -- **ninguna podia cerrar
 // mientras la otra tuviera trabajo a medias**, por impecable que estuviera su contenedor. Lo
 // destaparon los dos coordinadores el mismo dia, por separado y sin poder sellar: uno con su
@@ -169,8 +155,7 @@ function puertaArbolLimpio() {
   ajenoPendiente = sucio.filter((l) => !esMio(ruta(l)));
 
   if (ajenoPendiente.length) {
-    const duenos = [...new Set(ajenoPendiente.map((l) => (ruta(l).match(/^asuntos\/([^/]+)\//) || [, 'el general'])[1]))];
-    anota('arbol limpio', true, `${ajenoPendiente.length} fichero(s) sin commitear que NO son tuyos (${duenos.join(', ')}) — no te bloquean y no los toques; queda constancia en el sello`);
+    anota('arbol limpio', true, `${ajenoPendiente.length} fichero(s) ajenos sin commitear: no te bloquean`);
   }
   if (!mios.length) {
     return anota('arbol limpio', true, `sin cambios pendientes en tu ambito (${AMBITO.quien})`);
@@ -183,20 +168,35 @@ function puertaArbolLimpio() {
 // --- 3. higiene: nada efimero ya cumplido sigue vivo --------------------
 // Reutiliza el hook de limpieza en su modo lista, para que la regla viva en UN sitio y no en dos
 // que puedan derivar. Si el hook no esta, la puerta se declara saltada en vez de dar por buena.
+// El hook mira SOLO bajo su raiz de sesion, asi que se corre una vez por contenedor: la raiz del
+// vault y cada `asuntos/<x>` que sea un directorio (los `estudios/` de un asunto cuelgan de el).
+// Se juntan las rutas sin duplicados y `anotaPorAmbito` deja solo las tuyas: cada dueño ve lo suyo.
 function puertaHigiene() {
   const hook = join(RAIZ, 'general', 'comun', 'hooks', 'limpieza-coordinacion.mjs');
   if (!existsSync(hook)) return anota('higiene', true, 'no hay hook de limpieza (se salta)');
-  let salida = '';
-  try {
-    salida = execFileSync(process.execPath, [hook], {
-      encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
-      env: { ...process.env, LIMPIEZA_LIST_TRACKED: '1', CLAUDE_PROJECT_DIR: RAIZ },
-    });
-  } catch { return anota('higiene', true, 'el hook no pudo listar (se salta, no se da por buena)'); }
-  const pendientes = salida.split('\n').filter(Boolean);
-  if (!pendientes.length) return anota('higiene', true, 'sin efimeros cumplidos por retirar');
-  anota('higiene', true, `${pendientes.length} efimero(s) trackeado(s) ya cumplidos:`);
-  for (const f of pendientes) anotaPorAmbito('higiene', f.replace(RAIZ + '/', ''), `   ${f.replace(RAIZ + '/', '')} — \`git rm\` si ya cumplio`);
+  const contenedores = [RAIZ];
+  const dirAsuntos = join(RAIZ, 'asuntos');
+  if (existsSync(dirAsuntos)) {
+    for (const e of readdirSync(dirAsuntos, { withFileTypes: true })) {
+      if (e.isDirectory()) contenedores.push(join(dirAsuntos, e.name));
+    }
+  }
+  const rutas = new Set();
+  for (const dir of contenedores) {
+    let salida = '';
+    try {
+      salida = execFileSync(process.execPath, [hook], {
+        encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+        env: { ...process.env, LIMPIEZA_LIST_TRACKED: '1', CLAUDE_PROJECT_DIR: dir },
+      });
+    } catch { return anota('higiene', true, 'el hook no pudo listar (se salta, no se da por buena)'); }
+    for (const f of salida.split('\n').filter(Boolean)) rutas.add(f.replace(RAIZ + '/', ''));
+  }
+  const mias = [...rutas].filter(esMio).sort();
+  if (!mias.length) return anota('higiene', true, 'sin efimeros cumplidos por retirar en tu ambito');
+  // Es un aviso que pide accion al dueño: rojo, y la demostracion en rojo sale de datos reales.
+  anota('higiene', false, `${mias.length} efimero(s) trackeado(s) ya cumplidos en tu ambito:`);
+  for (const f of mias) anotaPorAmbito('higiene', f, `   ${f} — \`git rm\` si ya cumplio`);
 }
 
 // --- 4. los techos de los ficheros que se leen enteros al arrancar ------
@@ -297,8 +297,9 @@ function puertaTrabajoEnCurso() {
       if (!existsSync(destino)) fallos.push([rel, `${rel} linea ${i + 1}: el artefacto \`${m[1]}\` no existe — la ruta va DESDE LA RAIZ DEL VAULT, no desde el contenedor donde escribes`]);
     });
   }
-  if (!fallos.length) return anota('trabajo en curso', true, 'los artefactos declarados existen');
-  for (const [rel, texto] of fallos) anotaPorAmbito('trabajo en curso', rel, texto);
+  const mios = fallos.filter(([rel]) => esMio(rel));          // lo ajeno ni se nombra (D5)
+  if (!mios.length) return anota('trabajo en curso', true, 'los artefactos declarados existen en tu ambito');
+  for (const [rel, texto] of mios) anotaPorAmbito('trabajo en curso', rel, texto);
 }
 
 // (c) Si la sesion toco el catalogo o el inicializador, la plantilla tiene que quedar sincronizada.

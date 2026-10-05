@@ -2,12 +2,12 @@
 name: Convención de organización de la carpeta de trabajo
 description: La carpeta de coordinación mantiene en su raíz solo lo activo y lo vivo. Handoffs y buffers son LOCALES (gitignored, nunca se versionan); los prompts ejecutados y los briefs con informe se versionan en vuelo y se BORRAN al cumplir (git rm; git conserva el histórico). No se acumulan ficheros obsoletos. Y lo que se lee entero en cada arranque —cola, bitácora— tiene TECHO escrito, igual que el CLAUDE.md: 40.960 y 30.720 bytes de `wc -c`, comparados sin convertir.
 type: convention
-version: 3.0
+version: 3.1
 index_summary: >-
   Raíz solo con lo activo/vivo; prompts/briefs ejecutados se BORRAN (git es el histórico); handoffs y buffers son locales/gitignored; hook `SessionStart` que es el **ritual de arranque** —borra lo **superado por su serie** y lo **caducado a los 14 días**, **sella la fecha del sistema** y **ejecuta el verificador avisando solo si sale en rojo**— (sin lo segundo, un handoff con nombre único no se borraba nunca). **Lo que se lee entero en cada arranque tiene TECHO**: **40.960 bytes** la cola de un asunto, **30.720** la bitácora, comparados contra `wc -c` sin convertir, y lo cerrado baja al histórico (en bytes y no en líneas: 620 líneas de párrafo denso son 197 KB) — el `CLAUDE.md` ya lo tenía y los ficheros de estado no, que es como una cola llegó a costar 53.000 tokens por arranque. **Resumir TARDE produce desfase**: la conclusión sube a la cola en el mismo commit que genera el dato, o el fichero de estado deja de contar el estado — y eso no lo arregla podar. En un asunto en ejecución las palancas se agotan y se puede llegar al 97 % legítimamente; **entonces no se sube el techo, se decide qué se cierra**. Los originales no son efímeros: no se borran.
 ---
 
-La carpeta de coordinación de un asunto (`asuntos/<asunto>/coordinacion/`) se mantiene **limpia**: solo lo **activo** y lo **vivo**. Los insumos efímeros ya usados **se borran** — git conserva el histórico y el resultado perdura en otro sitio. Así nunca hay ficheros obsoletos que confundan ni que obliguen a leer de más.
+La carpeta de coordinación de un asunto (`asuntos/<asunto>/coordinacion/`) y su carpeta de estudios (`estudios/`) se mantienen **limpias**: solo lo **activo** y lo **vivo**. No se dejan ficheros obsoletos en el vault: cada coordinador gestiona los suyos, también los de `estudios/`. Los insumos efímeros ya usados **se borran** — git conserva el histórico y el resultado perdura en otro sitio. Así nunca hay ficheros obsoletos que confundan ni que obliguen a leer de más.
 
 ## Qué se conserva y qué se borra
 
@@ -16,12 +16,14 @@ La carpeta de coordinación de un asunto (`asuntos/<asunto>/coordinacion/`) se m
 - El **handoff vivo** de la sesión actual *(local, gitignored — ver §Versionado)*.
 - **`tmp-otros-actual.md`** — buffer sobreescribible *(local, gitignored)*.
 - `README.md` y **`referencia/`** (docs vivas: glosarios, plantillas, datos de contacto del asunto).
-- Los **resultados**: escritos, informes, síntesis (viven en `docs/`, `estudios/`, o la cola).
+- Los **resultados**: escritos, síntesis y los informes de estudios mientras su decisión no esté fundida en `docs/` (viven en `docs/`, `estudios/`, o la cola).
 - En `_meta/`, el **plan de tandas** mientras vive: se versiona hasta que se cumple la última tanda.
 
 **Se borra (git es el histórico):**
 - El **prompt ya ejecutado**, cerrada su tanda y capturado el resultado (commits + entrada en `cola-pendientes.md`). **No se archiva: se borra.**
 - El **brief**, cuando ya existe su informe.
+- En `estudios/`, el prompt o el brief de un estudio cuando ya existe su informe: `<base>_prompt.md` con `<base>_informe.md` o `<base>_prompt_informe.md`, o `brief.md` con `informe.md` en la carpeta del tema. Antes de borrarlo se arreglan los enlaces que apuntan a él, porque si no el verificador marca el enlace colgado.
+- Los informes de `estudios/` cuya decisión ya está fundida en `docs/` (ficha de decisión, `docs_sin_fases`), después de rescatar lo que solo vive en ellos. Esto es criterio del coordinador del asunto: no lo detecta ninguna puerta, porque saber si una decisión está fundida exige juicio.
 - Cualquier **handoff superado** por uno nuevo (borrado local; al ser gitignored ya no está en git).
 - En `_meta/`, los **informes cumplidos**, una vez rescatado lo que solo vive en ellos (D6 del método 5.5): no hace falta conservarlos todos, porque lo que mantiene el método al día es vigilar los modelos y las guías de Claude, no el archivo de informes.
 
@@ -71,7 +73,7 @@ El resultado perdura en los commits, en `docs/`/`estudios/` y en la cola. Si alg
 La limpieza no puede depender solo del cierre de tanda: las sesiones a menudo **mueren por límite de contexto** antes de cerrar, y el efímero se acumula. Por eso hay un **hook `SessionStart`** (`general/comun/hooks/limpieza-coordinacion.mjs`, cableado en el `settings.json` de perfil coordinador) que, al arrancar/reanudar cualquier sesión de coordinación:
 
 - **Auto-borra** los handoffs y buffers `tmp-otros-actual.md` **gitignored** que ya no sirven, por cualquiera de dos motivos independientes: **superados** (hay otro más reciente en su misma serie) o **caducados** (más de 14 días, aunque sean los únicos de su serie). Los de **hoy** no se tocan nunca; cero impacto en git. La caducidad no es redundante: **una serie de un solo elemento no tiene sucesor que la desplace**, así que sin ella un handoff con nombre único se conservaba para siempre.
-- **Avisa** por contexto de los **prompts/briefs trackeados** ya cumplidos, para que el coordinador los quite con `git rm` (con criterio: puede haber prompts en vuelo). One-liner de apoyo: `LIMPIEZA_LIST_TRACKED=1 node <script> | while IFS= read -r f; do git rm -- "$f"; done`.
+- **Avisa** por contexto de los **prompts/briefs trackeados** ya cumplidos, para que el coordinador los quite con `git rm` (con criterio: puede haber prompts en vuelo). Detecta cuatro casos: un `prompt*` de `coordinacion/`; un `brief*.md` con su `<brief>-informe.md` al lado; en `estudios/`, un `<base>_prompt.md` cuando existe `<base>_informe.md` o `<base>_prompt_informe.md`; y un `brief.md` cuando hay un `informe.md` o `informe-*.md` en su carpeta. El DoD (`_meta/dod.mjs`) consulta esa misma detección en todos los contenedores, la raíz y cada asunto, y deja como rojo solo lo del ámbito de quien lo corre: cada dueño ve y retira lo suyo. One-liner de apoyo: `LIMPIEZA_LIST_TRACKED=1 node <script> | while IFS= read -r f; do git rm -- "$f"; done`.
 
 - **Sella la fecha del sistema** en el contexto, siempre y sea cual sea el resto. La sesión no vuelve a deducir qué día es leyendo un fichero: se lo dice una **ejecución**. Va con su alcance escrito al lado —sirve para el caso ordinario, no para dirimir una duda sobre el propio reloj— porque una fecha que se entrega sin límites se acaba usando para aquello que no cubre. → [[verificacion_fuente_primaria]]
 - **Ejecuta el verificador del kit y avisa SOLO si sale en rojo.** Es la *prueba básica de arranque*: descubrir lo que la sesión anterior dejó roto **antes** de tocar nada, en vez de descubrirlo al ir a commitear. Lo busca subiendo desde el directorio de trabajo, así que funciona igual desde la raíz que desde un contenedor; si no lo encuentra, no dice nada.
@@ -82,6 +84,7 @@ Nunca bloquea el arranque (exit 0). La limpieza es, por tanto, **ritual de arran
 
 Buffer **exclusivo** de texto que el director pega como respuesta a la pregunta de un asistente. No es canal de instrucciones (eso va en el chat) ni panel de estado. Sobreescribible; si no hay pregunta pendiente, queda vacío.
 
+> v3.1 (2026-10-05): la convención cubre también `estudios/`: se retira el prompt o el brief de un estudio cuando ya tiene su informe, y el informe cuya decisión está fundida en `docs/` (este último, por criterio del coordinador, sin puerta que lo detecte). El hook detecta los casos de `estudios/` y el DoD los atribuye al dueño de cada contenedor. Motivo: no se dejan ficheros obsoletos en el vault y cada coordinador gestiona los suyos. Es la decisión D4 del director, 2026-10-05.
 > v3.0 (2026-10-04): en `_meta/`, los informes cumplidos se retiran tras rescatar lo que solo vive en ellos (D6 del método 5.5), y el plan de tandas se versiona mientras vive (tanda C6).
 > v2.0 (2026-06-08): se sustituye el archivado en `cerrados/` por **borrado** (git es el histórico). Mantener los directorios sin ficheros obsoletos.
 > v2.1 (2026-06-09): se distingue **local/gitignored** (handoffs, buffers — nunca se versionan) de **versionado-y-borrado** (prompts, briefs). Añadidos al `.gitignore` raíz `**/handoff-*.md`.

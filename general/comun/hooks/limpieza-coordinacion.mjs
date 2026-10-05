@@ -12,25 +12,34 @@
 //      vault el 2026-08-12: seis handoffs de julio vivos en dos contenedores, cada uno con un
 //      nombre distinto y por tanto cada uno su propia serie de uno.
 //      Lo de HOY nunca se toca, pase lo que pase.
-//   2. AVISA por stdout (que Claude recibe como contexto) de los prompts/briefs TRACKEADOS ya
-//      cumplidos, para que el coordinador los quite con `git rm` (con criterio: puede haber en vuelo).
+//   2. AVISA por stdout (que Claude recibe como contexto) de los efimeros TRACKEADOS ya cumplidos,
+//      para que el coordinador los quite con `git rm` (con criterio: puede haber en vuelo). Son
+//      cuatro formas, todas de fecha distinta de hoy y en cualquier zona:
+//        a) un `prompt*` de `coordinacion/` (se avisa siempre, esta o no su informe);
+//        b) un `brief*.md` con su `<brief>-informe.md` al lado;
+//        c) un `<base>_prompt.md` cuando existe `<base>_informe.md` o `<base>_prompt_informe.md`
+//           en la misma carpeta (el prompt de un estudio ya con informe);
+//        d) un `brief.md` cuando existe `informe.md` o algun `informe-*.md` en la misma carpeta.
+//      Cada fichero se lista una sola vez. Se mira SOLO bajo la raiz de la sesion: cada contenedor
+//      ve lo suyo (decision D5 del director, 2026-10-05).
 //   3. SELLA LA FECHA del sistema en el contexto (desde 2026-08-23). La sesion no vuelve a deducir
 //      que dia es leyendo un fichero: se lo dice una EJECUCION al arrancar. Sale del informe de
 //      continuidad, y del caso que lo motivo -- una sesion que arranco desde un handoff fechado y
 //      arrastro esa fecha a 38 sitios. Con su limite escrito al lado, que tambien se aprendio
 //      caro: esta fecha es la del EQUIPO, asi que sirve para el caso ordinario y NO para dirimir.
-//   4. EJECUTA EL VERIFICADOR del kit y avisa SOLO si sale en rojo (desde 2026-08-23). Es el
+//   4. EJECUTA EL VERIFICADOR del kit y avisa SOLO si sale en rojo EN TU AMBITO (desde 2026-08-23;
+//      acotado el 2026-10-05 por la decision D5: los hallazgos ajenos ni se muestran). Es el
 //      equivalente a la prueba basica de arranque del arnes de referencia: detectar lo que la
 //      sesion anterior dejo roto ANTES de tocar nada, en vez de descubrirlo al ir a commitear.
-//   5. VUELCA EL TRABAJO EN CURSO de todo el vault (desde 2026-08-23): las lineas abiertas de
-//      cada `trabajo-en-curso.md`, el de la raiz y el de cada asunto. Cierra dos huecos que
+//   5. VUELCA EL TRABAJO EN CURSO del PROPIO contenedor (desde 2026-08-23; acotado el 2026-10-05
+//      por la decision D5: cada coordinador ve solo lo suyo): las lineas abiertas de sus
+//      `trabajo-en-curso.md`. La raiz ve los que no estan bajo `asuntos/`; un asunto, los de su
+//      carpeta. Antes de mandar un handoff a otro coordinador se mira el suyo en ese momento. Cierra dos huecos que
 //      estaban escritos por separado en la cola y eran el mismo: (a) la mejora que pidio el
 //      coordinador de `climatizacion` -- antes de mandar un handoff hay que saber si el
 //      destinatario ya tiene ese trabajo abierto --, y (b) el buzon para sesiones apagadas,
 //      que no necesitaba herramienta nueva porque el fichero YA es un buzon persistente; lo
 //      que faltaba era que alguien lo leyera al arrancar sin tener que acordarse.
-//      Se busca desde la RAIZ DEL VAULT, no desde el directorio de trabajo, para que un
-//      coordinador de asunto vea tambien lo de los demas sin poder escribir en su contenedor.
 //   6bis. AVISA DE LOS HANDOFFS VIVOS que hay en tus zonas (desde 2026-08-28). Un handoff se borra
 //      cuando esta cumplido -- esa es la regla -- asi que uno que sigue ahi es, por definicion,
 //      trabajo sin despachar. Faltaba, y lo destapo el director: se le dejaron dos handoffs a dos
@@ -52,7 +61,7 @@
 
 import { readdirSync, statSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { join, basename, dirname } from 'node:path';
+import { join, basename, dirname, relative } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 const DRY = process.env.LIMPIEZA_DRY_RUN === '1';
@@ -87,6 +96,10 @@ function walk(dir, out) {
       out.push(full);
     }
   }
+}
+
+function hermanos(dir) {
+  try { return readdirSync(dir); } catch { return []; }
 }
 
 function isIgnored(file) {
@@ -127,8 +140,17 @@ function raizDelVault() {
 // Lineas `- [ABIERTO AAAA-MM-DD] ...` de los `trabajo-en-curso.md` del vault. El formato lo
 // comprueba el verificador (regla 12): si deriva, el hook deja de leerlas y el aviso se
 // perderia EN SILENCIO, que es el peor modo de fallo de una pieza de higiene.
+// AMBITO de la sesion (decision D5): un asunto responde de `asuntos/<slug>/`; la raiz, de todo lo
+// que no esta bajo `asuntos/`. Se deduce de donde esta ROOT respecto a la raiz del vault.
+function ambitoDeLaSesion(raiz) {
+  const rel = raiz ? relative(raiz, ROOT).replace(/\\/g, '/') : '';
+  const m = rel.match(/^asuntos\/([^/]+)/);
+  return m ? `asuntos/${m[1]}/` : null;                    // null = la raiz del vault
+}
+const esDelAmbito = (prefijo, ruta) => prefijo ? ruta.startsWith(prefijo) : !/^asuntos\/[^/]+\//.test(ruta);
+
 const ABIERTO = /^- \[ABIERTO (\d{4}-\d{2}-\d{2})\] (.+)$/;
-function trabajoEnCurso(raiz) {
+function trabajoEnCurso(raiz, prefijo) {
   if (!raiz) return [];
   const encontrados = [];
   const buscar = (dir, prof) => {
@@ -147,6 +169,7 @@ function trabajoEnCurso(raiz) {
   buscar(raiz, 0);
   const out = [];
   for (const f of encontrados.sort()) {
+    if (!esDelAmbito(prefijo, relative(raiz, f).replace(/\\/g, '/'))) continue;   // lo ajeno ni se lee
     let texto;
     try { texto = readFileSync(f, 'utf8'); } catch { continue; }
     let enEjemplo = false;
@@ -252,12 +275,22 @@ function main() {
     if (/^prompt/i.test(b) && f.includes(`${'coordinacion'}`)) {
       if (isIgnored(f)) continue; // solo trackeados
       surfaced.push([f, 'prompt ejecutado (git rm si ya cumplido)']);
-    } else if (/brief/i.test(b) && !/-informe\.md$/i.test(b)) {
-      const informe = f.replace(/\.md$/i, '-informe.md');
-      if (existsSync(informe) && !isIgnored(f)) {
-        surfaced.push([f, 'brief ya con informe (git rm)']);
+      continue;
+    }
+    const dir = dirname(f);
+    let motivo = null;
+    if (/brief/i.test(b) && !/-informe\.md$/i.test(b) &&
+        existsSync(f.replace(/\.md$/i, '-informe.md'))) {
+      motivo = 'brief ya con informe (git rm)';
+    } else if (/^brief\.md$/i.test(b) && hermanos(dir).some((n) => /^informe\.md$/i.test(n) || /^informe-.*\.md$/i.test(n))) {
+      motivo = 'brief ya con informe (git rm)';
+    } else if (/_prompt\.md$/i.test(b)) {
+      const base = b.replace(/_prompt\.md$/i, '');
+      if (existsSync(join(dir, `${base}_informe.md`)) || existsSync(join(dir, `${base}_prompt_informe.md`))) {
+        motivo = 'prompt de estudio ya con informe (git rm)';
       }
     }
+    if (motivo && !isIgnored(f) && !surfaced.some(([x]) => x === f)) surfaced.push([f, motivo]);
   }
 
   // Modo lista: solo rutas trackeadas obsoletas, sin decoración (para `git rm`).
@@ -302,10 +335,17 @@ function main() {
         try {
           execFileSync(process.execPath, [v], { encoding: 'utf8', timeout: 20000, stdio: ['ignore', 'pipe', 'ignore'] });
         } catch (e) {
-          const salida = (e.stdout || '').trim();
-          if (salida) {
-            rojo.push('[VERIFICADOR] El kit NO esta en verde AL ARRANCAR, o sea que algo quedo roto de antes. Arreglalo antes de empezar nada nuevo, y no ajustes el verificador para que pase:');
-            for (const l of salida.split('\n')) rojo.push('  ' + l);
+          // Solo los hallazgos (`  [regla] ruta :: detalle`) cuya ruta es de MI ambito (D5): los
+          // ajenos ni se muestran. Sin ninguno mio, el kit esta "en verde para tu ambito".
+          const prefijo = ambitoDeLaSesion(raizDelVault());
+          const propios = (e.stdout || '').split('\n')
+            .filter((l) => /^\s*\[[^\]]+\] (\S+) ::/.test(l))
+            .filter((l) => esDelAmbito(prefijo, l.match(/^\s*\[[^\]]+\] (\S+) ::/)[1]));
+          if (propios.length) {
+            rojo.push('[VERIFICADOR] El kit NO esta en verde AL ARRANCAR en tu ambito, o sea que algo quedo roto de antes. Arreglalo antes de empezar nada nuevo, y no ajustes el verificador para que pase:');
+            for (const l of propios) rojo.push('  ' + l.trim());
+          } else {
+            rojo.push('[VERIFICADOR] El kit esta en verde para tu ambito.');
           }
         }
         break;
@@ -316,13 +356,13 @@ function main() {
     }
   } catch { /* el verificador nunca rompe el arranque */ }
 
-  // --- trabajo en curso de todo el vault (SIEMPRE que haya alguno) ---
+  // --- trabajo en curso del propio contenedor (SIEMPRE que haya alguno) ---
   const raiz = raizDelVault();
   const curso = [];
   try {
-    const abiertos = trabajoEnCurso(raiz);
+    const abiertos = trabajoEnCurso(raiz, ambitoDeLaSesion(raiz));
     if (abiertos.length) {
-      curso.push(`[EN CURSO] ${abiertos.length} trabajo(s) abierto(s) en el vault. Antes de abrir un frente nuevo o de mandar un handoff, mira si ya esta aqui — y si abres uno que sobrevive a tu sesion, anadelo a su fichero en el mismo commit:`);
+      curso.push(`[EN CURSO] ${abiertos.length} trabajo(s) abierto(s) en tu contenedor. Antes de abrir un frente nuevo, mira si ya esta aqui — y antes de mandar un handoff a otro coordinador, mira EN ESE MOMENTO el trabajo-en-curso.md del destinatario — y si abres uno que sobrevive a tu sesion, anadelo a su fichero en el mismo commit:`);
       for (const [f, fecha, texto] of abiertos) {
         const dueno = f.startsWith(raiz) ? f.slice(raiz.length + 1).replace(/\\/g, '/') : f;
         curso.push(`  - (desde ${fecha}) ${texto}`);

@@ -14,7 +14,7 @@ Eres el **COORDINADOR del asunto {{ASUNTO}}**. La sesión anterior llegó a su l
 
 1. **Antes de cada tanda:** lees el material relevante y, si el trabajo no es trivial, lanzas el `planificador` con un encargo corto; lees su plan y corriges el encargo antes de ejecutar nada.
 2. **Durante la tanda:** la ejecuta un subagente `ejecutora`, una tanda cada vez, con la tanda tal como está en el plan.
-3. **Después:** validas el resultado (*trust-but-verify*) con `git status --short` y el comando de la tanda, commiteas por pathspec, actualizas la cola y la tabla de tandas, y al cerrar un bloque paras.
+3. **Después:** validas el resultado (*trust-but-verify*) con `git status --short` y el comando de la tanda, commiteas por pathspec, actualizas la cola y el tablero de tandas, y al cerrar un bloque te relevas o paras ([[ciclo_de_tandas]]).
 
 ## Lectura inicial obligatoria (en este orden)
 
@@ -53,7 +53,7 @@ Las doctrinas instaladas en `memoria/`. Recordatorio mínimo: prompts `.md` limp
 
 ## Prompt de relevo
 
-Cuando la sesión cierra un bloque con normalidad, el relevo es el prompt de la sección "Plantilla del prompt de relevo" de [[ciclo_de_tandas]], y este handoff no hace falta. El handoff queda para cuando la sesión muere a mitad de bloque y el estado no cabe en ese prompt. Si lo escribes, inclúyelo al final, con las mismas cuatro líneas: no copies aquí su plantilla, para que no derive de la original.
+Cuando la sesión cierra un bloque con normalidad, el relevo es el prompt de la sección "Plantilla del prompt de relevo" de [[ciclo_de_tandas]] (escrito en `relevo-actual.local.md`), y este handoff no hace falta. El handoff queda para cuando la sesión muere a mitad de bloque y el estado no cabe en ese prompt. Si lo escribes, inclúyelo al final, con las mismas cuatro líneas: no copies aquí su plantilla, para que no derive de la original.
 
 ## Primera acción en la nueva sesión
 

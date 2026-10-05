@@ -169,7 +169,7 @@ La condición del final es la que hace útil la respuesta: **sin ella, un consul
 
 ## Relevar una sesión
 
-**El caso normal no necesita handoff.** Se relevan las sesiones entre bloques, cuando el plan ya está al día en el vault: el coordinador cierra el bloque, commitea y escribe el prompt de relevo de la sección "Plantilla del prompt de relevo" de [[ciclo_de_tandas]]. Ese prompt se pega en una sesión nueva con la misma carpeta, y no se copia aquí para que no haya dos versiones. Lo que tiene que sobrevivir ya está en el plan, la cola y los commits.
+**El caso normal no necesita handoff ni que tú hagas nada:** si el vault usa Herdr, el coordinador se releva solo al cerrar cada bloque y la sesión nueva sigue en la misma pestaña. Si para o el relevo falla, te lo dice, y el prompt de relevo está en `relevo-actual.local.md` (`_meta/` o `coordinacion/`) para pegarlo en una sesión nueva con la misma carpeta. Lo que tiene que sobrevivir ya está en el plan, la cola, el tablero y los commits.
 
 **El handoff queda para cuando la sesión muere a mitad de bloque**, sin haber llegado a un punto de parada. Entonces son dos pasos: **le pides el handoff a la sesión que se acaba, y abres una nueva con la MISMA carpeta que lo lee.**
 
@@ -195,13 +195,15 @@ Retomas esta sesión desde un handoff. Lee el handoff más reciente de tu carpet
 
 ## Encargar un trabajo (ciclo de tandas)
 
-Cuando el trabajo no es trivial (toca varios ficheros, estrena una forma de trabajo o se apoya en premisas sin comprobar), el coordinador lo hace con el ciclo de [[ciclo_de_tandas]]: planifica primero con el subagente `planificador`, ejecuta después con el subagente `ejecutora` en tandas pequeñas y para al cerrar cada bloque. Los subagentes son del propio coordinador, así que no hace falta que hagas de transporte. `claude -p` queda para otra raíz u otro perfil.
+Cuando el trabajo no es trivial (toca varios ficheros, estrena una forma de trabajo o se apoya en premisas sin comprobar), el coordinador lo hace con el ciclo de [[ciclo_de_tandas]]: planifica primero con el subagente `planificador`, ejecuta después con el subagente `ejecutora` en tandas pequeñas y se releva o para al cerrar cada bloque. Los subagentes son del propio coordinador, así que no hace falta que hagas de transporte. `claude -p` queda para otra raíz u otro perfil.
 
 ```
-Esto no es trivial: planifícalo con el planificador, enséñame las premisas falsas y la tabla de tandas, y ejecútalo por bloques parando al cerrar cada uno
+Esto no es trivial: planifícalo con el planificador, enséñame las premisas falsas y la tabla de tandas, y ejecútalo por bloques según el ciclo de tandas
 ```
 
-Lo que el coordinador tiene que respetar al lanzar —el plan antes de las tandas, la comprobación de cada una y la parada al cerrar el bloque— está en la doctrina y en el contrato de tanda. No es cosa tuya acordarte.
+La tabla viva la ves en el tablero sin interrumpir: `_meta/tablero-tandas.md` o `asuntos/<asunto>/coordinacion/tablero-tandas.md`.
+
+Lo que el coordinador tiene que respetar al lanzar —el plan antes de las tandas, la comprobación de cada una y el relevo o la parada al cerrar el bloque— está en la doctrina y en el contrato de tanda. No es cosa tuya acordarte.
 
 ---
 
