@@ -1,15 +1,15 @@
 ---
 name: Herramientas comunes de usuario — se instalan una vez y quedan apuntadas
-description: Una herramienta que sirve a varios coordinadores se instala una sola vez a nivel de usuario, no por asunto ni por vault, y queda apuntada con cómo se instala y cómo se comprueba. Entre vaults de la misma máquina, los coordinadores generales se consultan antes de instalar y se avisan al hacerlo. Entradas: el navegador (Playwright CLI), la interfaz de sesiones (Herdr) y varias cuentas de Claude Code en una máquina.
+description: Una herramienta que sirve a varios coordinadores se instala una sola vez a nivel de usuario, no por asunto ni por vault, y queda apuntada con cómo se instala y cómo se comprueba. Entre vaults de la misma máquina, los coordinadores generales se consultan antes de instalar y se avisan al hacerlo. Entradas: el navegador (Playwright CLI), la interfaz de sesiones (Herdr), varias cuentas de Claude Code en una máquina, el cliente de API (Bruno) y las bases de datos (elegidas, sin instalar).
 type: doctrine
-version: 1.2
+version: 1.3
 index_summary: >-
-  **Una herramienta que sirve a varios coordinadores se instala UNA vez a nivel de usuario**, no por asunto ni por vault, y queda apuntada con cómo se instala y cómo se comprueba, para que una máquina nueva la reproduzca y el director pueda hacerlo solo. **Entre vaults de la misma máquina, el general pregunta a los otros generales antes de instalar una y les avisa al hacerlo**, para no acabar con dos herramientas para lo mismo. Entradas: **el navegador es Playwright CLI** (`playwright-cli`, skill de usuario), no el navegador integrado ni Claude in Chrome, que piden confirmación humana y no sirven para trabajo desatendido; **la interfaz de sesiones es Herdr**, con su integración y su skill; y **varias cuentas de Claude Code en una máquina** se montan con un directorio de configuración por cuenta adicional, nunca para la cuenta por defecto.
+  **Una herramienta que sirve a varios coordinadores se instala UNA vez a nivel de usuario**, no por asunto ni por vault, y queda apuntada con cómo se instala y cómo se comprueba, para que una máquina nueva la reproduzca y el director pueda hacerlo solo. **Entre vaults de la misma máquina, el general pregunta a los otros generales antes de instalar una y les avisa al hacerlo**, para no acabar con dos herramientas para lo mismo. Entradas: **el navegador es Playwright CLI** (`playwright-cli`, skill de usuario), no el navegador integrado ni Claude in Chrome, que piden confirmación humana y no sirven para trabajo desatendido; **la interfaz de sesiones es Herdr**, con su integración y su skill; **varias cuentas de Claude Code en una máquina** se montan con un directorio de configuración por cuenta adicional, nunca para la cuenta por defecto; **el cliente de API es Bruno** (app y CLI a la misma versión, el agente usa la CLI y nunca MCP, y la barrera de escritura es la credencial de solo lectura en el recurso); y **las bases de datos** tienen elegidas `hsql` para el agente y DBeaver CE para la persona, `[ELEGIDA, SIN INSTALAR]` hasta que un asunto tenga que consultar una.
 ---
 
 Si dos coordinadores necesitan lo mismo, instalarlo dos veces es trabajo repetido y dos versiones que derivan. Una herramienta reutilizable se instala **una vez, a nivel de usuario**, y esta doctrina la apunta con tres datos: por qué esa y no otra, cómo se instala y cómo se comprueba. Con eso una máquina nueva la reproduce y el director puede hacerlo sin ayuda.
 
-Una entrada nueva se añade solo cuando una herramienta ya la necesita más de un coordinador, no por adelantado.
+Una entrada nueva se añade solo cuando una herramienta ya la necesita más de un coordinador, no por adelantado. Excepción: una herramienta ya elegida pero aún no necesaria puede apuntarse marcada `[ELEGIDA, SIN INSTALAR]`, siempre con su **umbral escrito** (el hecho concreto que dispara la instalación); sin umbral, no se abre.
 
 ## Entre vaults de la misma máquina
 
@@ -101,6 +101,51 @@ Una persona puede tener en la misma máquina más de una cuenta (una personal y 
 - **Comprobación:** la línea `[CUENTA]` del hook de arranque y `claude auth status --json` (`configDirectory`, `orgId`, `subscriptionType`). Es necesaria pero no suficiente: puede no reflejar el token que realmente se usa. Se complementa con el consumo que muestra claude.ai.
 - Un `settings.json` compartido hace que `/model` cambie en las dos cuentas *(dato de terceros)*.
 
+## Cliente de API: Bruno
+
+### Por qué esta forma
+
+Bruno guarda las colecciones como ficheros de texto, que se versionan y se leen sin la aplicación, y tiene CLI para el agente. La comparativa y lo medido están en el registro de estudios del vault, en la síntesis de decisiones de herramientas de usuario.
+
+### Instalación
+
+    brew install --cask bruno
+    npm install -g @usebruno/cli@<la misma versión que la app>
+
+### Ajustes
+
+La app guarda las preferencias en `~/Library/Application Support/bruno/preferences.json` (medido tras apagar la actualización desde la propia app). Claves, bajo `preferences`:
+
+- **Actualización automática: se apaga, obligatorio.** `autoupdate.downloadUpdates` en `false`. App y CLI tienen que ir a la misma versión y se actualizan juntas a mano; la cask lleva además `auto_updates`.
+- **Telemetría: opcional.** `telemetry.enabled`; por defecto `true`. Envía un aviso diario anónimo con el sistema operativo y la versión. Se apaga desde los ajustes de la app.
+- **Mock Server: opcional.** Servidor local activado por defecto desde la 4.2.0: `beta.mock-server` en `true`. Se apaga desde los ajustes de la app, en la sección beta.
+
+### Actualizar
+
+Las dos a la vez y a la misma versión: `brew upgrade --cask bruno` y `npm install -g @usebruno/cli@<versión>`.
+
+### Comprobación
+
+La versión de la app (`CFBundleShortVersionString` de su `Info.plist`) tiene que ser igual a la salida de `bru --version`.
+
+### Uso por el agente
+
+- **La CLI (`bru run`), nunca un MCP:** el MCP devuelve el cuerpo entero de la respuesta al contexto.
+- **Secretos** en un `.env` de la colección ignorado por git o en variables del proceso, nunca en el `.bru`. La CLI carga el `.env` de la colección (medido).
+- **Informe** con `--reporter-json` a un temporal, y recorte con `jq`: el estado HTTP sale con `jq '.[0].results[0].response.status' <informe>` (medido).
+- **`--reporter-skip-headers Authorization`** para que la credencial no acabe en el informe.
+- **Barrera:** la credencial de solo lectura en el recurso. Las reglas de permisos del agente no cuentan como barrera: no restringen en "Omitir permisos" y su fiabilidad la discuten terceros. Escribir en producción sigue siendo decisión del titular.
+
+## Bases de datos: elegida, sin instalar
+
+`[ELEGIDA, SIN INSTALAR]`. **Umbral:** se instala con el primer asunto que tenga que consultar una base de datos.
+
+- **Agente: `hsql`**, con los perfiles `read_only` y `timeout` en `~/.config/harlequin/harlequin.toml`, sin secretos en el fichero (con `${VAR}`). **La barrera es un usuario de base de datos con solo SELECT** y un tiempo máximo por sentencia asignado a ese usuario; los perfiles son una segunda capa.
+- **Persona: DBeaver CE**, con la IA integrada sin proveedor configurado y sin guardar contraseñas de producción. El agente no lee nunca su configuración.
+- **Reserva: DBHub**, solo para SQL Server o si hace falta MCP.
+- **Receta** *(documentada, sin medir)*: `uv tool install 'harlequin[postgres,mysql]==<versión fijada>'`; `hsql --skill -o ~/.claude/skills/hsql/` (y el enlace en cada directorio de cuenta). Comprobaciones: `--info`; una escritura rechazada; `timeout` con salida 4; `--stats` con `truncated`; `--config show` con la contraseña enmascarada.
+- **Sin confirmar:** que el adaptador MySQL cumpla `implements_read_only`, la telemetría de hsql y su versión real.
+
 Relacionada: [[orquestacion_sesiones_por_herramienta]], [[higiene_contexto_y_tokens]], [[adopcion_tooling_externo_caso_uso_concreto]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v1.0 (2026-10-04):** nace con la decisión del director del 2026-10-04: una herramienta común de navegador para todos los coordinadores, instalada una sola vez. **v1.1 (2026-10-07):** sección *Entre vaults de la misma máquina*, por decisión del director: los generales se consultan antes de instalar y se avisan al hacerlo. **v1.2 (2026-10-07):** entradas de Herdr (interfaz de sesiones) y de varias cuentas de Claude Code en una máquina. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado y **no se hereda** automáticamente.
+> Pieza de catálogo `general/comun/doctrinas/`. **v1.0 (2026-10-04):** nace con la decisión del director del 2026-10-04: una herramienta común de navegador para todos los coordinadores, instalada una sola vez. **v1.1 (2026-10-07):** sección *Entre vaults de la misma máquina*, por decisión del director: los generales se consultan antes de instalar y se avisan al hacerlo. **v1.2 (2026-10-07):** entradas de Herdr (interfaz de sesiones) y de varias cuentas de Claude Code en una máquina. **v1.3 (2026-10-07):** entradas de Bruno (cliente de API) y de bases de datos (elegida, sin instalar), y la excepción `[ELEGIDA, SIN INSTALAR]` con umbral. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado y **no se hereda** automáticamente.
