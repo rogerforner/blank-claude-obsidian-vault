@@ -28,7 +28,8 @@ Opciones: --relevo <ruta>, --tablero <ruta> (solo --comprobar y --prueba, para f
 Salidas: 0 bien; 1 error interno; 2 uso; 3 entorno (fuera de Herdr, sin servidor o sin git);
   4 precondicion, no se releva y no se ha tocado nada; 5 no se abrio el panel B;
   6 B no arranco (B cerrado, A vivo); 7 B no confirmo (B cerrado, A vivo);
-  8 fallo la continuacion (B cerrado, A vivo); 9 A no se cerro o, en --tomar, A sigue vivo.`;
+  8 fallo la continuacion (B cerrado, A vivo); 9 A no se cerro o, en --tomar, A sigue vivo.
+Si el proceso tiene CLAUDE_CONFIG_DIR, el panel B la recibe con --env (la cuenta de la sucesora es la de esta sesion).`;
 
 class Salida extends Error { constructor(codigo, msg) { super(msg); this.codigo = codigo; } }
 
@@ -51,6 +52,12 @@ function herdrAsync(args, { timeout = 30000 } = {}) {
       try { resolve(JSON.parse(stdout)); } catch { resolve({ raw: stdout }); }
     });
   });
+}
+
+export function argsSplit(paneId, cwd, env = process.env) {
+  const a = ['pane', 'split', paneId, '--direction', 'right', '--cwd', cwd, '--no-focus'];
+  if (env.CLAUDE_CONFIG_DIR) a.push('--env', 'CLAUDE_CONFIG_DIR=' + env.CLAUDE_CONFIG_DIR);
+  return a;
 }
 
 function herdrSync(args) {
@@ -367,7 +374,7 @@ async function lanzar(args, prueba) {
 
   // Paso 5
   try {
-    const s = await herdrAsync(['pane', 'split', a.paneId, '--direction', 'right', '--cwd', a.cwd, '--no-focus']);
+    const s = await herdrAsync(argsSplit(a.paneId, a.cwd));
     paneB = s.result.pane.pane_id;
   } catch (e) { fallo(5, `no se abrio el panel B: ${e.message}`); }
   estado.paneB = paneB; escribirEstado(ctx, estado);
@@ -483,7 +490,7 @@ async function main() {
   }
 }
 
-main().catch((e) => {
+if (process.argv[1] && realpathSync(path.resolve(process.argv[1])) === realpathSync(AQUI)) main().catch((e) => {
   if (e instanceof Salida) { if (e.message) console.error(e.message); process.exit(e.codigo); }
   console.error(e && e.message ? e.message : String(e));
   process.exit(1);
