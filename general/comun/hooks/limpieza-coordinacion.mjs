@@ -52,6 +52,13 @@
 //      puerta y esta sesion se entera ANTES de tocar nada. El aviso va al arranque a proposito:
 //      un hook de cierre no lo lee nadie, y bloquear el cierre castiga al que si esta delante.
 //
+//   7. DICE QUE CUENTA USA LA SESION (CUENTA). Una linea `[CUENTA] <authMethod> · <plan> · <org> ·
+//      config: <dir>` leida de `claude auth status --json` (sin correo ni orgId), y un AVISO si
+//      la sesion puede facturar por API: `loggedIn` distinto de true, `authMethod` distinto de
+//      `claude.ai`, o alguna de ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN / CLAUDE_CODE_OAUTH_TOKEN
+//      en el entorno (ganan al login). Solo informa y no bloquea; si `claude` falla, lo dice y
+//      sigue. No corre en modo lista.
+//
 // Nunca borra nada trackeado. Siempre termina con exit 0 (jamás rompe el arranque).
 // Modo prueba: LIMPIEZA_DRY_RUN=1 → reporta lo que borraría, sin borrar.
 //
@@ -62,6 +69,7 @@
 import { readdirSync, statSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, basename, dirname, relative } from 'node:path';
+import { homedir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 
 const DRY = process.env.LIMPIEZA_DRY_RUN === '1';
@@ -212,6 +220,32 @@ function estadoDoD(raiz) {
   const actual = h.digest('hex').slice(0, 16);
   if (actual === s.hash) return { ok: true, por: `sellado el ${String(s.fecha).slice(0, 16).replace('T', ' ')} sobre ${s.ficheros} ficheros` };
   return { ok: false, por: `el sello es del ${String(s.fecha).slice(0, 16).replace('T', ' ')} y el arbol ha cambiado desde entonces (${s.ficheros} → ${contados} ficheros)` };
+}
+
+// Cuenta con la que arranca la sesion. Devuelve lineas y NUNCA lanza. No imprime correo ni orgId.
+const VARS_FACTURACION = ['ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'CLAUDE_CODE_OAUTH_TOKEN'];
+function cuenta() {
+  const out = [];
+  try {
+    const motivos = [];
+    for (const v of VARS_FACTURACION) if (process.env[v]) motivos.push(`${v} en el entorno`);
+    try {
+      const j = JSON.parse(execFileSync('claude', ['auth', 'status', '--json'],
+        { encoding: 'utf8', timeout: 5000, stdio: ['ignore', 'pipe', 'ignore'] }));
+      const home = homedir();
+      let dir = String(j.configDirectory ?? '?');
+      if (dir === home || dir.startsWith(home + '/')) dir = '~' + dir.slice(home.length);
+      // En cuentas personales orgName es "<correo>'s Organization": el correo no se imprime.
+      const org = /@/.test(String(j.orgName ?? '')) ? '(organizacion personal)' : String(j.orgName ?? '?');
+      out.push(`[CUENTA] ${j.authMethod ?? '?'} · ${j.subscriptionType ?? '?'} · ${org} · config: ${dir}`);
+      if (j.loggedIn !== true) motivos.push('loggedIn no es true');
+      if (j.authMethod !== 'claude.ai') motivos.push(`authMethod es ${j.authMethod ?? 'desconocido'}`);
+    } catch {
+      out.push('[CUENTA] No se pudo leer la cuenta (claude auth status fallo); compruebala con /status.');
+    }
+    if (motivos.length) out.push(`[CUENTA] AVISO: esta sesion puede facturar por API sin avisar (${motivos.join('; ')}). No lances claude -p ni tandas hasta aclararlo con el director.`);
+  } catch { /* la cuenta nunca rompe el arranque */ }
+  return out;
 }
 
 function main() {
@@ -397,7 +431,8 @@ function main() {
     }
   } catch { /* el estado del DoD nunca rompe el arranque */ }
 
-  const salida = [...sello, ...lines, ...rojo, ...curso, ...dod];
+  const cuentaLineas = cuenta();
+  const salida = [...sello, ...cuentaLineas, ...lines, ...rojo, ...curso, ...dod];
   if (salida.length) process.stdout.write(salida.join('\n') + '\n');
 }
 
