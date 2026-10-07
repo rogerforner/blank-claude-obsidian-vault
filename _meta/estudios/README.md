@@ -14,6 +14,7 @@ Un estudio **no se guarda por haber existido**. Hay dos clases y se tratan disti
 
 - **De un solo uso → se borra al aplicarse.** Un estudio que respondía a una pregunta concreta y ya está fundido en el kit **se elimina** (`git rm` + commit) en cuanto sus decisiones están escritas donde se aplican. El histórico de git conserva el texto íntegro, y el resultado perdura en las reglas, la cola y la bitácora. Mantenerlo en el árbol solo invita a releer un informe cuando lo vigente es la regla.
 - **De referencia → se queda y se refresca.** Un estudio cuya respuesta **caduca pero cuya pregunta sigue valiendo** se conserva, con su brief listo para relanzar cada cierto tiempo. Son los que dan información que conviene volver a mirar para mejorar.
+  Viven en `<tema>/referencia/`, con su brief y su informe: ahí el aviso de higiene no los cuenta como efímeros.
 
 **Antes de borrar un estudio, comprueba dos cosas:** que lo que aún no se ha ejecutado esté **extraído a su sitio definitivo** (un procedimiento pendiente no puede vivir solo dentro del informe que lo propuso), y que **ningún fichero lo enlace**, o arréglalo en el mismo commit.
 
