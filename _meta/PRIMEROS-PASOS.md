@@ -52,7 +52,7 @@ Dos o tres líneas de estado, no un informe. Y **una propuesta concreta**, no un
 
 | Carpeta | Qué es |
 |---|---|
-| `general/comun/` | **Catálogo** transversal: doctrinas del core + índice, hook de higiene, tooling **local** de documentos, resolución de problemas de la herramienta. Se **lee** desde el asunto; no se copia ni se hereda. |
+| `general/comun/` | **Catálogo** transversal: doctrinas del core + índice, hook de higiene, tooling **local** de documentos, manuales de las herramientas de usuario (`herramientas-de-usuario/`), resolución de problemas de la herramienta. Se **lee** desde el asunto; no se copia ni se hereda. |
 | `general/comun/packs/codigo/` | Pack **opcional**, solo si un asunto incluye software propio. El core no depende de él. |
 | `inicializador/` | **Procedimiento + plantillas** para arrancar un asunto: checklists, charter, contrato de tanda ejecutora, handoff, consultor, settings por rol y el árbol del contenedor. |
 | `<espacio>/<asunto>/` | Un contenedor por asunto, agrupados en espacios y todos con la misma estructura ([[estructura_contenedor_asunto]]). **No existe hasta el primer espacio.** |
