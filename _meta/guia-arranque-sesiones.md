@@ -221,4 +221,4 @@ Lo que el coordinador tiene que respetar al lanzar —el plan antes de las tanda
 2. Si aún no es un repositorio, inicialízalo.
 3. **Coordinador general y coordinadores de asunto arrancan sin más.** Solo si un asunto lee una carpeta **externa** al vault hay que añadirla al abrir la sesión.
 4. Pide al coordinador general que compruebe el kit: `node _meta/verificar-kit.mjs` tiene que salir en verde.
-5. **Herramientas comunes de usuario.** Viven fuera del vault y hay que reinstalarlas siguiendo las entradas de [[herramientas_comunes_de_usuario]], cada una con su instalación y su comprobación.
+5. **Herramientas comunes de usuario.** Viven fuera del vault y se reinstalan siguiendo su manual en `general/comun/herramientas-de-usuario/` (viaja con el vault), sin buscar en Internet; lo que falle vuelve al manual en el mismo commit. El porqué y el uso, en [[herramientas_comunes_de_usuario]].
