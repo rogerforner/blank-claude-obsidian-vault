@@ -37,3 +37,5 @@ Lo que viene de terceros y no está medido aquí se marca así, como `[SIN MEDIR
 
 | Herramienta | Manual | Estado | Sistemas con manual medido |
 |---|---|---|---|
+| Playwright CLI | [playwright-cli.md](playwright-cli.md) | macOS medido; Debian y Windows 11 sin manual | macOS |
+| Herdr | [herdr.md](herdr.md) | macOS medido; Debian y Windows 11 sin manual; tres problemas por medir | macOS |
