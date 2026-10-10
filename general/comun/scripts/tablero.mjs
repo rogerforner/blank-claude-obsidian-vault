@@ -4,6 +4,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ambitoDe } from './espacios.mjs';
 
 const CABECERA = '| Id | Bloque | Objetivo | Ficheros | Ejecuta | Depende de | Estado |';
 const SEPARADOR = '|---|---|---|---|---|---|---|';
@@ -69,10 +70,11 @@ function rutaPorDefecto() {
   const raiz = raizVault();
   const cwd = process.cwd();
   if (raiz) {
-    if (path.resolve(cwd) === raiz) return path.join('_meta', 'tablero-tandas.md');
-    if (path.dirname(path.resolve(cwd)) === path.join(raiz, 'asuntos')) return path.join('coordinacion', 'tablero-tandas.md');
+    const amb = ambitoDe(raiz, cwd);
+    if (amb.tipo === 'general' && amb.exacto) return path.join('_meta', 'tablero-tandas.md');
+    if (amb.tipo === 'asunto' && amb.exacto) return path.join('coordinacion', 'tablero-tandas.md');
   }
-  throw new Salida(2, 'sin --tablero: el cwd no es la raiz del vault ni asuntos/<slug>');
+  throw new Salida(2, 'sin --tablero: el cwd no es la raiz del vault ni <espacio>/<slug>');
 }
 
 function opcion(args, nombre) {
@@ -153,7 +155,7 @@ function desdePlan(args) {
     '',
     ...tabla,
     '',
-  ].join('\n').replace(script, script);
+  ].join('\n');
   writeFileSync(tab, texto);
 
   const puntero = `La tabla de tandas vive en el tablero, \`${tabRel}\`.`;

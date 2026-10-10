@@ -6,6 +6,7 @@ import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, relative, basename, dirname, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { listarAsuntos, listarEspacios, tipoDeCarpeta, RESERVADOS } from '../general/comun/scripts/espacios.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const hallazgos = [];
@@ -90,7 +91,7 @@ const jsonInicializador = [];
 
 const SEG = '[A-Za-z0-9_.-]';
 const RUTAS = new RegExp(`([A-Za-z]:\\\\{1,2}[Uu]sers\\\\{1,2}${SEG}|/home/${SEG}|/Users/${SEG})`);
-for (const f of [...md, ...jsonInicializador, ...['.claude/settings.json', '.gitignore'].map((p) => join(RAIZ, p))]) {
+for (const f of [...md, ...jsonInicializador, ...['.claude/settings.json', '.gitignore', ...listarAsuntos(RAIZ).map((a) => `${a.rel}/.claude/settings.json`)].map((p) => join(RAIZ, p))]) {
   if (!existsSync(f)) continue;
   readFileSync(f, 'utf8').split('\n').forEach((l, i) => {
     if (RUTAS.test(l)) nota('ruta de maquina', f, `linea ${i + 1}`);
@@ -346,13 +347,10 @@ for (const f of md.filter((x) => !ES_REGISTRO(x))) {
 // -- los contenedores son de sus coordinadores -- convertiria el verificador en ruido.
 // Dos detonantes independientes: lo DECLARADO en el charter y lo que se ve DE HECHO en el
 // contenedor. El segundo existe porque el caso que duele es justo el que no declaro nada.
-const asuntosDir = join(RAIZ, 'asuntos');
-if (existsSync(asuntosDir)) {
-  for (const nombre of readdirSync(asuntosDir, { withFileTypes: true })
-      .filter((e) => e.isDirectory()).map((e) => e.name)) {
-    const cont = join(asuntosDir, nombre);
+{
+  for (const { rel: nombre } of listarAsuntos(RAIZ)) {        // `<espacio>/<slug>`; sin charter no hay asunto
+    const cont = join(RAIZ, nombre);
     const charter = join(cont, 'charter-coordinador.md');
-    if (!existsSync(charter)) continue;                       // sin charter no hay asunto que juzgar
     const textoCharter = readFileSync(charter, 'utf8');
     // Se mira SOLO la linea del encabezado del perfil, no el charter entero. Buscar la cadena en
     // todo el fichero es un falso positivo garantizado, y ademas SISTEMATICO: la plantilla de
@@ -373,7 +371,7 @@ if (existsSync(asuntosDir)) {
       : 'su charter se apoya en el pack `codigo/`';
     if (!existsSync(join(cont, 'docs', 'emplazamiento-runtime.md'))) {
       nota('arranque de software incompleto', charter,
-        `${porQue}, y falta \`asuntos/${nombre}/docs/emplazamiento-runtime.md\` — sin ella nadie sabe donde vive el codigo ni como se entra a ejecutarlo (checklist-arranque paso 6-bis)`);
+        `${porQue}, y falta \`${nombre}/docs/emplazamiento-runtime.md\` — sin ella nadie sabe donde vive el codigo ni como se entra a ejecutarlo (checklist-arranque paso 6-bis)`);
     }
     // El perfil de permisos solo se exige a quien lo declaro: deducirlo del `repo/` seria adivinar.
     const settings = join(cont, '.claude', 'settings.json');
@@ -434,7 +432,7 @@ for (const f of md) {
 }
 
 // --- 16. los agentes de cada contenedor son copia idéntica de su plantilla ---
-// Cada `<contenedor>/.claude/agents/<x>.md` (la raiz y cada `asuntos/<asunto>/`) tiene que ser
+// Cada `<contenedor>/.claude/agents/<x>.md` (la raiz y cada `<espacio>/<asunto>/`) tiene que ser
 // identico byte a byte a `inicializador/plantilla-agente-<x>.md`. Las copias derivan sin avisar,
 // el mismo fallo que persiguen las reglas 7 y 11, y aqui sale mas caro: una sesion de asunto
 // carga sus agentes Y los de la raiz, y con el mismo nombre GANA el del asunto sin avisar
@@ -442,13 +440,7 @@ for (const f of md) {
 // ejecutora sin que nadie lo vea. Un agente sin plantilla de ese nombre tambien es hallazgo:
 // es una definicion que no viene del kit. Que un contenedor no tenga `.claude/agents/` no lo es.
 const contenedores = [RAIZ];
-const dirAsuntos = join(RAIZ, 'asuntos');
-if (existsSync(dirAsuntos)) {
-  for (const e of readdirSync(dirAsuntos)) {
-    const d = join(dirAsuntos, e);
-    if (statSync(d).isDirectory()) contenedores.push(d);
-  }
-}
+for (const a of listarAsuntos(RAIZ)) contenedores.push(join(RAIZ, a.rel));
 for (const c of contenedores) {
   const dirAg = join(c, '.claude', 'agents');
   if (!existsSync(dirAg)) continue;
@@ -459,6 +451,74 @@ for (const c of contenedores) {
       nota('agente sin plantilla', f, `no existe inicializador/plantilla-agente-${e}: una definicion de agente que no viene del kit`);
     } else if (!readFileSync(f).equals(readFileSync(plantilla))) {
       nota('agente distinto de su plantilla', f, `difiere de inicializador/plantilla-agente-${e} — la copia se vuelve a sacar de la plantilla, no se edita a mano`);
+    }
+  }
+}
+
+// --- 17. estructura de espacios ------------------------------------------
+// Un directorio hijo directo de la raiz (sin punto) es de sistema o lleva su marca `tipo:` en el
+// README; si no, es un directorio sin dueno. Un espacio no puede llamarse como un nombre
+// reservado, todo hijo de un espacio es un asunto (con charter-coordinador.md) y el slug de un
+// asunto es unico en todo el vault (dos asuntos con el mismo slug en dos espacios se confunden
+// en el relevo, el tablero y la cola).
+for (const e of readdirSync(RAIZ, { withFileTypes: true })) {
+  if (!e.isDirectory() || e.name.startsWith('.')) continue;
+  if (tipoDeCarpeta(RAIZ, e.name) === null) {
+    nota('estructura de espacios', join(RAIZ, e.name), 'directorio de la raiz sin marca: ni de sistema ni con `tipo: espacio|archivo|libre` en su README.md');
+  }
+}
+const slugsVistos = new Map();
+for (const espacio of listarEspacios(RAIZ)) {
+  if (RESERVADOS.includes(espacio)) {
+    nota('estructura de espacios', join(RAIZ, espacio), 'el nombre del espacio esta reservado (RESERVADOS de espacios.mjs)');
+  }
+  for (const h of readdirSync(join(RAIZ, espacio), { withFileTypes: true })) {
+    if (!h.isDirectory() || h.name.startsWith('.')) continue;
+    if (!existsSync(join(RAIZ, espacio, h.name, 'charter-coordinador.md'))) {
+      nota('estructura de espacios', join(RAIZ, espacio, h.name), 'hijo de un espacio sin charter-coordinador.md: un asunto lo lleva, y lo que no es un asunto no cuelga de un espacio');
+    }
+  }
+}
+for (const a of listarAsuntos(RAIZ)) {
+  if (slugsVistos.has(a.slug)) {
+    nota('estructura de espacios', join(RAIZ, a.rel), `el slug \`${a.slug}\` ya existe en ${slugsVistos.get(a.slug)}: debe ser unico en todo el vault`);
+  } else slugsVistos.set(a.slug, a.rel);
+}
+
+// --- 18. profundidad de asunto --------------------------------------------
+// Un asunto vive a dos niveles (`<espacio>/<asunto>/`), asi que sus rutas relativas al vault y su
+// hook de arranque suben dos niveles. Un `CLAUDE.md` o un `.claude/` a nivel de espacio se
+// cargarian en TODOS los asuntos del espacio sin que nadie lo decidiera. Y cada
+// `additionalDirectories` y el hook SessionStart del asunto tienen que resolver, desde
+// `<espacio>/<asunto>`, a algo que existe dentro de la raiz.
+for (const espacio of listarEspacios(RAIZ)) {
+  for (const x of ['CLAUDE.md', '.claude']) {
+    if (existsSync(join(RAIZ, espacio, x))) {
+      nota('profundidad de asunto', join(RAIZ, espacio, x), 'prohibido a nivel de espacio: se heredaria en todos sus asuntos');
+    }
+  }
+}
+for (const a of listarAsuntos(RAIZ)) {
+  const dirA = join(RAIZ, a.rel);
+  const fs = join(dirA, '.claude', 'settings.json');
+  if (!existsSync(fs)) continue;
+  let cfg;
+  try { cfg = JSON.parse(readFileSync(fs, 'utf8')); } catch { nota('profundidad de asunto', fs, 'no es JSON valido'); continue; }
+  for (const d of cfg?.permissions?.additionalDirectories ?? []) {
+    const abs = resolve(dirA, d);
+    const rel = relative(RAIZ, abs);
+    if (rel.startsWith('..') || !existsSync(abs)) {
+      nota('profundidad de asunto', fs, `additionalDirectories \`${d}\` no resuelve a una ruta existente dentro del vault desde ${a.rel}`);
+    }
+  }
+  for (const grupo of cfg?.hooks?.SessionStart ?? []) {
+    for (const hk of grupo.hooks ?? []) {
+      const cmd = (hk.command ?? '').replaceAll('${CLAUDE_PROJECT_DIR}', dirA);
+      const m = cmd.match(/"([^"]+\.mjs)"|(\S+\.mjs)/);
+      if (!m) continue;
+      if (!existsSync(resolve(dirA, m[1] ?? m[2]))) {
+        nota('profundidad de asunto', fs, `el hook SessionStart apunta a un fichero que no existe desde ${a.rel}: ${hk.command}`);
+      }
     }
   }
 }

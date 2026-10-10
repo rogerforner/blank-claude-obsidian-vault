@@ -33,8 +33,9 @@
 //      sesion anterior dejo roto ANTES de tocar nada, en vez de descubrirlo al ir a commitear.
 //   5. VUELCA EL TRABAJO EN CURSO del PROPIO contenedor (desde 2026-08-23; acotado el 2026-10-05
 //      por la decision D5: cada coordinador ve solo lo suyo): las lineas abiertas de sus
-//      `trabajo-en-curso.md`. La raiz ve los que no estan bajo `asuntos/`; un asunto, los de su
-//      carpeta. Antes de mandar un handoff a otro coordinador se mira el suyo en ese momento. Cierra dos huecos que
+//      `trabajo-en-curso.md`. La raiz ve los que no estan bajo un asunto; un asunto, los de su
+//      carpeta (`<espacio>/<asunto>/`). Una sesion fuera de la raiz y de un asunto no tiene rol: ni
+//      volcado ni hallazgos, solo la linea `[AMBITO]`. Antes de mandar un handoff a otro coordinador se mira el suyo en ese momento. Cierra dos huecos que
 //      estaban escritos por separado en la cola y eran el mismo: (a) la mejora que pidio el
 //      coordinador de `climatizacion` -- antes de mandar un handoff hay que saber si el
 //      destinatario ya tiene ese trabajo abierto --, y (b) el buzon para sesiones apagadas,
@@ -148,17 +149,22 @@ function raizDelVault() {
 // Lineas `- [ABIERTO AAAA-MM-DD] ...` de los `trabajo-en-curso.md` del vault. El formato lo
 // comprueba el verificador (regla 12): si deriva, el hook deja de leerlas y el aviso se
 // perderia EN SILENCIO, que es el peor modo de fallo de una pieza de higiene.
-// AMBITO de la sesion (decision D5): un asunto responde de `asuntos/<slug>/`; la raiz, de todo lo
-// que no esta bajo `asuntos/`. Se deduce de donde esta ROOT respecto a la raiz del vault.
+// AMBITO de la sesion (decision D5): un asunto responde de `<espacio>/<slug>/`; la raiz, de todo lo
+// que no esta bajo un asunto. Lo calcula `scripts/espacios.mjs`, cargado con import() dinamico
+// dentro de try (ruta relativa a este fichero) para que un fallo de carga no rompa el arranque.
+// Si no carga, o ROOT no es la raiz ni un asunto, el ambito es invalido y no pasa nada.
+let ESP = null;
+try { ESP = await import(new URL('../scripts/espacios.mjs', import.meta.url).href); } catch { /* ambito invalido */ }
+const INVALIDO = { tipo: 'invalido' };
 function ambitoDeLaSesion(raiz) {
-  const rel = raiz ? relative(raiz, ROOT).replace(/\\/g, '/') : '';
-  const m = rel.match(/^asuntos\/([^/]+)/);
-  return m ? `asuntos/${m[1]}/` : null;                    // null = la raiz del vault
+  try { return raiz && ESP ? ESP.ambitoDe(raiz, ROOT) : INVALIDO; } catch { return INVALIDO; }
 }
-const esDelAmbito = (prefijo, ruta) => prefijo ? ruta.startsWith(prefijo) : !/^asuntos\/[^/]+\//.test(ruta);
+function esDelAmbito(ambito, ruta) {
+  try { return ambito.tipo !== 'invalido' && ESP.esDelAmbito(ambito, ruta, ESP.listarAsuntos(raizDelVault())); } catch { return false; }
+}
 
 const ABIERTO = /^- \[ABIERTO (\d{4}-\d{2}-\d{2})\] (.+)$/;
-function trabajoEnCurso(raiz, prefijo) {
+function trabajoEnCurso(raiz, ambito) {
   if (!raiz) return [];
   const encontrados = [];
   const buscar = (dir, prof) => {
@@ -177,7 +183,7 @@ function trabajoEnCurso(raiz, prefijo) {
   buscar(raiz, 0);
   const out = [];
   for (const f of encontrados.sort()) {
-    if (!esDelAmbito(prefijo, relative(raiz, f).replace(/\\/g, '/'))) continue;   // lo ajeno ni se lee
+    if (!esDelAmbito(ambito, relative(raiz, f).replace(/\\/g, '/'))) continue;   // lo ajeno ni se lee
     let texto;
     try { texto = readFileSync(f, 'utf8'); } catch { continue; }
     let enEjemplo = false;
@@ -361,6 +367,9 @@ function main() {
   // Se busca subiendo desde el directorio de trabajo: la raiz del vault lo tiene en `_meta/`,
   // y un contenedor de asunto lo alcanza subiendo dos niveles. Si no aparece, no pasa nada.
   const rojo = [];
+  if (ambitoDeLaSesion(raizDelVault()).tipo === 'invalido') {
+    rojo.push('[AMBITO] Esta sesion no esta en la raiz del vault ni en <espacio>/<asunto>: no tiene rol, y no se vuelcan trabajo en curso ni hallazgos del verificador.');
+  }
   try {
     let dir = ROOT;
     for (let i = 0; i < 4; i++) {
@@ -371,14 +380,14 @@ function main() {
         } catch (e) {
           // Solo los hallazgos (`  [regla] ruta :: detalle`) cuya ruta es de MI ambito (D5): los
           // ajenos ni se muestran. Sin ninguno mio, el kit esta "en verde para tu ambito".
-          const prefijo = ambitoDeLaSesion(raizDelVault());
+          const ambito = ambitoDeLaSesion(raizDelVault());
           const propios = (e.stdout || '').split('\n')
             .filter((l) => /^\s*\[[^\]]+\] (\S+) ::/.test(l))
-            .filter((l) => esDelAmbito(prefijo, l.match(/^\s*\[[^\]]+\] (\S+) ::/)[1]));
+            .filter((l) => esDelAmbito(ambito, l.match(/^\s*\[[^\]]+\] (\S+) ::/)[1]));
           if (propios.length) {
             rojo.push('[VERIFICADOR] El kit NO esta en verde AL ARRANCAR en tu ambito, o sea que algo quedo roto de antes. Arreglalo antes de empezar nada nuevo, y no ajustes el verificador para que pase:');
             for (const l of propios) rojo.push('  ' + l.trim());
-          } else {
+          } else if (ambito.tipo !== 'invalido') {
             rojo.push('[VERIFICADOR] El kit esta en verde para tu ambito.');
           }
         }

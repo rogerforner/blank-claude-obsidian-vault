@@ -37,6 +37,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { join, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ambitoDe, esDelAmbito, listarAsuntos } from '../general/comun/scripts/espacios.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SELLO = join(RAIZ, '.dod-seal.json');
@@ -107,21 +108,20 @@ function puertaVerificador() {
 
 // --- ambito: que parte del arbol es TUYA ---------------------------------
 // Se deduce del directorio DESDE EL QUE SE INVOCA el DoD, igual que el cwd fija el rol de una
-// sesion. Un coordinador de asunto cierra desde su contenedor y responde de su contenedor; el
-// general cierra desde la raiz y responde de todo lo que no es un asunto ajeno.
-function ambitoPropio() {
-  const cwd = process.cwd();
-  if (cwd.startsWith(join(RAIZ, 'asuntos') + '/')) {
-    const resto = cwd.slice(join(RAIZ, 'asuntos').length + 1);
-    const nombre = resto.split('/')[0];
-    if (nombre) return { prefijo: `asuntos/${nombre}/`, quien: `coordinador de \`${nombre}\`` };
-  }
-  return { prefijo: null, quien: 'coordinador general' };   // null = todo salvo asuntos ajenos
+// sesion. Un coordinador de asunto cierra desde su contenedor (`<espacio>/<asunto>`) y responde
+// de su contenedor; el general cierra desde la raiz y responde de todo lo que no es un asunto,
+// incluidos los ficheros de nivel espacio. Cualquier otro directorio es un ambito invalido: no se
+// trata como la raiz ni se sella. La logica vive en `espacios.mjs`, que comparten hook y relevo.
+const ASUNTOS = listarAsuntos(RAIZ);
+const AMBITO_ESP = ambitoDe(RAIZ, process.cwd());
+if (AMBITO_ESP.tipo === 'invalido') {
+  console.log(`[NO] ambito: ${AMBITO_ESP.rel} no es la raiz del vault ni <espacio>/<asunto>`);
+  process.exit(1);
 }
-const AMBITO = ambitoPropio();
-const esMio = (ruta) => AMBITO.prefijo
-  ? ruta.startsWith(AMBITO.prefijo)
-  : !/^asuntos\/[^/]+\//.test(ruta);
+const AMBITO = AMBITO_ESP.tipo === 'asunto'
+  ? { prefijo: AMBITO_ESP.prefijo, quien: `coordinador de \`${AMBITO_ESP.slug}\`` }
+  : { prefijo: null, quien: 'coordinador general' };
+const esMio = (ruta) => esDelAmbito(AMBITO_ESP, ruta, ASUNTOS);
 
 // ANOTA SOLO LO TUYO. Un hallazgo sobre algo que no es tuyo no puede pedirte una accion que no
 // puedes ejecutar, y un aviso que no es para ti se aprende a ignorar rapido (lo cazo un
@@ -169,18 +169,13 @@ function puertaArbolLimpio() {
 // Reutiliza el hook de limpieza en su modo lista, para que la regla viva en UN sitio y no en dos
 // que puedan derivar. Si el hook no esta, la puerta se declara saltada en vez de dar por buena.
 // El hook mira SOLO bajo su raiz de sesion, asi que se corre una vez por contenedor: la raiz del
-// vault y cada `asuntos/<x>` que sea un directorio (los `estudios/` de un asunto cuelgan de el).
+// vault y cada asunto descubierto, `<espacio>/<asunto>` (los `estudios/` de un asunto cuelgan de el).
 // Se juntan las rutas sin duplicados y `anotaPorAmbito` deja solo las tuyas: cada dueño ve lo suyo.
 function puertaHigiene() {
   const hook = join(RAIZ, 'general', 'comun', 'hooks', 'limpieza-coordinacion.mjs');
   if (!existsSync(hook)) return anota('higiene', true, 'no hay hook de limpieza (se salta)');
   const contenedores = [RAIZ];
-  const dirAsuntos = join(RAIZ, 'asuntos');
-  if (existsSync(dirAsuntos)) {
-    for (const e of readdirSync(dirAsuntos, { withFileTypes: true })) {
-      if (e.isDirectory()) contenedores.push(join(dirAsuntos, e.name));
-    }
-  }
+  for (const a of ASUNTOS) contenedores.push(join(RAIZ, a.rel));
   const rutas = new Set();
   for (const dir of contenedores) {
     let salida = '';
@@ -207,13 +202,10 @@ const TECHOS = [
   ['_meta/bitacora.md', 30720],
 ];
 function puertaTechos() {
-  const asuntos = join(RAIZ, 'asuntos');
+  // Solo la cola de cada asunto descubierto: un patron generico `<x>/<y>/cola-pendientes.md`
+  // casaria con `inicializador/plantilla-contenedor-asunto/`.
   const lista = [...TECHOS];
-  if (existsSync(asuntos)) {
-    for (const a of git(['ls-files', 'asuntos']).split('\n').filter((f) => /^asuntos\/[^/]+\/cola-pendientes\.md$/.test(f))) {
-      lista.push([a, 40960]);
-    }
-  }
+  for (const a of ASUNTOS) lista.push([`${a.rel}/cola-pendientes.md`, 40960]);
   let malos = 0;
   for (const [rel, techo] of lista) {
     const ruta = join(RAIZ, rel);
@@ -249,7 +241,11 @@ function puertaTechos() {
 //     que es como se pierde una puerta. Lo que sigue cazando es el caso real: cerrar la ventana
 //     con una doctrina cambiada y su version intacta. (Cazado asi el mismo dia que se escribio:
 //     cinco doctrinas, una de ellas del propio coordinador veinte minutos antes.)
+//
+//     SOLO DEL GENERAL (E18): un asunto tiene `deny` de `Edit` sobre `general/`, asi que ni causa
+//     ni puede arreglar este rojo (D5). En su ambito la puerta anota una linea en verde y no corre.
 function puertaDoctrinasVersionadas(commits) {
+  if (AMBITO_ESP.tipo !== 'general') return anota('doctrinas al dia', true, 'es del coordinador general (un asunto no edita el catalogo)');
   const porFichero = new Map();   // fichero → { sustantivo, subeVersion, donde }
   for (const c of commits) {
     const tocados = git(['show', '--name-only', '--format=', c]).split('\n').filter(Boolean);
@@ -306,11 +302,20 @@ function puertaTrabajoEnCurso() {
 //     La ruta de la plantilla es de ESTA maquina, asi que vive en un fichero local gitignored: sin
 //     el, la puerta se declara NO CORRIDA en vez de darse por buena. Un salto silencioso es una
 //     puerta que miente.
+//     SOLO DEL GENERAL (E18), por la misma razon que la puerta (a): un asunto no edita `general/`
+//     ni `inicializador/`, asi que no puede causar ni arreglar la deriva de la plantilla.
+//     Tambien cuenta lo que no cuelga de esas dos carpetas pero es del kit (E8): los scripts de `_meta/`,
+//     `.gitignore`, `.claude/settings.json` y `.claude/agents/`. Se comparan con `cmp` (y `diff -rq` para
+//     `.claude/agents/`) contra la misma ruta de la plantilla.
+const FICHEROS_KIT = ['_meta/verificar-kit.mjs', '_meta/dod.mjs', '_meta/generar-indice-doctrinas.mjs',
+  '_meta/comprobar-tanda.mjs', '.gitignore', '.claude/settings.json'];
+const ESCRITOS_KIT = /^((general|inicializador)\/|_meta\/(verificar-kit|dod|generar-indice-doctrinas|comprobar-tanda)\.mjs$|\.gitignore$|\.claude\/settings\.json$|\.claude\/agents\/)/;
 function puertaSincroniaPlantilla(commits) {
+  if (AMBITO_ESP.tipo !== 'general') return anota('sincronia con la plantilla', true, 'es del coordinador general (un asunto no edita el catalogo)');
   const conf = join(RAIZ, '_meta', 'dod.local.json');
   const tocaKit = commits.some((c) => git(['show', '--name-only', '--format=', c])
-    .split('\n').some((f) => /^(general|inicializador)\//.test(f)));
-  if (!tocaKit) return anota('sincronia con la plantilla', true, 'la sesion no toco catalogo ni inicializador');
+    .split('\n').some((f) => ESCRITOS_KIT.test(f)));
+  if (!tocaKit) return anota('sincronia con la plantilla', true, 'la sesion no toco catalogo, inicializador ni los scripts y la configuracion del kit');
   if (!existsSync(conf)) {
     return anota('sincronia con la plantilla', false,
       'la sesion toco `general/` o `inicializador/` y NO se puede comprobar la plantilla: falta `_meta/dod.local.json` con {"plantilla": "<ruta>"} (local, gitignored)');
@@ -333,7 +338,19 @@ function puertaSincroniaPlantilla(commits) {
       if (/^Only in/.test(l) && !/\.DS_Store/.test(l)) difs.push(l);
     }
   }
-  if (!difs.length) return anota('sincronia con la plantilla', true, 'catalogo e inicializador identicos, salvo las divergencias declaradas');
+  for (const f of FICHEROS_KIT) {
+    const aqui = join(RAIZ, f), alla = join(ruta, f);
+    if (!existsSync(aqui) && !existsSync(alla)) continue;
+    try { execFileSync('cmp', ['-s', aqui, alla]); } catch { difs.push(f); }
+  }
+  {
+    let salida = '';
+    try {
+      salida = execFileSync('diff', ['-rq', '-x', '.DS_Store', join(RAIZ, '.claude', 'agents'), join(ruta, '.claude', 'agents')], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    } catch (e) { salida = e.stdout || ''; }
+    for (const l of salida.split('\n').filter(Boolean)) difs.push('.claude/agents: ' + l);
+  }
+  if (!difs.length) return anota('sincronia con la plantilla', true, 'catalogo, inicializador y ficheros del kit identicos, salvo las divergencias declaradas');
   anota('sincronia con la plantilla', false, `${difs.length} diferencia(s) no declarada(s) — propaga EL CAMBIO, no el fichero:`);
   for (const d of difs.slice(0, 10)) anota('sincronia con la plantilla', false, '   ' + d);
 }

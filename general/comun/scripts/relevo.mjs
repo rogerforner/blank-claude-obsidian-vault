@@ -9,6 +9,7 @@ import { execFile, execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { leerTablero } from './tablero.mjs';
+import { ambitoDe, listarAsuntos, pathspecDe } from './espacios.mjs';
 
 const AQUI = fileURLToPath(import.meta.url);
 const TABLERO_MJS = path.join(path.dirname(AQUI), 'tablero.mjs');
@@ -110,14 +111,17 @@ function entero(v, nombre) {
 function contexto(cwd, prueba) {
   const raiz = raizVault();
   const c = real(cwd);
-  let tipo = null; let slug = null;
-  if (raiz && c === real(raiz)) tipo = 'general';
-  else if (raiz && path.dirname(c) === real(path.join(raiz, 'asuntos'))) { tipo = 'asunto'; slug = path.basename(c); }
+  let tipo = null; let slug = null; let espacio = null; let amb = null;
+  if (raiz) {
+    amb = ambitoDe(raiz, c);
+    if (amb.tipo === 'general' && amb.exacto) tipo = 'general';
+    else if (amb.tipo === 'asunto' && amb.exacto) { tipo = 'asunto'; slug = amb.slug; espacio = amb.espacio; }
+  }
   const dirCoord = tipo === 'general' ? '_meta' : 'coordinacion';
-  const ambito = tipo === 'general' ? ['.', ':(exclude)asuntos'] : ['.'];
+  const ambito = tipo ? pathspecDe(amb, listarAsuntos(raiz)) : ['.'];
   const script = tipo === 'asunto' ? '../../general/comun/scripts/relevo.mjs' : 'general/comun/scripts/relevo.mjs';
   return {
-    cwd, tipo, slug, dirCoord, ambito, script,
+    cwd, tipo, slug, espacio, dirCoord, ambito, script,
     titulo: tipo === 'general' ? 'coordinador general' : `coordinador de ${slug}`,
     rutaEstado: path.join(dirCoord, prueba ? 'relevo-prueba-estado.local.json' : 'relevo-estado.local.json'),
   };
@@ -222,7 +226,7 @@ function precondiciones(ctx, a, opts) {
   if (a) {
     add(a.problemas.length === 0, a.problemas.length ? `panel de A: ${a.problemas.join('; ')}` : 'panel de A (cwd, proceso y agente)');
   }
-  add(ctx.tipo !== null, ctx.tipo ? `contenedor: ${ctx.tipo === 'general' ? 'raiz del vault' : `asuntos/${ctx.slug}`}` : `contenedor: ${ctx.cwd} no es la raiz del vault ni asuntos/<slug>`);
+  add(ctx.tipo !== null, ctx.tipo ? `contenedor: ${ctx.tipo === 'general' ? 'raiz del vault' : `${ctx.espacio}/${ctx.slug}`}` : `contenedor: ${ctx.cwd} no es la raiz del vault ni <espacio>/<slug>`);
   if (!ctx.tipo) return L;
 
   const sucio = git(['status', '--porcelain', '--', ...ctx.ambito], ctx.cwd);
@@ -299,7 +303,7 @@ function comprobar(args) {
 
 function reiniciarCuenta() {
   const ctx = contexto(process.cwd(), false);
-  if (!ctx.tipo) throw new Salida(4, 'el cwd no es la raiz del vault ni asuntos/<slug>');
+  if (!ctx.tipo) throw new Salida(4, 'el cwd no es la raiz del vault ni <espacio>/<slug>');
   const prev = leerEstado(ctx) || {};
   escribirEstado(ctx, { ...prev, seguidos: 0 });
   console.log('relevos seguidos: 0');
@@ -334,7 +338,7 @@ async function lanzar(args, prueba) {
   const a = panelA(prueba);
   if (a.problemas.length) throw new Salida(4, a.problemas.join('\n'));
   const ctx = contexto(a.cwd, prueba);
-  if (!ctx.tipo) throw new Salida(4, `el cwd del panel (${a.cwd}) no es la raiz del vault ni asuntos/<slug>`);
+  if (!ctx.tipo) throw new Salida(4, `el cwd del panel (${a.cwd}) no es la raiz del vault ni <espacio>/<slug>`);
   Object.assign(opts, nombres(prueba, ctx, a));
   // Paso 3
   const L = precondiciones(ctx, a, opts);
@@ -347,7 +351,7 @@ async function lanzar(args, prueba) {
   const extra = (opts.relevo ? ` --relevo "${opts.relevo}"` : '') + (opts.tablero ? ` --tablero "${opts.tablero}"` : '');
   const { t1, t2 } = textos(ctx, prueba, sinConfirmar, extra);
   const estado = {
-    modo: prueba ? 'prueba' : 'lanzar', fecha: ahora(), contenedor: ctx.tipo === 'general' ? '.' : `asuntos/${ctx.slug}`,
+    modo: prueba ? 'prueba' : 'lanzar', fecha: ahora(), contenedor: ctx.tipo === 'general' ? '.' : `${ctx.espacio}/${ctx.slug}`,
     relevo: opts.relevo || path.join(ctx.dirCoord, 'relevo-actual.local.md'), hash,
     bloqueCerrado: rel.cerrado, bloqueSiguiente: rel.siguiente,
     paneA: a.paneId, nombreA, paneB: null, nombreB: opts.nombreB, seguidos, fase: 'lanzado',
@@ -425,7 +429,7 @@ function entornoB(args, prueba) {
   if (env.length) throw new Salida(3, env.join('\n'));
   const cwd = process.cwd();
   const ctx = contexto(cwd, prueba);
-  if (!ctx.tipo) throw new Salida(4, 'el cwd no es la raiz del vault ni asuntos/<slug>');
+  if (!ctx.tipo) throw new Salida(4, 'el cwd no es la raiz del vault ni <espacio>/<slug>');
   return ctx;
 }
 

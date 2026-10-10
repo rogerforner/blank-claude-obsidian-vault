@@ -52,14 +52,14 @@
 # --- Red de seguridad para el caso EXCEPCIONAL (perfil `asunto con software` sin runtime propio) ---
 # El caso NORMAL es el repositorio de código FUERA del vault (docs/emplazamiento-runtime.md de
 # cada asunto dice dónde). Este patrón es la red de seguridad de la excepción declarada: si,
-# excepcionalmente, el repositorio queda anidado en repo/ dentro del contenedor del asunto,
+# excepcionalmente, el repositorio queda anidado en repo/ dentro del contenedor `<espacio>/<asunto>/`,
 # trae su propio .git y el vault no debe versionar su contenido (lo versiona el propio
 # repositorio) ni tratarlo como submódulo accidental. Medido (informe-tanda-pack-codigo.md):
 # sin este patrón, un `git add` que alcance el contenedor que lo envuelve genera el aviso
 # "adding embedded git repository" y un gitlink en el índice del vault. Con el patrón, ni
 # aparece en `git status` ni se puede añadir sin forzar con -f.
 # Doctrina: general/comun/doctrinas/estructura_contenedor_asunto.md § convivencia de los dos .git
-asuntos/*/repo/
+/*/*/repo/
 
 # --- Basura del sistema operativo ---
 Thumbs.db
