@@ -1,0 +1,208 @@
+#!/usr/bin/env node
+// worktree-tanda.mjs: integra en el principal el trabajo de una tanda hecha en un worktree
+// (variante W de ciclo_de_tandas) y lo retira. Sin dependencias.
+// Salidas: 0 bien, 1 error interno, 2 uso, 4 precondicion sin tocar nada.
+import { readFileSync, writeFileSync, existsSync, mkdtempSync, rmSync, realpathSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const AQUI = fileURLToPath(import.meta.url);
+const TABLERO_JS = path.join(path.dirname(AQUI), 'tablero.mjs');
+
+const AYUDA = `Uso:
+  worktree-tanda.mjs --integrar <Id> --worktree <ruta> [--mensaje "<texto>"] [--tablero <ruta>]
+      Se corre desde el arbol principal. Comprueba que el worktree solo cambio los ficheros
+      de la fila <Id> del tablero (cuarta celda, rutas entre acentos graves que no empiezan
+      por ~ ni por /), trae su rama con cherry-pick --no-commit, pasa la fila a HECHA,
+      commitea por pathspec ("<Id> <mensaje>") y retira el worktree y su rama.
+  worktree-tanda.mjs --listar     worktrees distintos del principal: 0 si no hay, 4 si hay
+  worktree-tanda.mjs --prueba     prueba en un repositorio temporal, tres casos
+  worktree-tanda.mjs --ayuda
+Salidas: 0 bien, 1 error interno, 2 uso, 4 precondicion sin tocar nada.`;
+
+class Salida extends Error { constructor(codigo, msg) { super(msg); this.codigo = codigo; } }
+
+function git(cwd, args, opts = {}) {
+  const r = spawnSync('git', args, { cwd, encoding: 'utf8' });
+  if (r.error) throw new Salida(1, `no se pudo correr git: ${r.error.message}`);
+  if (r.status !== 0 && !opts.tolerar) throw new Salida(1, `git ${args.join(' ')}: ${(r.stderr || r.stdout).trim()}`);
+  return { ok: r.status === 0, out: opts.crudo ? (r.stdout || '') : (r.stdout || '').trim(), err: (r.stderr || '').trim() };
+}
+
+function opcion(args, nombre) {
+  const i = args.indexOf(nombre);
+  if (i < 0) return null;
+  const v = args[i + 1];
+  if (v === undefined) throw new Salida(2, `falta el valor de ${nombre}`);
+  args.splice(i, 2);
+  return v;
+}
+
+function ficherosDeFila(textoTablero, id) {
+  const linea = textoTablero.split('\n').find((l) => /^\| T\d\d \|/.test(l) && l.split('|')[1].trim() === id);
+  if (!linea) throw new Salida(4, `Id inexistente en el tablero: ${id}`);
+  const celda = linea.trim().replace(/^\|/, '').replace(/\|$/, '').split('|')[3] || '';
+  const rutas = [...celda.matchAll(/`([^`]+)`/g)].map((m) => m[1]).filter((r) => !r.startsWith('~') && !r.startsWith('/'));
+  if (!rutas.length) throw new Salida(4, `la fila ${id} no lista ficheros`);
+  return rutas;
+}
+
+const dentro = (f, lista) => lista.some((r) => f === r || f.startsWith(r.endsWith('/') ? r : r + '/'));
+
+function porcelain(cwd, extra = []) {
+  const o = git(cwd, ['status', '--porcelain', '--untracked-files=all', ...extra], { crudo: true }).out;
+  return o ? o.split('\n').filter(Boolean).map((l) => l.slice(3).replace(/^.* -> /, '').replace(/^"|"$/g, '')) : [];
+}
+
+function integrar(args) {
+  const id = opcion(args, '--integrar');
+  const wt = opcion(args, '--worktree');
+  const mensaje = opcion(args, '--mensaje') || 'tanda integrada';
+  let tab = opcion(args, '--tablero');
+  if (!id || !wt) throw new Salida(2, 'uso: --integrar <Id> --worktree <ruta> [--mensaje "<texto>"] [--tablero <ruta>]');
+  const top = git(process.cwd(), ['rev-parse', '--show-toplevel']).out;
+  if (!existsSync(wt)) throw new Salida(4, `no existe el worktree ${wt}`);
+  const wtTop = git(wt, ['rev-parse', '--show-toplevel']).out;
+  if (realpathSync(wtTop) === realpathSync(top)) throw new Salida(4, 'el worktree es el arbol principal');
+  if (!tab) tab = existsSync(path.join(top, '_meta', 'tablero-tandas.md')) ? '_meta/tablero-tandas.md' : 'coordinacion/tablero-tandas.md';
+  const tabAbs = path.resolve(top, tab);
+  if (!existsSync(tabAbs)) throw new Salida(4, `no existe el tablero ${tab}`);
+  const tabRel = path.relative(top, tabAbs).split(path.sep).join('/');
+  const ficheros = ficherosDeFila(readFileSync(tabAbs, 'utf8'), id);
+  const rama = git(wt, ['rev-parse', '--abbrev-ref', 'HEAD']).out;
+  if (!rama || rama === 'HEAD') throw new Salida(4, 'el worktree no esta en una rama');
+
+  // b. todo lo cambiado (sin commitear y ya commiteado en la rama) esta en la lista
+  const sucios = porcelain(wt);
+  const base = git(top, ['merge-base', 'HEAD', rama]).out;
+  const commiteados = git(wt, ['diff', '--name-only', base, rama]).out.split('\n').filter(Boolean);
+  const sobran = [...new Set([...sucios, ...commiteados])].filter((f) => !dentro(f, ficheros));
+  if (sobran.length) throw new Salida(4, `cambios fuera de la tanda ${id}:\n${sobran.join('\n')}`);
+
+  // c (antes de tocar nada). el principal no tiene cambios en esos ficheros ni en el tablero
+  const ocupados = porcelain(top, ['--', ...ficheros, tabRel]);
+  if (ocupados.length) throw new Salida(4, `el principal tiene cambios sin commitear en:\n${ocupados.join('\n')}`);
+
+  if (sucios.length) {
+    git(wt, ['add', '--', ...sucios]);
+    git(wt, ['commit', '-m', `${id} ${mensaje}`, '--', ...sucios]);
+  }
+  if (!git(top, ['rev-list', `${base}..${rama}`]).out) throw new Salida(4, 'la rama del worktree no trae cambios');
+
+  const cp = git(top, ['cherry-pick', '--no-commit', `${base}..${rama}`], { tolerar: true });
+  if (!cp.ok) {
+    const ab = git(top, ['cherry-pick', '--abort'], { tolerar: true });
+    if (!ab.ok) {
+      git(top, ['reset', '--quiet'], { tolerar: true });
+      git(top, ['checkout', '--', '.'], { tolerar: true });
+      git(top, ['clean', '-fdq', '--', ...ficheros], { tolerar: true });
+    }
+    throw new Salida(4, `conflicto al traer ${rama}; abortado, el worktree sigue intacto\n${cp.err}`);
+  }
+
+  const t = spawnSync(process.execPath, [TABLERO_JS, '--estado', id, 'HECHA', '--tablero', tabAbs], { cwd: top, encoding: 'utf8' });
+  if (t.status !== 0) throw new Salida(1, `tablero.mjs --estado fallo: ${(t.stderr || '').trim()}`);
+  git(top, ['add', '--', ...ficheros, tabRel]);
+  git(top, ['commit', '-m', `${id} ${mensaje}`, '--', ...ficheros, tabRel]);
+  git(top, ['worktree', 'remove', '--force', wt]);
+  git(top, ['branch', '-D', rama]);
+  console.log(`${id} integrada: ${ficheros.join(', ')}`);
+}
+
+function listar() {
+  const top = git(process.cwd(), ['rev-parse', '--show-toplevel']).out;
+  const ls = git(top, ['worktree', 'list', '--porcelain']).out.split('\n')
+    .filter((l) => l.startsWith('worktree ')).map((l) => l.slice(9));
+  const otros = ls.filter((p) => realpathSync(p) !== realpathSync(top));
+  if (otros.length) throw new Salida(4, otros.join('\n'));
+}
+
+function prueba() {
+  const dir = realpathSync(mkdtempSync(path.join(os.tmpdir(), 'wt-tanda-')));
+  const repo = path.join(dir, 'repo');
+  let fallos = 0;
+  const caso = (nombre, ok, detalle = '') => {
+    console.log(`${ok ? '[OK]' : '[FALLA]'} ${nombre}${ok ? '' : ' — ' + detalle}`);
+    if (!ok) fallos++;
+  };
+  const g = (cwd, ...a) => git(cwd, a, { tolerar: true });
+  const escribir = (rel, txt, base = repo) => writeFileSync(path.join(base, rel), txt);
+  const correr = () => (a) => spawnSync(process.execPath, [AQUI, ...a], { cwd: repo, encoding: 'utf8' });
+  const run = correr();
+  try {
+    spawnSync('mkdir', ['-p', path.join(repo, '_meta')]);
+    g(repo, 'init', '-q', '-b', 'main');
+    g(repo, 'config', 'user.email', 'prueba@example.com');
+    g(repo, 'config', 'user.name', 'prueba');
+    const fila = (id, f) => `| ${id} | A | objetivo | \`${f}\` | ejecutora | - | [PENDIENTE] |`;
+    escribir('_meta/tablero-tandas.md', [
+      '# Tablero', '', 'Plan: `plan.md`', 'Paradas: ninguna', '',
+      '| Id | Bloque | Objetivo | Ficheros | Ejecuta | Depende de | Estado |',
+      '|---|---|---|---|---|---|---|',
+      fila('T01', 'a.txt'), fila('T02', 'b.txt'), fila('T03', 'c.txt'), ''].join('\n'));
+    escribir('a.txt', 'a\n'); escribir('b.txt', 'b\n'); escribir('c.txt', 'c\n');
+    g(repo, 'add', '.'); g(repo, 'commit', '-q', '-m', 'inicial');
+    const nuevoWt = (n) => {
+      const p = path.join(dir, `wt-${n}`);
+      g(repo, 'worktree', 'add', '-q', '-b', `rama-${n}`, p);
+      return p;
+    };
+    const wt1 = nuevoWt('1'), wt2 = nuevoWt('2'), wt3 = nuevoWt('3');
+
+    // 1. integracion buena
+    escribir('a.txt', 'a cambiado\n', wt1);
+    let r = run(['--integrar', 'T01', '--worktree', wt1, '--mensaje', 'prueba']);
+    const tab = readFileSync(path.join(repo, '_meta/tablero-tandas.md'), 'utf8');
+    caso('integracion buena',
+      r.status === 0 && readFileSync(path.join(repo, 'a.txt'), 'utf8') === 'a cambiado\n'
+      && /\| T01 .*\[HECHA\] \|/.test(tab) && !existsSync(wt1)
+      && !g(repo, 'rev-parse', '--verify', 'rama-1').ok && g(repo, 'status', '--porcelain').out === '',
+      `rc=${r.status} ${r.stderr}`);
+
+    // 2. fichero fuera de la tanda
+    escribir('b.txt', 'b cambiado\n', wt2); escribir('intruso.txt', 'x\n', wt2);
+    const h2 = g(repo, 'rev-parse', 'HEAD').out;
+    r = run(['--integrar', 'T02', '--worktree', wt2]);
+    caso('fichero fuera de la tanda: salida 4 y nada tocado',
+      r.status === 4 && existsSync(wt2) && g(repo, 'rev-parse', 'HEAD').out === h2
+      && g(repo, 'status', '--porcelain').out === ''
+      && readFileSync(path.join(repo, 'b.txt'), 'utf8') === 'b\n'
+      && g(wt2, 'status', '--porcelain').out.includes('intruso.txt'),
+      `rc=${r.status} ${r.stderr}`);
+
+    // 3. conflicto
+    escribir('c.txt', 'c en worktree\n', wt3);
+    escribir('c.txt', 'c en principal\n');
+    g(repo, 'commit', '-q', '-m', 'c en principal', '--', 'c.txt');
+    const h3 = g(repo, 'rev-parse', 'HEAD').out;
+    r = run(['--integrar', 'T03', '--worktree', wt3]);
+    caso('conflicto: salida 4, cherry-pick abortado, worktree intacto',
+      r.status === 4 && existsSync(wt3) && g(repo, 'rev-parse', 'HEAD').out === h3
+      && g(repo, 'status', '--porcelain').out === ''
+      && !existsSync(path.join(repo, '.git', 'CHERRY_PICK_HEAD'))
+      && g(repo, 'rev-parse', '--verify', 'rama-3').ok,
+      `rc=${r.status} ${r.stderr}`);
+  } catch (e) {
+    console.log(`[FALLA] error en la prueba: ${e.message}`); fallos++;
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+  if (fallos) throw new Salida(1, `${fallos} casos en rojo`);
+}
+
+function main() {
+  const args = process.argv.slice(2);
+  const modo = args[0];
+  if (modo === '--ayuda') { console.log(AYUDA); return; }
+  if (modo === '--integrar') return integrar(args);
+  if (modo === '--listar') return listar();
+  if (modo === '--prueba') return prueba();
+  throw new Salida(2, AYUDA);
+}
+
+try { main(); } catch (e) {
+  if (e instanceof Salida) { console.error(e.message); process.exit(e.codigo); }
+  console.error(e && e.message ? e.message : String(e)); process.exit(1);
+}
