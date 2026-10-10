@@ -1,6 +1,6 @@
 # Convención de organización de `coordinacion/`
 
-> Copia este archivo a `asuntos/<asunto>/coordinacion/README-convencion.md`. Generaliza la doctrina [[convencion_organizacion_carpeta_trabajo]].
+> Copia este archivo a `<espacio>/<asunto>/coordinacion/README-convencion.md`. Generaliza la doctrina [[convencion_organizacion_carpeta_trabajo]].
 
 ## Principio
 

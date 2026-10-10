@@ -1,11 +1,11 @@
 # Notas de `plantilla-settings-coordinador.json` — perfil de autonomía con verificación
 
-Aísla al **coordinador de un asunto** (cwd en su contenedor): escribe en su contenedor, ve el catálogo `general/` en **solo lectura**, y no anda por los demás `asuntos/**`. **Portable**: ni una ruta de máquina en lo versionado.
+Aísla al **coordinador de un asunto** (cwd en su contenedor): escribe en su contenedor, ve el catálogo `general/` en **solo lectura**, y no anda por los demás asuntos. **Portable**: ni una ruta de máquina en lo versionado.
 
 ## Cómo se instala
 
-1. Copia el `.json` a `asuntos/<asunto>/.claude/settings.json`. La sesión del coordinador se lanza con **cwd en ese contenedor**.
-2. Crea tu `asuntos/<asunto>/.claude/settings.local.json` (**gitignored**) con las rutas de **esta** máquina que el asunto necesite:
+1. Copia el `.json` a `<espacio>/<asunto>/.claude/settings.json`. La sesión del coordinador se lanza con **cwd en ese contenedor**.
+2. Crea tu `<espacio>/<asunto>/.claude/settings.local.json` (**gitignored**) con las rutas de **esta** máquina que el asunto necesite:
 
 ```json
 {
@@ -23,7 +23,7 @@ Nada de eso se versiona: cambia de una máquina a otra y no es producto del asun
 ## Qué hace, bloque a bloque
 
 - **`defaultMode: acceptEdits`** — escribe en su contenedor sin micro-aprobaciones. La autonomía no la limita el modo, la limitan los `deny`.
-- **`additionalDirectories: ["../../general", "../../_meta/memoria"]`** — rutas **relativas** (portables) que dan **lectura** del catálogo y de la memoria del vault. Funcionan porque el contenedor está exactamente **dos niveles** bajo la raíz del vault (`asuntos/<asunto>/`).
+- **`additionalDirectories: ["../../general", "../../_meta/memoria"]`** — rutas **relativas** (portables) que dan **lectura** del catálogo y de la memoria del vault. Funcionan porque el contenedor está exactamente **dos niveles** bajo la raíz del vault (`<espacio>/<asunto>/`).
   - **Por qué la memoria del vault está aquí, y no fue así desde el principio.** El `CLAUDE.md` de la raíz manda consultar `_meta/memoria/` "para que la lea cualquier agente", pero hasta el **2026-08-14** el único directorio adicional era el catálogo: la memoria del vault le quedaba **fuera de alcance** al coordinador de un asunto, y leerla le abría una aprobación. **Una regla que el perfil no permite cumplir no es una regla**, así que se resolvió por el lado del perfil. Se concede **solo `memoria/`**, no `_meta/` entero: el resto es el meta-asunto del kit y no es suyo.
 - **`hooks.SessionStart`** — invoca `limpieza-coordinacion.mjs`: auto-borra los handoffs y buffers gitignored ya superados y avisa de los prompts trackeados que toca quitar con `git rm`. Limpia **al arrancar**, no solo al cerrar tanda, porque las sesiones a menudo mueren por límite de contexto antes de cerrar ([[convencion_organizacion_carpeta_trabajo]]). Nunca bloquea el arranque.
 - **`env.CLAUDE_CODE_DISABLE_FAST_MODE: "1"`** — **veto de `/fast` por configuración**, no por buena voluntad. `/fast` se factura **siempre** con usage credits (nunca va incluido en la suscripción) y **viene activado por defecto** en los planes altos, así que sin esta variable se gasta dinero aparte sin que nadie lo haya decidido. Una regla que depende de que el coordinador se acuerde no es una regla: esto lo apaga desde el propio settings ([[modelo_por_tarea]]).
@@ -43,7 +43,7 @@ El script es **un único fichero compartido** en `general/comun/hooks/` (solo le
 | Sesión lanzada desde | Ruta en el `command` |
 |---|---|
 | **La raíz del vault** (coordinador general, `_meta/`) | `node "${CLAUDE_PROJECT_DIR}/general/comun/hooks/limpieza-coordinacion.mjs"` |
-| **Un contenedor de asunto** (`asuntos/<asunto>/`, dos niveles) | `node "${CLAUDE_PROJECT_DIR}/../../general/comun/hooks/limpieza-coordinacion.mjs"` |
+| **Un contenedor de asunto** (`<espacio>/<asunto>/`, dos niveles) | `node "${CLAUDE_PROJECT_DIR}/../../general/comun/hooks/limpieza-coordinacion.mjs"` |
 
 Esta plantilla trae la **segunda** (es el settings de un contenedor de asunto). El `.claude/settings.json` de la **raíz** del vault trae la primera. Si alguna vez anidas un contenedor a otra profundidad, ajusta el número de `../` — y compruébalo, porque un hook con la ruta mal **no da error visible**: simplemente no limpia.
 
@@ -97,7 +97,16 @@ Automatizar un navegador es una necesidad de varios asuntos, y la herramienta co
 - **Un `deny` con ruta RELATIVA no funciona en Windows.** `Edit(../../general/**)` **no** resuelve contra la ruta absoluta: se puede escribir en el catálogo igualmente. Por eso el deny del catálogo se expresa como **glob**: `//**/general/**` — el mismo estilo que el deny de claves privadas (`//**/id_rsa`), que sí funciona. **No lo cambies a ruta relativa "para que quede más limpio".**
 - **El glob asume el nombre de la carpeta.** `//**/general/**` protege cualquier carpeta llamada `general` que quede bajo el árbol. Dos consecuencias: (a) si alguna vez renombras el catálogo, hay que actualizar el deny; (b) si tuvieras otra carpeta llamada `general` en un asunto, también quedaría de solo lectura. Con la estructura de la plantilla no ocurre, pero conviene saberlo.
 - **Verifica el aislamiento, no lo supongas.** Con la sesión del coordinador arrancada: intenta escribir un fichero en `general/` y comprueba que **se deniega**. Si no se deniega, el resto de este documento no te protege de nada.
-- **La invisibilidad entre asuntos hermanos es aislamiento BLANDO.** No se puede expresar como `deny` sin denegar también el propio contenedor, que vive dentro de `asuntos/`. Se apoya en el cwd y en el comportamiento acotado del coordinador (no lee otros asuntos salvo que se le pida), **no** en una barrera dura. Si un asunto exige separación fuerte —material de un procedimiento con abogado, datos médicos de un tercero—, la vía es un vault aparte, no un `deny` más.
+- **La invisibilidad entre asuntos hermanos de un mismo espacio es aislamiento BLANDO.** No se puede expresar como `deny` sin denegar también el propio contenedor, que vive dentro del espacio. Se apoya en el cwd y en el comportamiento acotado del coordinador (no lee otros asuntos salvo que se le pida), **no** en una barrera dura. Si un asunto exige separación fuerte —material de un procedimiento con abogado, datos médicos de un tercero—, la decide el director al crear el espacio (puerta del espacio sensible de `checklist-arranque`); un vault aparte queda solo para lo totalmente independiente o lo que tenga que salir del histórico git compartido. Ver la sección siguiente para la separación entre espacios.
+
+## Si el vault tiene varios espacios
+
+Entre asuntos, de cualquier espacio, el aislamiento es de conducta. Lo que cambia con los espacios es esto:
+
+- **Entre espacios sí se puede escribir un `deny`** de lectura, `Read(//**/<otro-espacio>/**)`, porque el contenedor propio no queda dentro de él (dentro de un mismo espacio, no).
+- **Está sin medir bajo "Omitir permisos".** No cuentes con él hasta comprobar que se deniega la lectura de verdad.
+- **No tapa `cat` ni `git show`** mientras se permitan: la regla cubre la herramienta de lectura, no el contenido del árbol por otras vías.
+- **Lo decide el director** en la puerta del espacio sensible de `checklist-arranque`, y se mide antes de contar con él.
 
 ## Si el vault tiene archivo documental
 

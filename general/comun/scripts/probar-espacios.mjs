@@ -207,6 +207,14 @@ function casos(c, esp) {
     ['V3', () => R(hallazgo(node([path.join(c.v2(), '_meta', 'verificar-kit.mjs')], c.v2()).salida, 'esp-uno/a1/.claude/agents/ejecutora.md'), 'ningun hallazgo con esp-uno/a1/.claude/agents/ejecutora.md')],
     ['V4', () => R(hallazgo(node([path.join(c.v2(), '_meta', 'verificar-kit.mjs')], c.v2()).salida, 'esp-uno/CLAUDE.md'), 'ningun hallazgo con esp-uno/CLAUDE.md')],
     ['V5', () => R(hallazgo(node([path.join(c.v2(), '_meta', 'verificar-kit.mjs')], c.v2()).salida, 'esp-uno/x'), 'ningun hallazgo con esp-uno/x')],
+    ['V6', () => {
+      const v = c.clon();
+      escribir(v, 'general/x.md', '# X\n\nVive en `asuntos/<a>/` todavia.\n');
+      escribir(v, 'general/y.md', '# Y\n\n> Pieza de catalogo adaptada de asuntos/<a>/ (pie de registro).\n');
+      const lineas = node([path.join(v, '_meta', 'verificar-kit.mjs')], v).salida.split('\n').filter((l) => /residuo de la estructura vieja/.test(l));
+      const enX = lineas.some((l) => l.includes('general/x.md')); const enY = lineas.some((l) => l.includes('general/y.md'));
+      return R(enX && !enY, `regla 19: hallazgo en x.md=${enX} (se esperaba true), en y.md=${enY} (se esperaba false)`);
+    }],
 
     ['G1', () => {
       const v = c.clon();

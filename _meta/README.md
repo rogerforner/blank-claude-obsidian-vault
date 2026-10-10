@@ -1,6 +1,6 @@
 # `_meta/` — el kit tratado como un asunto más
 
-`_meta/` es el espacio del **coordinador general** del vault: el rol que **inicializa asuntos y mantiene coherente toda la estructura** (el catálogo `general/`, las plantillas del `inicializador/`, las convenciones). Es un rol **permanente**, no un montaje de una sola vez: el kit se usa, se rompe por algún sitio y se arregla, y esa evolución se gestiona aquí igual que un `asuntos/<asunto>/` gestiona su asunto.
+`_meta/` es la zona del **coordinador general** del vault: el rol que **inicializa asuntos y mantiene coherente toda la estructura** (el catálogo `general/`, las plantillas del `inicializador/`, las convenciones). Es un rol **permanente**, no un montaje de una sola vez: el kit se usa, se rompe por algún sitio y se arregla, y esa evolución se gestiona aquí igual que un `<espacio>/<asunto>/` gestiona su asunto.
 
 La idea de fondo: **el kit no es infraestructura invisible, es un asunto con su charter, su cola y su bitácora.** Si mejorar la forma de trabajar no tiene un sitio donde anotarse y una cola donde priorizarse, no se mejora — se comenta y se olvida.
 
@@ -31,7 +31,7 @@ Gobiernan **permisos opuestos**:
 
 | | **Construir el kit** (lo que se hace desde aquí) | **Coordinar un asunto** (lo que hacen los coordinadores que este kit arranca) |
 |---|---|---|
-| cwd | la **raíz** del vault | `asuntos/<asunto>/` |
+| cwd | la **raíz** del vault | `<espacio>/<asunto>/` |
 | Alcance de escritura | todo el vault, incluido `general/` | **solo su contenedor**; el catálogo `general/` en **solo lectura** |
 | Otros asuntos | los ve y los mantiene coherentes | **no son asunto suyo** |
 | Settings | `.claude/settings.json` de la raíz | `inicializador/plantilla-settings-coordinador.json`, copiado a su contenedor |

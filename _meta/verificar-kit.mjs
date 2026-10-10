@@ -523,6 +523,22 @@ for (const a of listarAsuntos(RAIZ)) {
   }
 }
 
+// --- 19. residuo de la estructura vieja ------------------------------------
+// Tras pasar de `asun`+`tos/<asunto>/` a `<espacio>/<asunto>/`, el metodo (zona de estilo estricto,
+// sin registro) no vuelve a nombrar la carpeta vieja: ni en prosa ni entre acentos graves (no se
+// quitan los literales). Exentas: los changelogs y pies de registro (`> **v`, `> Adaptada`,
+// `> Pieza`) y las carpetas `coordinacion/referencia/` y `estudios/`. El patron va partido para
+// que este fichero no se cace a si mismo.
+const RESIDUO = new RegExp('\\basun' + 'tos/');
+const EXENTA_19 = /^> (\*\*v|Adaptada|Pieza)/;
+for (const f of md.filter((x) => zonaDeEstiloEstricto(x) && !ES_REGISTRO(x))) {
+  const r = relative(RAIZ, f).replace(/\\/g, '/');
+  if (/(^|\/)(coordinacion\/referencia|estudios)\//.test(r)) continue;
+  readFileSync(f, 'utf8').split('\n').forEach((linea, i) => {
+    if (RESIDUO.test(linea) && !EXENTA_19.test(linea)) nota('residuo de la estructura vieja', f, `linea ${i + 1}: nombra la carpeta vieja de asuntos; la estructura es <espacio>/<asunto>/`);
+  });
+}
+
 // --- resultado ----------------------------------------------------------
 const revisados = `${md.length} markdown y ${mjs.length + jsonInicializador.length} script/config`;
 if (!hallazgos.length) {

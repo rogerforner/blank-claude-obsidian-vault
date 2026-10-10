@@ -7,7 +7,7 @@
 - **Un `[[wikilink]]` sin copia local resuelve al catálogo, y eso es lo correcto** — no es un olvido.
 - **El default es NO copiar.** Una copia desfasada miente con la autoridad de estar instalada, y una copia idéntica no aporta nada mientras el asunto viva dentro del vault.
 - **Cuándo SÍ copiar:** para **fijar** a propósito una versión concreta (declarando por qué), o si el contenedor va a **salir** del vault. Quien copia, resincroniza.
-- `asuntos/<asunto>/memoria/` es para las doctrinas **propias** de ese asunto.
+- `<espacio>/<asunto>/memoria/` es para las doctrinas **propias** de ese asunto.
 
 Detalle en [`comun/README.md`](comun/README.md) y en la doctrina [[estructura_contenedor_asunto]].
 

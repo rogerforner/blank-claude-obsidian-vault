@@ -14,13 +14,13 @@ El coordinador de un asunto de software necesita, desde su propio cwd (el conten
 
 ## Por qué NO incluye `ssh`, a propósito
 
-Un runtime en máquina virtual también se "entra" — por SSH. **Deliberadamente no está en el `allow` por defecto.** `ssh` no es un mecanismo acotado a un runtime declarado (como `docker exec <contenedor-que-ya-existe>`): es un primitivo genérico de ejecución remota y reenvío de puertos, de la misma familia de riesgo que `curl`/`wget` — las herramientas que el vault deniega en todos los perfiles como contramedida contra exfiltración vía inyección de instrucciones. Añadir `ssh` por defecto abriría ese mismo agujero con otro nombre. **Si el asunto usa una VM y de verdad hace falta**, el coordinador de ESE asunto añade `Bash(ssh:*)` a su propio `asuntos/<asunto>/.claude/settings.json`, sabiendo exactamente qué abre — la misma decisión, informada y por asunto, que ya pedía el perfil anterior para un stack que no fuera Node.
+Un runtime en máquina virtual también se "entra" — por SSH. **Deliberadamente no está en el `allow` por defecto.** `ssh` no es un mecanismo acotado a un runtime declarado (como `docker exec <contenedor-que-ya-existe>`): es un primitivo genérico de ejecución remota y reenvío de puertos, de la misma familia de riesgo que `curl`/`wget` — las herramientas que el vault deniega en todos los perfiles como contramedida contra exfiltración vía inyección de instrucciones. Añadir `ssh` por defecto abriría ese mismo agujero con otro nombre. **Si el asunto usa una VM y de verdad hace falta**, el coordinador de ESE asunto añade `Bash(ssh:*)` a su propio `<espacio>/<asunto>/.claude/settings.json`, sabiendo exactamente qué abre — la misma decisión, informada y por asunto, que ya pedía el perfil anterior para un stack que no fuera Node.
 
 ## Lo que esta plantilla NO hace: adivinar el runtime concreto
 
 **Deliberado, igual que antes con el stack.** No precarga el nombre de un contenedor, un `docker-compose.yml` concreto ni un contexto de `kubectl`: eso es específico del asunto y vive en `docs/emplazamiento-runtime.md` (`inicializador/plantilla-emplazamiento-runtime.md`), no aquí. Esta plantilla solo concede **el binario**; qué contenedor o pod se nombra en cada comando lo decide quien lo ejecuta, leyendo la ficha.
 
-**Cuando el asunto necesita algo más** (un cliente distinto, `ssh` para una VM, un binario propio del proveedor de nube) el coordinador de ESE asunto añade las reglas `allow` que le hagan falta a su propio `asuntos/<asunto>/.claude/settings.json`, con el mismo patrón (`Bash(<binario>:*)`) y sabiendo qué abre. Es una decisión del asunto, no un valor por defecto del kit.
+**Cuando el asunto necesita algo más** (un cliente distinto, `ssh` para una VM, un binario propio del proveedor de nube) el coordinador de ESE asunto añade las reglas `allow` que le hagan falta a su propio `<espacio>/<asunto>/.claude/settings.json`, con el mismo patrón (`Bash(<binario>:*)`) y sabiendo qué abre. Es una decisión del asunto, no un valor por defecto del kit.
 
 ## Lo que sigue exactamente igual que el perfil normal (y por qué)
 

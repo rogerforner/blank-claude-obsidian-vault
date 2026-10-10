@@ -10,6 +10,14 @@ La sintaxis de lanzamiento no está aquí: vive en la tabla "Ejecución" del `CL
 
 - En terminal: `cd <ruta>` y luego `claude`.
 - En la app: abre esa carpeta como directorio de trabajo.
+- **Si el vault usa Herdr:** **un espacio de trabajo de Herdr por espacio del vault** (por ejemplo, `casa`), con una pestaña por coordinador de sus asuntos, abierta en la carpeta del asunto y con `claude` dentro. El general tiene su propio espacio de trabajo, con el nombre del vault, y solo su pestaña, la de la raíz. El espacio de trabajo de Herdr se crea con el cwd de un asunto, nunca con el de la carpeta del espacio (sería un ámbito sin rol). Una pestaña de asunto:
+
+  ```
+  herdr tab create --workspace <id del espacio de trabajo> --cwd "<vault>/<espacio>/<asunto>" --label <asunto>
+  ```
+
+  Lo que fija el rol es la carpeta, no el nombre de la pestaña. Con Herdr hay relevo autónomo entre sesiones.
+- **Si el vault usa Claude Code Desktop:** los chats de los coordinadores de un espacio se agrupan en un grupo con el nombre del espacio `[declarado, no medido]`. No hay relevo autónomo. Las denegaciones y el hook de arranque no están comprobados en la app: compruébalos antes de contar con ellos.
 **Y tres cosas que NO hay que hacer:** no le expliques su rol ni le enumeres las reglas —todo eso lo carga de la carpeta, y un prompt largo explicándoselo **compite** con lo que ya ha leído—; **no cambies de modelo a media sesión**; y **empieza cada tarea nueva con `/clear`**.
 
 **Al arrancar, comprueba en la cabecera de la sesión el modelo y el esfuerzo.** El alias de modelo puede haber cambiado y el esfuerzo no se hereda de la sesión anterior. Con `effortLevel: "high"` en el perfil, Opus 5.5 arranca en `high` (medido el 2026-10-04); lo que se lee en la cabecera es lo que corre, y es el sitio donde se comprueba.
@@ -105,8 +113,8 @@ Desde el **2026-08-12** el modelo y el esfuerzo van escritos en el `settings.jso
 | Quiero… | Carpeta | Sección |
 |---|---|---|
 | Arrancar el **coordinador general** | raíz del vault | [↓](#coordinador-general) |
-| Arrancar el coordinador de **un asunto** | `asuntos/<slug>/` | [↓](#coordinador-de-asunto) |
-| Arrancar el coordinador de un asunto **de software** | `asuntos/<slug>/` | [↓](#coordinador-de-asunto-de-software) |
+| Arrancar el coordinador de **un asunto** | `<espacio>/<slug>/` | [↓](#coordinador-de-asunto) |
+| Arrancar el coordinador de un asunto **de software** | `<espacio>/<slug>/` | [↓](#coordinador-de-asunto-de-software) |
 | Arrancar un **consultor** de solo lectura | la del asunto, o la raíz | [↓](#consultor-de-solo-lectura) |
 | **Relevar** una sesión que se queda sin contexto | la misma | [↓](#relevar-una-sesión) |
 | Encargar **un trabajo** (ciclo de tandas) | la del coordinador | [↓](#encargar-un-trabajo-ciclo-de-tandas) |
@@ -128,7 +136,7 @@ Arranca como coordinador general de este vault. Lee _meta/PRIMEROS-PASOS.md, el 
 
 ## Coordinador de asunto
 
-**Carpeta: `asuntos/<slug>/`.** Ve **solo su asunto** y el catálogo `general/` en solo lectura; los demás asuntos son invisibles para él, y eso es deliberado.
+**Carpeta: `<espacio>/<slug>/`.** Responde **solo de su asunto** y lee el catálogo `general/` en solo lectura; los demás asuntos no son cosa suya, y eso es regla de conducta, no barrera técnica (podría leerlos).
 
 **No hace falta nombrar el asunto:** la carpeta ya lo determina, y **el mismo texto sirve para todos**.
 
@@ -201,7 +209,7 @@ Cuando el trabajo no es trivial (toca varios ficheros, estrena una forma de trab
 Esto no es trivial: planifícalo con el planificador, enséñame las premisas falsas y la tabla de tandas, y ejecútalo por bloques según el ciclo de tandas
 ```
 
-La tabla viva la ves en el tablero sin interrumpir: `_meta/tablero-tandas.md` o `asuntos/<asunto>/coordinacion/tablero-tandas.md`.
+La tabla viva la ves en el tablero sin interrumpir: `_meta/tablero-tandas.md` o `<espacio>/<asunto>/coordinacion/tablero-tandas.md`.
 
 Lo que el coordinador tiene que respetar al lanzar —el plan antes de las tandas, la comprobación de cada una y el relevo o la parada al cerrar el bloque— está en la doctrina y en el contrato de tanda. No es cosa tuya acordarte.
 

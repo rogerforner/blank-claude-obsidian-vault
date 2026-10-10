@@ -1,6 +1,6 @@
 # Brief de investigación a fondo — {{TÍTULO}}
 
-> Plantilla de **brief de investigación a fondo**. La investigación se ejecuta en el **chat web** (función de investigación profunda), **no con subagentes** ([[orquestacion_sesiones_por_herramienta]]). Rellena los `{{…}}` y **borra este bloque**. Vive en `asuntos/<asunto>/estudios/<tema>/`. Vuelve como `informe.md` y se condensa en `sintesis-decisiones.md`.
+> Plantilla de **brief de investigación a fondo**. La investigación se ejecuta en el **chat web** (función de investigación profunda), **no con subagentes** ([[orquestacion_sesiones_por_herramienta]]). Rellena los `{{…}}` y **borra este bloque**. Vive en `<espacio>/<asunto>/estudios/<tema>/`. Vuelve como `informe.md` y se condensa en `sintesis-decisiones.md`.
 >
 > **Frontera de soberanía — inviolable.** El chat web corre **fuera de esta máquina**. Un brief **no lleva datos personales, ni documentos del asunto, ni nombres de terceros, ni importes identificables**: se redacta en abstracto ("un seguro de hogar con cláusula de daños por agua", no la póliza con su número y su titular). Si la pregunta no se puede formular sin el dato, **no va al chat web**: se resuelve en local ([[sensitive_file_guard]]).
 
@@ -45,6 +45,6 @@ Busca **cómo encaja dentro de las restricciones** (pasos concretos, métodos re
 
 ## Entregable
 
-Informe en `asuntos/<asunto>/estudios/<tema>/informe.md`: **resumen ejecutivo**, **hallazgos por pregunta con cita**, **recomendaciones accionables**, **banderas rojas**, y un **veredicto adelante / no / prueba piloto** por opción evaluada, con la condición que lo decide. Síntesis del coordinador en `sintesis-decisiones.md`.
+Informe en `<espacio>/<asunto>/estudios/<tema>/informe.md`: **resumen ejecutivo**, **hallazgos por pregunta con cita**, **recomendaciones accionables**, **banderas rojas**, y un **veredicto adelante / no / prueba piloto** por opción evaluada, con la condición que lo decide. Síntesis del coordinador en `sintesis-decisiones.md`.
 
 *(La remisión a la carpeta de estudios del propio kit se ha retirado: los estudios del kit no viajan en la plantilla. Un brief sobre la forma de trabajar se guarda en `_meta/` del vault temático, donde su coordinador decida.)*

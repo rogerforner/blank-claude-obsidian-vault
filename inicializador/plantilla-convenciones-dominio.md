@@ -1,6 +1,6 @@
 # Convenciones documentales — {{ASUNTO}}
 
-> **Plantilla parametrizable** para `asuntos/<slug>/docs/convenciones-dominio.md`. Sustituye `{{ASUNTO}}` y rellena solo las secciones que este asunto necesite de verdad; **borra las que no**, junto con este bloque. Una sección vacía "por si acaso" es deuda, no previsión ([[adopcion_tooling_externo_caso_uso_concreto]]).
+> **Plantilla parametrizable** para `<espacio>/<slug>/docs/convenciones-dominio.md`. Sustituye `{{ASUNTO}}` y rellena solo las secciones que este asunto necesite de verdad; **borra las que no**, junto con este bloque. Una sección vacía "por si acaso" es deuda, no previsión ([[adopcion_tooling_externo_caso_uso_concreto]]).
 >
 > **Cuándo se crea este fichero:** solo si el asunto tiene **convenciones documentales propias** — porque llegó con método propio en una migración, o porque su materia impone una forma de nombrar, fechar o estructurar los documentos. **Un asunto que se conforma con la convención del vault no necesita este fichero**, y crearlo vacío solo añade un sitio más que mantener.
 

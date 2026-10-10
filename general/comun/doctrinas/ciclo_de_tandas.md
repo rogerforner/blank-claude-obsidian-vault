@@ -2,7 +2,7 @@
 name: Ciclo de trabajo por tandas — planificar, ejecutar en pequeño, parar
 description: Todo coordinador trabaja igual. Lo no trivial lo planifica un subagente Opus en un plan partido en tandas pequeñas; cada tanda la ejecuta un subagente Sonnet, una tras otra; y al cerrar una tanda suelta o un bloque el coordinador guarda el estado y el tablero y escribe el prompt de relevo; si el bloque siguiente es del mismo plan y no hay nada abierto, se releva él mismo en una sesión nueva (relevo autónomo por Herdr, con un script común); si no, para y pregunta. La tabla viva está en un tablero de nombre fijo, y lo repetitivo se hace con scripts.
 type: doctrine
-version: 2.0
+version: 2.1
 index_summary: >-
   **Todo coordinador trabaja con el mismo ciclo.** Lo no trivial lo **planifica un subagente Opus** en un plan partido en **tandas pequeñas**; cada tanda la **ejecuta un subagente Sonnet**, una tras otra, y la comprueba el coordinador, que **commitea por pathspec**. Al cerrar una tanda suelta o un bloque, el coordinador **guarda el estado y el tablero y escribe el prompt de relevo**; si el bloque siguiente es del mismo plan y no hay nada abierto, **se releva él mismo en una sesión nueva** (relevo autónomo por Herdr, con un script común), y si no, **para y pregunta**. Así los bloques se encadenan sin acumular contexto, que es lo que degrada la precisión mucho antes de llenar la ventana. La tabla viva está en un **tablero de nombre fijo**, y lo repetitivo se hace con scripts. El estado vive en ficheros, no en la conversación.
 ---
@@ -39,7 +39,7 @@ El script `general/comun/scripts/relevo.mjs` lo corre la sesión que se va. En c
 
 **Lo que garantiza:** la sesión nueva no trabaja nunca con la vieja viva, y si algo falla antes del cierre, la vieja sigue y avisa. Medido el 2026-10-05 en una pestaña desechable: un relevo bueno tarda unos 15 s de principio a fin, y al terminar la vieja ya no existe y la nueva está sola en la pestaña con el nombre de la vieja. Los tres fallos que se provocaron salieron como el script dice: un commit que no es el del ámbito, con salida 4 y nada tocado; una sesión nueva que no arranca, con salida 6 y su panel cerrado, y una que no confirma, con salida 7, su panel cerrado y la vieja viva.
 
-**La comparación del commit es la del ámbito del coordinador,** no la de todos los ámbitos: `git log -1 --format=%h -- <ámbito>`, con `. ':(exclude)asuntos'` para el general y `asuntos/<slug>` para un asunto, y además que ese commit sea ancestro de HEAD. Así la sesión nueva ve el mismo estado que dejó la vieja, y el commit de otra sesión en otro ámbito no tumba el relevo. Por lo mismo, el script exige el árbol limpio en el ámbito: un cambio del propio script se commitea antes de probarlo en vivo.
+**La comparación del commit es la del ámbito del coordinador,** no la de todos los ámbitos: `git log -1 --format=%h -- <ámbito>`, con `.` menos cada asunto (`':(exclude)<espacio>/<asunto>'`) para el general, que da `node general/comun/scripts/espacios.mjs --pathspec .`, y `.` para un asunto, y además que ese commit sea ancestro de HEAD. Así la sesión nueva ve el mismo estado que dejó la vieja, y el commit de otra sesión en otro ámbito no tumba el relevo. Por lo mismo, el script exige el árbol limpio en el ámbito: un cambio del propio script se commitea antes de probarlo en vivo.
 
 **Para qué no se usa nunca:** arrancar a otro coordinador o a ejecutoras, ni contestar los diálogos que una sesión nueva pueda mostrar. Solo abre la sucesora del mismo rol, y la lanza el propio coordinador, no un subagente.
 
@@ -88,3 +88,4 @@ Relacionada: [[orquestacion_sesiones_por_herramienta]], [[scripts_adhoc_tareas_r
 
 > Pieza de catálogo `general/comun/doctrinas/`. **v1.0 (2026-10-04):** nace con la decisión D4 del director del 2026-10-04: todo coordinador trabaja con el mismo ciclo de planificar, ejecutar en tandas pequeñas y parar al cerrar cada bloque. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado y **no se hereda** automáticamente.
 > **v2.0 (2026-10-05):** decisiones D1, D2 y D3 del director: relevo autónomo por Herdr con sus condiciones de parada, tablero de tandas y scripts.
+> **v2.1 (2026-10-10):** con el vault en espacios, el ámbito del general es `.` menos cada asunto y lo da `espacios.mjs --pathspec .`.

@@ -2,7 +2,7 @@
 
 Si abriste esta sesión con la **carpeta de trabajo** (`cwd`, *current working directory*) en la **raíz del vault**, eres el **coordinador general**: inicializas asuntos y mantienes coherente la estructura. Esta página es tu arranque; vale para cualquier sesión, la primera y la número treinta.
 
-*(Si tu carpeta de trabajo es `asuntos/<asunto>/`, eres el coordinador de **ese** asunto: lee su `CLAUDE.md` y su `charter-coordinador.md`, no esto.)*
+*(Si tu carpeta de trabajo es `<espacio>/<asunto>/` (por ejemplo `casa/climatizacion/`), eres el coordinador de **ese** asunto: lee su `CLAUDE.md` y su `charter-coordinador.md`, no esto.)*
 
 ## Al arrancar (orden de lectura)
 
@@ -55,7 +55,7 @@ Dos o tres líneas de estado, no un informe. Y **una propuesta concreta**, no un
 | `general/comun/` | **Catálogo** transversal: doctrinas del core + índice, hook de higiene, tooling **local** de documentos, resolución de problemas de la herramienta. Se **lee** desde el asunto; no se copia ni se hereda. |
 | `general/comun/packs/codigo/` | Pack **opcional**, solo si un asunto incluye software propio. El core no depende de él. |
 | `inicializador/` | **Procedimiento + plantillas** para arrancar un asunto: checklists, charter, contrato de tanda ejecutora, handoff, consultor, settings por rol y el árbol del contenedor. |
-| `asuntos/<asunto>/` | Un contenedor por asunto, todos con la misma estructura ([[estructura_contenedor_asunto]]). **No existe hasta el primer asunto.** |
+| `<espacio>/<asunto>/` | Un contenedor por asunto, agrupados en espacios y todos con la misma estructura ([[estructura_contenedor_asunto]]). **No existe hasta el primer espacio.** |
 | `_meta/` | El kit tratado como asunto: charter, cola, decisiones, bitácora, estos primeros pasos y la plantilla de brief. |
 
 ## Punteros

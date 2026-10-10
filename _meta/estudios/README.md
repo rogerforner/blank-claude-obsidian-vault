@@ -1,6 +1,6 @@
 # `_meta/estudios/` — vigilancia e investigaciones a nivel de kit/vault
 
-Estudios que **no** pertenecen a un proyecto concreto, sino a la mejora del propio kit y del vault (métodos de coordinación, el agente en uso, modelos, plataformas de apoyo). Para investigaciones de un proyecto, ver `asuntos/<slug>/estudios/`.
+Estudios que **no** pertenecen a un proyecto concreto, sino a la mejora del propio kit y del vault (métodos de coordinación, el agente en uso, modelos, plataformas de apoyo). Para investigaciones de un proyecto, ver `<espacio>/<slug>/estudios/`.
 
 ## Organización
 

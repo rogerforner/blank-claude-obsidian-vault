@@ -34,11 +34,20 @@ Que el kit de este vault quede **idéntico** al de la plantilla, que el informe 
 
 **NO entra, no lo toques aunque lo veas:**
 
-- **Todo `asuntos/**`**, salvo lo que dice el paso 3. Ahí vive el trabajo real: documentos, originales, colas, charters, notas. **Nada de eso se sobrescribe jamás.**
+- **Todo espacio** (directorio de la raíz con `tipo: espacio` en su README) **y todo directorio `tipo: libre`**; en vaults antiguos, `asuntos/**`. Salvo lo que dice el paso 3. Ahí vive el trabajo real: documentos, originales, colas, charters, notas. **Nada de eso se sobrescribe jamás.**
 - `_meta/bitacora.md`, `_meta/cola-pendientes.md`, `_meta/decisiones-abiertas.md`, `_meta/charter-coordinador.md`: son el estado propio de ESE vault.
 - Cualquier `settings.local.json` (son de la máquina) y cualquier fichero gitignored.
 
 ## Pasos
+
+### 0. Migración de la estructura (solo si el vault es antiguo; antes de copiar nada)
+
+Los vaults anteriores a los espacios tienen los asuntos en `asuntos/<asunto>/`; el kit nuevo espera `<espacio>/<asunto>/` y reconoce un espacio por la marca `tipo: espacio` en el frontmatter de su `README.md`. **Hazlo antes del paso 1 y antes de copiar nada, y el motivo es de orden:** si se copian primero los scripts nuevos, toda sesión abierta en un asunto queda con un ámbito inválido (el hook no reconoce `asuntos/` como espacio) y la regla 17 del verificador sale en rojo.
+
+- Si existe `asuntos/` sin marca, añade a `asuntos/README.md` el frontmatter `tipo: espacio` (créalo si no hay frontmatter; si el README no existe, créalo con solo esa marca). **No muevas ni renombres nada**: renombrar `asuntos/` a otro nombre es decisión del dueño del vault.
+- Cada otro directorio propio de la raíz que no sea de sistema (`.git`, `.claude`, `_meta`, `general`, `inicializador`, `.obsidian` y similares) se clasifica con la marca en su `README.md`: `tipo: espacio` (agrupa asuntos), `tipo: archivo` (documentos compartidos que los asuntos enlazan) o `tipo: libre` (carpeta suelta que no se toca).
+- **Si hay un asunto suelto en la raíz, o una carpeta que no sabes clasificar, para y pregunta a su dueño.** No adivines.
+- Anota en el informe qué marcas pusiste y en qué carpetas.
 
 ### 1. Inventario ANTES (esto es lo que hace útil el informe)
 
@@ -50,7 +59,7 @@ Copia desde la plantilla al vault todo lo del apartado "SÍ entra", **reemplazan
 
 ### 3. Retirar las copias de doctrinas dentro de los asuntos
 
-La política cambió: **el catálogo se lee, no se copia** (ver `estructura_contenedor_asunto`). En cada `asuntos/*/memoria/`:
+La política cambió: **el catálogo se lee, no se copia** (ver `estructura_contenedor_asunto`). En cada `<espacio>/*/memoria/` (en un vault antiguo sin migrar, `asuntos/*/memoria/`):
 
 - Si un fichero es **copia de una doctrina del catálogo** (mismo nombre que una pieza de `general/`), **retíralo**: ya no aporta y su desfase miente. Anótalo en el informe.
 - Si un fichero es **propio del asunto** (no existe en el catálogo), **déjalo intacto**: ese es justamente el contenido para el que existe `memoria/`.
@@ -88,4 +97,4 @@ find . -name AGENTS.md -not -path "./.git/*"                                    
 
 ## Puertas humanas (no las cruces)
 
-No borres nada de `asuntos/**` que no sea una copia de doctrina del catálogo. No cambies decisiones de configuración marcadas `[A CONFIRMAR]`. No hagas commit de material que contenga datos personales sin que una persona lo apruebe.
+No borres nada de un espacio (o de `asuntos/**` en un vault antiguo) que no sea una copia de doctrina del catálogo. No cambies decisiones de configuración marcadas `[A CONFIRMAR]`. No hagas commit de material que contenga datos personales sin que una persona lo apruebe.

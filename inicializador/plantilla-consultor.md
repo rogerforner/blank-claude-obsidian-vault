@@ -4,10 +4,10 @@
 >
 > El **consultor** es una sesión paralela **estrictamente de solo lectura** que resuelve dudas factuales sobre los documentos y el estado del asunto **sin gastar el contexto del coordinador** y sin tocar nada ([[sesion_consultor_paralelo]]).
 >
-> 1. Copia `inicializador/plantilla-settings-consultor.json` → `asuntos/{{SLUG}}/.claude/settings.consultor.json` (versionado, portable).
-> 2. Copia este fichero → `asuntos/{{SLUG}}/.claude/consultor-prompt.md`, sustituye `{{ASUNTO}}`/`{{SLUG}}` y **borra este bloque de instrucciones** (deja solo el prompt de abajo).
+> 1. Copia `inicializador/plantilla-settings-consultor.json` → `{{ESPACIO}}/{{SLUG}}/.claude/settings.consultor.json` (versionado, portable).
+> 2. Copia este fichero → `{{ESPACIO}}/{{SLUG}}/.claude/consultor-prompt.md`, sustituye `{{ASUNTO}}`/`{{SLUG}}`/`{{ESPACIO}}` y **borra este bloque de instrucciones** (deja solo el prompt de abajo).
 > 3. Si el consultor debe leer material que vive fuera del contenedor (la carpeta del escáner, una unidad de copias), añade esa ruta a `additionalDirectories` en `.claude/settings.local.json` (gitignored) — el modo plan lo mantiene de solo lectura de todas formas.
-> 4. Lánzalo con **cwd en el contenedor** `asuntos/{{SLUG}}/`:
+> 4. Lánzalo con **cwd en el contenedor** `{{ESPACIO}}/{{SLUG}}/`:
 >    ```
 >    claude --settings .claude/settings.consultor.json --append-system-prompt-file .claude/consultor-prompt.md --permission-mode plan
 >    ```

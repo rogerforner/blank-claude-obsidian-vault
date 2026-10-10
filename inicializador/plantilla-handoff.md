@@ -2,7 +2,7 @@
 
 > Plantilla para **relevar a un coordinador** cuando su sesión llega al límite de contexto. La sesión nueva continúa el trabajo sin interrupciones. Sustituye los `{{…}}` y rellena las secciones *(parametrizar)*. Borra este bloque al terminar.
 >
-> **Esta plantilla se versiona; los handoffs que generes con ella, NO.** El fichero generado va a `asuntos/<asunto>/coordinacion/handoff-coordinador-<fecha>.md` y es **local y gitignored** (`**/coordinacion/handoff-*.md` en el `.gitignore` raíz del vault; el del coordinador general lo cubre `/_meta/handoff-*.md`): sirve solo hasta que arranca la siguiente sesión y no aporta nada al histórico. Un handoff superado se **borra** — y el hook `SessionStart` de limpieza lo borra solo. La plantilla se salva del patrón porque su nombre **no** empieza por `handoff-` ([[convencion_organizacion_carpeta_trabajo]]).
+> **Esta plantilla se versiona; los handoffs que generes con ella, NO.** El fichero generado va a `<espacio>/<asunto>/coordinacion/handoff-coordinador-<fecha>.md` y es **local y gitignored** (`**/coordinacion/handoff-*.md` en el `.gitignore` raíz del vault; el del coordinador general lo cubre `/_meta/handoff-*.md`): sirve solo hasta que arranca la siguiente sesión y no aporta nada al histórico. Un handoff superado se **borra** — y el hook `SessionStart` de limpieza lo borra solo. La plantilla se salva del patrón porque su nombre **no** empieza por `handoff-` ([[convencion_organizacion_carpeta_trabajo]]).
 
 > **Antes de escribir el handoff, cierra tu DoD** (`node _meta/dod.mjs`). Un handoff redactado sobre un árbol a medio commitear, con efímeros sin retirar o una doctrina cambiada sin su changelog, le traslada el problema a la sesión siguiente **disfrazado de estado**. → [[definition_of_done]]
 

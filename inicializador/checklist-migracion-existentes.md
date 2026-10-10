@@ -8,9 +8,9 @@ Para **traer al vault un asunto que ya existe**: papeles en carpetas del disco, 
 
 > La pregunta más recurrente de una migración. **Innegociable:** manda la convención del vault. Tabla canónica completa en [[estructura_contenedor_asunto]] § Qué vive dónde.
 
-- **Documentación del asunto** (cronología, plazos, contactos, decisiones, guías de trámite, cálculos) → **canónica en el vault**, `asuntos/<asunto>/docs/`.
+- **Documentación del asunto** (cronología, plazos, contactos, decisiones, guías de trámite, cálculos) → **canónica en el vault**, `{{ESPACIO}}/{{SLUG}}/docs/`.
 - **Coordinación** (charter, cola, handoffs, prompts, estudios) → **vault** (contenedor del asunto).
-- **Originales recibidos y emitidos** (escaneos, resoluciones, acuses, facturas, contratos firmados) → `asuntos/<asunto>/docs/`, **inmutables**. Son prueba.
+- **Originales recibidos y emitidos** (escaneos, resoluciones, acuses, facturas, contratos firmados) → `{{ESPACIO}}/{{SLUG}}/docs/`, **inmutables**. Son prueba.
 - **Material voluminoso que no es del asunto** (la carpeta entera de fotos del móvil, el volcado del correo, copias de seguridad) → **se queda fuera**. El vault recibe lo que sostiene el asunto, no todo lo que había al lado.
 - **Valores sensibles y rutas de máquina** → nunca se versionan; van a ficheros gitignored o se quedan fuera.
 
@@ -42,7 +42,8 @@ Guarda el inventario en `coordinacion/referencia/reconocimiento-<fecha>.md` (doc
 
 ## 2. Crear el contenedor estándar (= checklist-arranque pasos 1, 3, 4, 5)
 
-- Contenedor `asuntos/<asunto>/` desde la plantilla; **slug = nombre corto y estable del asunto**. Aunque dos asuntos compartan protagonista o inmueble, **un contenedor estándar por asunto** ([[estructura_contenedor_asunto]]).
+- Espacio elegido o creado, con la puerta del espacio sensible si toca (paso 0 del checklist de arranque).
+- Contenedor `{{ESPACIO}}/{{SLUG}}/` desde la plantilla; **slug = nombre corto y estable del asunto, único en todo el vault**. Aunque dos asuntos compartan protagonista o inmueble, **un contenedor estándar por asunto** ([[estructura_contenedor_asunto]]).
 - Charter + `CLAUDE.md` + configuración del agente (`.claude/settings.json` y las tres definiciones de `.claude/agents/`, copiadas de las plantillas como en el paso 4 del checklist de arranque) + `settings.local.json` (rutas de esta máquina, gitignored).
 - Doctrinas del mínimo común por copia, registrando su `version`. Si el asunto trae una casuística nueva para el catálogo, **generaliza la doctrina al catálogo** y luego instálala ([[mejora_continua_del_kit]]).
 
@@ -87,13 +88,13 @@ Limpio = adelante. **Un hallazgo = te detienes** y lo sacas *antes* del primer c
 
 ## 6. Lanzar el coordinador propio (= checklist-arranque paso 7)
 
-- El director lanza la sesión con cwd en `asuntos/<asunto>/`. El coordinador lee charter + doctrinas + el reconocimiento de `coordinacion/referencia/` y arranca por **fijar la cronología y los plazos** y **comprobar que el material se puede trabajar** (que los escaneos son legibles y completos, que las cifras cuadran con los justificantes). Lo que no pueda comprobar por comando lo entrega como **comprobación en campo** con procedimiento escrito ([[verificacion_e2e_por_agente]]). Material ilegible o plazo sin fecha = **hallazgo** prioritario.
+- El director lanza la sesión con cwd en `{{ESPACIO}}/{{SLUG}}/`. El coordinador lee charter + doctrinas + el reconocimiento de `coordinacion/referencia/` y arranca por **fijar la cronología y los plazos** y **comprobar que el material se puede trabajar** (que los escaneos son legibles y completos, que las cifras cuadran con los justificantes). Lo que no pueda comprobar por comando lo entrega como **comprobación en campo** con procedimiento escrito ([[verificacion_e2e_por_agente]]). Material ilegible o plazo sin fecha = **hallazgo** prioritario.
 
 ## Mejora continua
 
 Anota en [`../_meta/bitacora.md`](../_meta/bitacora.md) lo aprendido y fúndelo aquí ([[mejora_continua_del_kit]]).
 
-## Lo que no aplica en un vault de asuntos (retirado a propósito)
+## Lo que no aplica en un vault con espacios (retirado a propósito)
 
 - La comprobación de **si el destino era privado o público** —que antes se hacía sobre el alojamiento externo de un proyecto de software, para decidir si el material podía copiarse— se ha retirado: aquí no hay alojamiento externo. Lo que **sí se conserva** es su conclusión, que era la parte importante: *la privacidad del destino no autoriza por sí sola; la decisión es del director*.
 - El reparto entre **operativos del código** (`.claude/`, `AGENTS.md`, manifiestos acoplados al código) y documentación de proyecto solo tiene sentido con software propio: vive en el pack `codigo/`.

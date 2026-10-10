@@ -109,12 +109,9 @@ Dicho esto, el método **no es propiedad de ninguna herramienta**. Lo que es esp
 
 ## 5. Cómo está organizado el trabajo
 
-**Un vault por ámbito de la vida, no uno gigante para todo.** Yo llevo dos:
+**Un vault con espacios, y otro vault solo para lo totalmente independiente.** Dentro de un vault, los asuntos se agrupan en **espacios** (carpetas de primer nivel con una marca, por ejemplo `casa`, `finanzas`); yo uso uno técnico y doméstico —electricidad DIY, reformas, el jardín, la domótica, el mantenimiento de la casa— y reservaría otro vault para algo que no tiene nada que ver con ello y no debe compartir contexto, como el trabajo.
 
-- **Uno técnico y doméstico** — electricidad DIY, reformas, el diseño del jardín, la domótica, el mantenimiento de la casa.
-- **Uno personal** — lo que no tiene nada que ver con lo anterior y no debe compartir contexto con ello.
-
-La razón no es el orden estético: es que **cada vault carga sus reglas en cada sesión**, y mezclar ámbitos hace que el agente arranque con contexto que no le sirve. Separar por ámbito real es lo que mantiene los arranques ligeros.
+La razón no es el orden estético: es que **cada sesión carga las reglas de la raíz del vault**, y mezclar ámbitos hace que el agente arranque con contexto que no le sirve. Los arranques se mantienen ligeros porque las reglas propias de un dominio van en el asunto y no en la raíz.
 
 **Dentro de un vault, cada asunto tiene su carpeta y su sesión**, y trabaja solo con lo suyo.
 
@@ -172,7 +169,7 @@ El modelo es de **sesiones independientes**, cada una abierta desde la carpeta q
 |---|---|---|---|
 | **Director** | — | Tú. Decides, apruebas lo irreversible y lees los informes. | No transportas información entre sesiones a mano; para eso está el canal. |
 | **Coordinador general** | raíz del vault | Mantiene el kit, inicializa asuntos, lleva la cola y las decisiones abiertas. | No trabaja dentro de ningún asunto. |
-| **Coordinador de asunto** | `asuntos/<slug>/` | Lleva **su** asunto: estado, plazos, prompts, verificación. | No ejecuta el trabajo voluminoso, y no ve los demás asuntos. |
+| **Coordinador de asunto** | `<espacio>/<slug>/` | Lleva **su** asunto: estado, plazos, prompts, verificación. | No ejecuta el trabajo voluminoso, y no toca los demás asuntos (entre asuntos el aislamiento es de conducta, no de barrera técnica). |
 | **Consultor** | la del asunto, o la raíz | Responde dudas factuales citando fichero y línea, en modo de solo lectura. | No edita, no decide, no deduce lo que no está escrito. |
 | **Subagente `ejecutora`** | dentro de la sesión del coordinador | Hace una tanda con contexto limpio, contra un contrato cerrado. La `ejecutora-mecanica` hace las tandas literales. | No coordina, no delega, no lanza otros agentes, no commitea, no cruza puertas humanas. |
 | **Subagentes `planificador` y de reconocimiento** | dentro de la sesión del coordinador | El planificador (Opus) escribe el plan de tandas; los de reconocimiento leen en paralelo y están **limitados a solo lectura**. | El planificador solo escribe `plan-tanda-*.md`; los de reconocimiento no escriben nada. |
@@ -180,6 +177,13 @@ El modelo es de **sesiones independientes**, cada una abierta desde la carpeta q
 **La regla que sostiene todo el modelo: coordinar no es ejecutar.** Si el coordinador se pone a transcribir cuarenta facturas, se queda sin contexto a mitad y hay que relevarlo — y entonces el asunto avanza a base de relevos en vez de a base de trabajo. El trabajo voluminoso va a un **subagente con contexto limpio**, tanda a tanda; el ciclo está en `general/comun/doctrinas/ciclo_de_tandas.md`.
 
 **Y el reparto de modelos va por rol, no por gusto:** el modelo capaz (Opus, esfuerzo `high`) para coordinar y para planificar; Sonnet para las tandas, en esfuerzo `medium`, o `low` en las literales (`ejecutora-mecanica`). Haiku ya no se usa. Van fijados en el `settings.json` de cada perfil y en la definición de cada subagente, **no elegidos a mano al arrancar**: una regla que depende de que alguien se acuerde de tocar un desplegable no es una regla. Modelo y esfuerzo no se cambian a mitad de sesión, porque cambiarlos obliga a reprocesar todo el contexto; si una subtarea pide otro modelo, se lanza un subagente. *(Los nombres concretos de modelo caducan rápido; están en la doctrina `modelo_por_tarea`, que es la pieza más volátil del catálogo a propósito.)*
+
+### Interfaz de sesiones
+
+El método no depende de cómo veas las sesiones; hay dos vías:
+
+- **Herdr**: un espacio de trabajo por espacio del vault (y el general en el suyo) y una pestaña por coordinador, con **relevo autónomo** entre sesiones.
+- **Claude Code Desktop**: los chats de los coordinadores de un espacio se agrupan en un grupo con el nombre del espacio `[declarado, no medido aquí]`. No hay relevo autónomo. Las denegaciones y el hook de arranque no están comprobados en la app: compruébalos antes de contar con ellos.
 
 ---
 
@@ -313,9 +317,9 @@ Un caso completo y ficticio: **una reclamación a la aseguradora por daños de a
 Arranca como coordinador general de este vault. Lee _meta/PRIMEROS-PASOS.md, el charter, la cola de pendientes, las decisiones abiertas y el índice de doctrinas. Salúdame con el estado en 2-3 líneas y tu propuesta de siguiente paso.
 ```
 
-**2. Le pides que inicialice el asunto.** Como ya viene en marcha y con material sensible, el coordinador pasa por `inicializador/checklist-migracion-existentes.md` antes de copiar nada: reconocimiento del material y **puerta de confidencialidad** —qué entra al vault se decide, no se asume—. Después crea `asuntos/reclamacion-agua-2026/` desde la plantilla de contenedor, redacta el charter con **el plazo escrito con fecha**, y fija el perfil de permisos que le da el catálogo en solo lectura.
+**2. Le pides que inicialice el asunto.** Como ya viene en marcha y con material sensible, el coordinador pasa por `inicializador/checklist-migracion-existentes.md` antes de copiar nada: reconocimiento del material y **puerta de confidencialidad** —qué entra al vault se decide, no se asume—. Después crea `casa/reclamacion-agua-2026/` desde la plantilla de contenedor, redacta el charter con **el plazo escrito con fecha**, y fija el perfil de permisos que le da el catálogo en solo lectura.
 
-**3. Abres el coordinador del asunto**, esta vez con la carpeta de trabajo en `asuntos/reclamacion-agua-2026/`:
+**3. Abres el coordinador del asunto**, esta vez con la carpeta de trabajo en `casa/reclamacion-agua-2026/`:
 
 ```
 Arranca como coordinador de este asunto. Lee tu charter-coordinador.md, la cola de pendientes, las doctrinas propias de memoria/ y, si existe, el material de referencia en coordinacion/referencia/. Salúdame con el estado del asunto y tu plan de arranque.
@@ -354,7 +358,7 @@ Su primer trabajo es **entender el expediente**: cronología y reconocimiento. Y
 
 ### Los pasos
 
-1. **Copia la carpeta y renómbrala** por su ámbito (`casa`, `finanzas`, `reclamaciones`). Un vault por ámbito, no uno gigante para todo.
+1. **Copia la carpeta y renómbrala** como te sea útil. Un vault para los asuntos que pueden compartir contexto; otro, aparte, para lo totalmente independiente.
 2. **Decide el histórico.** La copia trae el git de la plantilla. Si prefieres empezar limpio, borra `.git` y haz `git init`. En cualquier caso **no configures ningún destino externo**: el `.claude/settings.json` ya lo refuerza con reglas de denegación.
 
    > **Y aquí hay una aparente contradicción que conviene aclarar, porque salta a la vista:** este repositorio que estás leyendo **sí está en GitHub**, mientras que el kit repite que el vault es git local sin remoto. Las dos cosas son ciertas y no chocan. **Lo que se publica es la plantilla** —método y andamiaje, sin un solo dato de nadie—, igual que se publica cualquier repositorio de documentación. **El vault que montes con ella es otra cosa**: lleva tus escrituras, tus facturas y tus informes médicos, y ese **no sale de tu máquina**. De ahí que la plantilla venga con las denegaciones puestas: para que el vault que nazca de ella no acabe en ningún sitio por descuido.
@@ -363,7 +367,7 @@ Su primer trabajo es **entender el expediente**: cronología y reconocimiento. Y
    - **¿Dónde está tu frontera de libertad técnica?** Qué puede hacer el agente sin preguntar y qué no. **No hay respuesta universal**: la fija el titular del vault, y el `CLAUDE.md` la trae como pregunta, no como afirmación.
    - **¿Hay un segundo proveedor de IA?** El vault nace con esa llave **apagada** (`_meta/memoria/proveedor-secundario-ia.md`), y se gira a propósito o no está girada.
 5. **Ajusta el `_meta/` a tu ámbito**: el charter, los primeros bloques de la cola y las decisiones abiertas. Llegan **vacíos a propósito**, con su estructura y un ejemplo.
-6. **Inicializa el primer asunto** con [`inicializador/checklist-arranque.md`](inicializador/checklist-arranque.md), o con [`checklist-migracion-existentes.md`](inicializador/checklist-migracion-existentes.md) si ya viene en marcha. La carpeta `asuntos/` **no existe todavía**: aparece con el primero.
+6. **Inicializa el primer asunto** con [`inicializador/checklist-arranque.md`](inicializador/checklist-arranque.md), o con [`checklist-migracion-existentes.md`](inicializador/checklist-migracion-existentes.md) si ya viene en marcha. Aún no hay espacios: el checklist te pide **crear el primero, con su marca**, y después el primer asunto dentro de él. Si el espacio va a guardar datos sensibles, antes del primer asunto pasa por la **puerta del espacio sensible** del checklist (aislamiento, fichas de memoria y herramientas externas decididos por escrito).
 7. **Comprueba que el kit está sano**: `node _meta/verificar-kit.mjs` tiene que salir en **verde**. Comprueba sus reglas estructurales —enlaces colgados, índices desincronizados, rutas absolutas de máquina coladas en lo versionado, **datos cuya fecha de caducidad ya venció** y **fechas de estado imposibles, puestas en el futuro**—. **Y no se ajusta el verificador para que pase.**
 
 8. **Cierra cruzando el DoD**: `node _meta/dod.mjs`. El verificador dice si el kit está bien **escrito**; el DoD dice si el trabajo está bien **terminado**, que no es lo mismo — árbol limpio, efímeros ya cumplidos retirados, colas por debajo de su techo, y **documentación al día** (toda doctrina cambiada sube su versión en el mismo commit). Si pasa, sella una huella del **contenido** del árbol: si tocas algo después, el sello caduca solo y la sesión siguiente se entera al arrancar.
@@ -485,14 +489,14 @@ Cuando vayas a montar algo así —conectar un aparato, arrancar un asunto con s
 | Ruta | Qué es |
 |---|---|
 | `README.md` | Esto. |
-| `CLAUDE.md` | Las reglas **siempre activas**, canónicas y auto-cargadas. Tu rol lo fija tu carpeta de trabajo: raíz → coordinador general; `asuntos/<asunto>/` → coordinador de ese asunto. Se mantiene por debajo de 200 líneas a propósito. |
+| `CLAUDE.md` | Las reglas **siempre activas**, canónicas y auto-cargadas. Tu rol lo fija tu carpeta de trabajo: raíz → coordinador general; `<espacio>/<asunto>/` → coordinador de ese asunto. Se mantiene por debajo de 200 líneas a propósito. |
 | `.claude/settings.json` | Perfil de la sesión coordinadora de la raíz: hook de higiene (un script que se dispara solo al arrancar la sesión y limpia lo que sobra), modelo y esfuerzo fijados, y **reglas de denegación** (credenciales de la máquina, destinos externos para git). |
 | `.gitignore` | Qué no se versiona y **por qué**, comentado línea a línea. |
 | [`general/comun/`](general/comun/README.md) | **Catálogo** transversal: las doctrinas del core con su índice, el hook de higiene, el tooling **local** de documentos y la resolución de problemas de la herramienta. Se **LEE**: no se copia ni se hereda, y para un coordinador de asunto es **solo lectura con barrera técnica**. |
 | [`general/comun/packs/codigo/`](general/comun/packs/codigo/README.md) | Pack **opcional**, solo si un asunto incluye **software propio**. Si tu vault no toca software, ignóralo entero: el core no depende de él. |
 | [`inicializador/`](inicializador/README.md) | **Procedimiento y plantillas** para arrancar un asunto: los dos checklists, el charter, el contrato de tanda, el handoff, el consultor, los perfiles de permisos por rol y el árbol de contenedor a copiar. |
 | [`_meta/`](_meta/README.md) | **El kit tratado como un asunto más**: charter, cola, decisiones abiertas, bitácora, primeros pasos, guía de arranque de sesiones y el verificador. Aquí se gestiona la evolución del propio vault. |
-| `asuntos/<asunto>/` | Los asuntos, uno por carpeta, todos con la misma estructura. **No existe hasta que inicializas el primero.** |
+| `<espacio>/<asunto>/` | Los asuntos, uno por carpeta dentro de su espacio (por ejemplo `casa`), todos con la misma estructura. **No existe hasta que creas el primer espacio y su primer asunto.** |
 | *(el archivo de documentos)* | Los papeles que sirven a **varios** asuntos —identificativos, de la vivienda, de un vehículo—, en un sitio y enlazados desde cada asunto en lugar de copiados (sección 5). Las sesiones lo leen pero **no escriben en él**, y **no existe hasta que el primer asunto lo necesita**: el nombre se lo pones tú al crearlo. |
 
 ---
