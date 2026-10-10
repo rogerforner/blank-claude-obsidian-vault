@@ -1,10 +1,10 @@
 ---
 name: Ciclo de trabajo por tandas — planificar, ejecutar en pequeño, parar
-description: Todo coordinador trabaja igual. Lo no trivial lo planifica un subagente Opus en un plan partido en tandas pequeñas; cada tanda la ejecuta un subagente Sonnet, una tras otra; y al cerrar una tanda suelta o un bloque el coordinador guarda el estado y el tablero y escribe el prompt de relevo; si el bloque siguiente es del mismo plan y no hay nada abierto, se releva él mismo en una sesión nueva (relevo autónomo por Herdr, con un script común); si no, para y pregunta. La tabla viva está en un tablero de nombre fijo, y lo repetitivo se hace con scripts.
+description: Todo coordinador trabaja igual. Lo no trivial lo planifica un subagente Opus en un plan partido en tandas pequeñas; cada tanda la ejecuta un subagente Sonnet, una tras otra, o en paralelo cada una en su worktree si son independientes; y al cerrar una tanda suelta o un bloque el coordinador guarda el estado y el tablero y escribe el prompt de relevo; si el bloque siguiente es del mismo plan y no hay nada abierto, se releva él mismo en una sesión nueva (relevo autónomo por Herdr, con un script común); si no, para y pregunta. La tabla viva está en un tablero de nombre fijo, y lo repetitivo se hace con scripts.
 type: doctrine
-version: 2.1
+version: 2.2
 index_summary: >-
-  **Todo coordinador trabaja con el mismo ciclo.** Lo no trivial lo **planifica un subagente Opus** en un plan partido en **tandas pequeñas**; cada tanda la **ejecuta un subagente Sonnet**, una tras otra, y la comprueba el coordinador, que **commitea por pathspec**. Al cerrar una tanda suelta o un bloque, el coordinador **guarda el estado y el tablero y escribe el prompt de relevo**; si el bloque siguiente es del mismo plan y no hay nada abierto, **se releva él mismo en una sesión nueva** (relevo autónomo por Herdr, con un script común), y si no, **para y pregunta**. Así los bloques se encadenan sin acumular contexto, que es lo que degrada la precisión mucho antes de llenar la ventana. La tabla viva está en un **tablero de nombre fijo**, y lo repetitivo se hace con scripts. El estado vive en ficheros, no en la conversación.
+  **Todo coordinador trabaja con el mismo ciclo.** Lo no trivial lo **planifica un subagente Opus** en un plan partido en **tandas pequeñas**; cada tanda la **ejecuta un subagente Sonnet**, una tras otra (o en paralelo, cada una en su worktree, si son independientes), y la comprueba el coordinador, que **commitea por pathspec**. Al cerrar una tanda suelta o un bloque, el coordinador **guarda el estado y el tablero y escribe el prompt de relevo**; si el bloque siguiente es del mismo plan y no hay nada abierto, **se releva él mismo en una sesión nueva** (relevo autónomo por Herdr, con un script común), y si no, **para y pregunta**. Así los bloques se encadenan sin acumular contexto, que es lo que degrada la precisión mucho antes de llenar la ventana. La tabla viva está en un **tablero de nombre fijo**, y lo repetitivo se hace con scripts. El estado vive en ficheros, no en la conversación.
 ---
 
 Todo coordinador —el general y el de cada asunto— trabaja con el mismo ciclo. Existe por una razón: lo que devuelve un subagente entra entero en el contexto de quien lo lanza, y la calidad de una sesión baja mucho antes de llenar la ventana. Tandas pequeñas, informes cortos y un relevo o una parada al cerrar cada bloque mantienen ese contexto corto, y el estado vive en ficheros, no en la conversación.
@@ -13,7 +13,7 @@ Todo coordinador —el general y el de cada asunto— trabaja con el mismo ciclo
 
 1. **Encargo.** Si el trabajo no es trivial —toca varios ficheros, estrena una forma de trabajar o se apoya en premisas sin comprobar—, el coordinador escribe un encargo corto: decisiones ya tomadas, fuentes y restricciones. Lo trivial lo hace él o lo manda directamente a una tanda.
 2. **Plan.** Lanza el subagente `planificador` (Opus) con la ruta del encargo. El planificador escribe `plan-tanda-<nombre>.md` —en `_meta/` el general y en `coordinacion/` un asunto— con las premisas falsas del encargo, el inventario, las decisiones abiertas, la tabla de tandas y, por cada tanda, los ficheros, el cambio, el criterio de aceptación y el comando que lo comprueba. Al volver, el coordinador comprueba con `git status --short` que solo existe el plan, lo lee y corrige su encargo. Este es el punto de corrección barato: si nadie va a leer el plan, no se lanza. Después pasa la tabla de tandas al tablero con `tablero.mjs --desde-plan <plan>`: desde ahí la tabla vive en el tablero y el plan remite a él, para que no haya dos copias.
-3. **Ejecución.** Cada tanda la ejecuta un subagente `ejecutora` (Sonnet) o `ejecutora-mecanica` si la tanda es literal y no pide criterio, uno por tanda y uno detrás de otro. El coordinador le pasa la tanda tal como está en el plan. Al volver, comprueba que `git status --short` solo muestra los ficheros de esa tanda, corre su comando de comprobación y commitea por pathspec. En el mismo commit deja la tanda como hecha con `tablero.mjs --estado <Id> HECHA`, y el mensaje del commit empieza por el Id ("T03 …"), de modo que se encuentra con `git log --oneline --grep "^T03 "`. Las tandas que van juntas de forma natural forman un bloque.
+3. **Ejecución.** Cada tanda la ejecuta un subagente `ejecutora` (Sonnet) o `ejecutora-mecanica` si la tanda es literal y no pide criterio, uno por tanda y uno detrás de otro, salvo las tandas independientes, que van a la vez cada una en su worktree (sección "Tandas en paralelo"). El coordinador le pasa la tanda tal como está en el plan. Al volver, comprueba que `git status --short` solo muestra los ficheros de esa tanda, corre su comando de comprobación y commitea por pathspec. En el mismo commit deja la tanda como hecha con `tablero.mjs --estado <Id> HECHA`, y el mensaje del commit empieza por el Id ("T03 …"), de modo que se encuentra con `git log --oneline --grep "^T03 "`. Las tandas que van juntas de forma natural forman un bloque.
 4. **Relevo o parada.** Al cerrar una tanda suelta o un bloque, el coordinador guarda el estado: un commit con el tablero, la cola y el trabajo en curso al día, y el prompt de relevo en `relevo-actual.local.md` (en `_meta/` el general, en `coordinacion/` un asunto). Después:
    - **Si el vault usa Herdr** y no se da ninguna condición de parada, se releva: `node <ruta>/general/comun/scripts/relevo.mjs --lanzar`, en primer plano y con un tope de Bash de 10 minutos, porque el script espera a que la sesión nueva confirme. Si el vault no usa Herdr, la parada de siempre.
    - **Condiciones de parada:**
@@ -23,7 +23,8 @@ Todo coordinador —el general y el de cada asunto— trabaja con el mismo ciclo
      - el plan se acabó;
      - van tres relevos seguidos sin que intervenga el director;
      - no hay tablero;
-     - el script devuelve un código distinto de 0.
+     - el script devuelve un código distinto de 0;
+     - quedan worktrees de tanda sin integrar (`worktree-tanda.mjs --listar` sale 4).
    - **Al parar,** remite al tablero (o enseña la tabla si el director la pide) y para; el director decide si sigue en la misma sesión o hace `/clear` y pega el relevo. Si el relevo falla, la sesión vieja sigue viva y avisa, y el director puede pegar a mano `relevo-actual.local.md` en una sesión nueva con la misma carpeta.
    - **Cuando el director interviene,** el coordinador corre `relevo.mjs --reiniciar-cuenta`: la cuenta de relevos seguidos vuelve a cero. Si se olvida, la sesión para antes de tiempo, que es el lado seguro.
 5. **Los bloques se encadenan con relevo, no en la misma sesión.** Que la ventana sea de un millón de tokens no es motivo para gastarla: cada turno relee todo lo acumulado y la precisión cae mucho antes de llenarla. El relevo es justo lo que deja encadenar bloques sin acumular contexto: cada bloque lo empieza una sesión con el contexto limpio.
@@ -55,16 +56,41 @@ Lo que se pierde respecto a enseñar la tabla en el chat en cada bloque es verla
 
 Una tanda toca pocos ficheros relacionados, se revisa de un vistazo y su comprobación es un comando. Cuanto más pequeña, más barato es ver que salió mal y repetirla. El límite por abajo es el coste fijo de arrancar un subagente, unos 37.000 tokens medidos: no se parte en tres un cambio de una línea.
 
+## Tandas en paralelo, cada una en su worktree
+
+**La regla** (decisión del director, 2026-10-08): las tandas o bloques de un plan que se pueden ejecutar a la vez se lanzan cada uno en su worktree, porque lanzadas sobre el mismo árbol se pisan. Lo que no es independiente sigue en serie.
+
+**Independientes** son las que no comparten ficheros en ningún árbol (tampoco la plantilla ni cualquier otro árbol fuera del vault) y no tienen `Depende de` entre ellas en el tablero.
+
+**Cómo,** con la vía medida el 2026-10-11 (Claude Code, dos subagentes con `isolation: "worktree"` lanzados en un solo mensaje: cada uno nace en `.claude/worktrees/agent-<id>` de la raíz, en la rama `worktree-agent-<id>` y desde el `HEAD` de `main`, que no se mueve; carga el `CLAUDE.md` de la raíz y no trae los ficheros locales ignorados):
+
+1. Antes de lanzar, se anota `git status --porcelain`.
+2. Los subagentes se lanzan en un mismo mensaje con `isolation: "worktree"`. Cada worktree nace en `.claude/worktrees/agent-<id>`, en la rama `worktree-agent-<id>` y desde el `HEAD` de `main`, ignorado, y carga el `CLAUDE.md` de la raíz.
+3. Al volver, cada tanda se integra y se retira con `node <ruta>/general/comun/scripts/worktree-tanda.mjs --integrar <Id> --worktree <ruta>`, una por una, cada una con su commit "T0x …". El verificador y el DoD se corren después de retirarlos todos; la puerta del DoD "worktrees de tanda" no deja cerrar con un worktree propio colgando.
+
+**Cautelas:**
+
+- Un worktree nace en otra rama y sin los ficheros ignorados (`*.local.*`, `settings.local.json`): la plantilla y la configuración local se localizan desde el directorio común de git (`git rev-parse --git-common-dir`).
+- Los hooks de git son comunes a todos los worktrees de un clon.
+- Los subagentes no cambian de rama ni reescriben historia ([[no_push_por_subagentes]], del pack `codigo`).
+- Como máximo dos tandas a la vez hasta medir la cuota con `/usage` ([[orquestacion_sesiones_por_herramienta]]: "N sesiones consumen N veces").
+- El verificador recorre `.claude/worktrees/`, así que con un worktree vivo duplica hallazgos: se corre después de integrar y retirar.
+- `git worktree list` se compara con lo que el método da por hecho.
+- Nunca se reescribe el histórico de `main` con otra sesión viva.
+- Medido solo desde la raíz del vault: desde un asunto, dónde nace el worktree y si está ignorado `[POR MEDIR]` antes de usarlo.
+
+**El director solo ve `main`.** Revisa en Obsidian sobre la carpeta del vault: los worktrees son internos del coordinador, y nada se le enseña ni se le da una ruta antes de integrar.
+
 ## Reglas que acompañan al ciclo
 
-- **Una tanda a la vez sobre el mismo árbol.** Dos ejecutoras en paralelo se pisan, y la comprobación de alcance con `git status` deja de servir. Los subagentes de solo lectura sí pueden correr en paralelo con el coordinador.
+- **Sobre el mismo árbol, una tanda a la vez; en paralelo, cada una en su worktree (sección "Tandas en paralelo").** Dos ejecutoras en paralelo se pisan, y la comprobación de alcance con `git status` deja de servir. Los subagentes de solo lectura sí pueden correr en paralelo con el coordinador.
 - **El plan se versiona mientras vive y se retira al cerrar el trabajo.** Tiene que sobrevivir a `/clear` y a los relevos; cuando el trabajo termina, sale con `git rm`, como un prompt cumplido.
 - **Quién commitea: el coordinador.** La ejecutora deja los cambios en el árbol; el coordinador revisa el diff y commitea por pathspec. Es la comprobación de que solo cambió lo que la tanda nombraba.
 - **Lo que un subagente no puede hacer va por `claude -p`:** trabajar con otra raíz o con otro perfil. Un subagente hereda la carpeta y los permisos de quien lo lanza.
 - **Puertas humanas.** Ni el planificador ni la ejecutora las cruzan. El plan marca dónde se para y la ejecutora se detiene ahí.
 - **Las definiciones de los tres subagentes** están en el `.claude/agents/` de cada contenedor, copiadas de `inicializador/plantilla-agente-planificador.md`, `inicializador/plantilla-agente-ejecutora.md` e `inicializador/plantilla-agente-ejecutora-mecanica.md`.
 - **Modelo, esfuerzo y topes van en la definición.** El planificador corre en Opus con el esfuerzo de la sesión; la ejecutora, en Sonnet `medium`, y la mecánica, en Sonnet `low`, con `maxTurns` como tope. Un subagente sin `effort` en su definición hereda el de la sesión. El planificador lleva un hook que solo le deja escribir `plan-tanda-*.md`. Está medido el 2026-10-04.
-- **Lo repetitivo y determinista del ciclo se hace con scripts comunes** (`general/comun/scripts/`): el relevo y el tablero ya lo son, y salen siempre igual sin gastar contexto → [[scripts_adhoc_tareas_repetitivas]].
+- **Lo repetitivo y determinista del ciclo se hace con scripts comunes** (`general/comun/scripts/`): el relevo, el tablero y `worktree-tanda.mjs` ya lo son, y salen siempre igual sin gastar contexto → [[scripts_adhoc_tareas_repetitivas]].
 - **Cuando cambian los agentes o las reglas.** Un cambio en un `.claude/agents/` que ya existía al arrancar la sesión se recarga solo; si la carpeta se creó después, o si cambia un `CLAUDE.md`, hace falta una sesión nueva, porque `/clear` no recarga las definiciones. Medido el 2026-10-04.
 
 ## Plantilla de la tabla de tandas
@@ -89,3 +115,4 @@ Relacionada: [[orquestacion_sesiones_por_herramienta]], [[scripts_adhoc_tareas_r
 > Pieza de catálogo `general/comun/doctrinas/`. **v1.0 (2026-10-04):** nace con la decisión D4 del director del 2026-10-04: todo coordinador trabaja con el mismo ciclo de planificar, ejecutar en tandas pequeñas y parar al cerrar cada bloque. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado y **no se hereda** automáticamente.
 > **v2.0 (2026-10-05):** decisiones D1, D2 y D3 del director: relevo autónomo por Herdr con sus condiciones de parada, tablero de tandas y scripts.
 > **v2.1 (2026-10-10):** con el vault en espacios, el ámbito del general es `.` menos cada asunto y lo da `espacios.mjs --pathspec .`.
+> **v2.2 (2026-10-11):** las tandas independientes de un plan van en paralelo, cada una en su worktree, con `worktree-tanda.mjs` para integrarlas y retirarlas (decisión del director del 2026-10-08; vía medida el 2026-10-11).
