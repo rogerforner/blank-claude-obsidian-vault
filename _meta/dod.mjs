@@ -32,7 +32,7 @@
 // El veredicto esta en el bloque de resumen, y el codigo de salida es 0/1. No lo encadenes con
 // tuberia: `node _meta/dod.mjs` a secas, igual que el verificador.
 
-import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, realpathSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { join, dirname, basename } from 'node:path';
@@ -192,6 +192,35 @@ function puertaHigiene() {
   // Es un aviso que pide accion al dueño: rojo, y la demostracion en rojo sale de datos reales.
   anota('higiene', false, `${mias.length} efimero(s) trackeado(s) ya cumplidos en tu ambito:`);
   for (const f of mias) anotaPorAmbito('higiene', f, `   ${f} — \`git rm\` si ya cumplio`);
+}
+
+// --- sin worktrees de tanda colgando ---------------------------------
+// Un worktree sin integrar es trabajo que el director no ve en Obsidian y que el verificador
+// recorre dos veces. Reparto por ambito (D5, D11): los de DENTRO del vault son del dueño de su
+// ruta relativa (`esMio`); los de FUERA, del general. Los ajenos solo se cuentan, sin ruta ni dueño.
+function puertaWorktrees() {
+  let salida = '';
+  try { salida = git(['worktree', 'list', '--porcelain']); } catch { return anota('worktrees de tanda', true, 'no se pudo listar (se salta)'); }
+  const rutas = salida.split('\n').filter((l) => l.startsWith('worktree ')).map((l) => l.slice(9));
+  const real = (r) => { try { return realpathSync(r); } catch { return r; } };
+  const principal = rutas[0];
+  const raiz = real(RAIZ);
+  const colgando = rutas.slice(1).filter((r) => real(r) !== raiz);
+  const mios = [];
+  let ajenos = 0;
+  for (const r of colgando) {
+    const rr = real(r);
+    const dentro = rr.startsWith(real(principal) + '/');
+    const rel = dentro ? rr.slice(real(principal).length + 1) : null;
+    const mio = dentro ? esMio(rel) : AMBITO.prefijo === null;
+    if (mio) mios.push(dentro ? rel : r); else ajenos++;
+  }
+  if (ajenos) anota('worktrees de tanda', true, `${ajenos} worktree(s) ajenos: no te bloquean`);
+  if (!mios.length) return anota('worktrees de tanda', true, 'sin worktrees de tanda colgando en tu ambito');
+  anota('worktrees de tanda', false, `${mios.length} worktree(s) TUYOS sin retirar:`);
+  for (const r of mios) {
+    anota('worktrees de tanda', false, `   ${r} — intégralo con \`node general/comun/scripts/worktree-tanda.mjs --integrar <Id> --worktree ${r}\` o retíralo con \`git worktree remove ${r}\``);
+  }
 }
 
 // --- 4. los techos de los ficheros que se leen enteros al arrancar ------
@@ -400,6 +429,7 @@ puertaTechos();
 puertaDoctrinasVersionadas(commitsDeHoy);
 puertaTrabajoEnCurso();
 puertaSincroniaPlantilla(commitsDeHoy);
+puertaWorktrees();
 
 const fallidas = [...new Set(puertas.filter((p) => !p.ok).map((p) => p.nombre))];
 const nombres = [...new Set(puertas.map((p) => p.nombre))];
