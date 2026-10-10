@@ -47,9 +47,12 @@ charters, handoffs, briefs y estudios no se guardan aquí.
 
 ## Alineación de `CLAUDE.md` / `AGENTS.md` del repo
 
-- **Referencia breve**, no duplicar doctrina: el `CLAUDE.md`/`AGENTS.md` del repositorio resume las convenciones operativas vivas y **apunta** a las doctrinas instaladas (`<espacio>/<asunto>/memoria/` del vault) y a `docs/`.
-- **Sin referencias a fases ni identificadores históricos** en el contenido ([[docs_sin_fases]]): describe el estado actual del sistema, sus contratos y convenciones.
-- **Refleja las doctrinas operativas** que afectan al agente: push verificado por la sesión principal; subagentes no pushean ([[no_push_por_subagentes]]), commits sin `Co-Authored-By` ([[sin_coautor_commits]]), Haiku para mecánica ([[modelo_por_tarea]]), verificación E2E por el agente ([[verificacion_e2e_por_agente]]), y las puertas que impiden cerrar la tarea en rojo ([[gates_de_calidad_locales]]).
+- **La regla y su porqué.** El directorio de trabajo con el que se lanza una sesión decide qué ficheros de contexto se cargan (`CLAUDE.md` del vault, regla "El directorio de trabajo con el que lanzas la hija es su raíz"): una regla que solo vive en el vault no le llega a una ejecutora enraizada en el repositorio. Por eso **lo que esa ejecutora tiene que cumplir, aunque sea de método, va en el `CLAUDE.md` o en `.claude/rules/` del repositorio**. Decisión del director del 2026-10-08.
+- **Quién.** El coordinador general se asegura de que se haga; lo hace el coordinador del asunto con una sesión `claude -p` enraizada en el repositorio, y el general lo revisa.
+- **Lista de partida:** ceñirse a la tanda y no hacer más de lo que toca; los subagentes no hacen push ([[no_push_por_subagentes]]); commits sin coautoría ([[sin_coautor_commits]]); informe a fichero; el procedimiento de worktree por tanda en paralelo (README del pack); verificación por el agente ([[verificacion_e2e_por_agente]]) y las puertas que impiden cerrar en rojo ([[gates_de_calidad_locales]]).
+- **Lo que no va:** lo que solo es de coordinar (orquestación, modelo por tarea, higiene de contexto). En el repositorio se pagaría en cada sesión de código y no le sirve a ninguna.
+- **Referencia breve**, no duplicar doctrina: el `CLAUDE.md`/`AGENTS.md` del repositorio resume en su propio fichero lo que se cumple allí y apunta a `docs/`. El repositorio no puede depender de seguir un puntero a `<espacio>/<asunto>/memoria/` del vault, porque una sesión enraizada en él no lo alcanza; el vault puede citarse solo como referencia para personas.
+- **Sin referencias a fases ni identificadores históricos** en el contenido ([[docs_sin_fases]]): describe el estado actual del sistema, sus contratos y convenciones. El modelo de las sesiones de código lo fija quien las lanza, no el repositorio.
 
 ## `.claude/rules/` del repo
 

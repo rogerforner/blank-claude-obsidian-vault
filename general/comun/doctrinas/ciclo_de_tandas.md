@@ -72,6 +72,7 @@ Una tanda toca pocos ficheros relacionados, se revisa de un vistazo y su comprob
 
 - Un worktree nace en otra rama y sin los ficheros ignorados (`*.local.*`, `settings.local.json`): la plantilla y la configuración local se localizan desde el directorio común de git (`git rev-parse --git-common-dir`).
 - Los hooks de git son comunes a todos los worktrees de un clon.
+- Dentro de su worktree, una tanda puede escribir ficheros fuera del vault (por ejemplo, la plantilla), pero el arnés le bloquea `git` sobre otro árbol (medido el 2026-10-11). El `git status` y el commit de ese árbol los hace el coordinador, y dos tandas a la vez solo pueden tocar en él ficheros disjuntos.
 - Los subagentes no cambian de rama ni reescriben historia ([[no_push_por_subagentes]], del pack `codigo`).
 - Como máximo dos tandas a la vez hasta medir la cuota con `/usage` ([[orquestacion_sesiones_por_herramienta]]: "N sesiones consumen N veces").
 - El verificador recorre `.claude/worktrees/`, así que con un worktree vivo duplica hallazgos: se corre después de integrar y retirar.

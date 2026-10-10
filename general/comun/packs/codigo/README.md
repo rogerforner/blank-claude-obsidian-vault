@@ -61,6 +61,7 @@ Las doctrinas de este pack —sobre todo [`gates_de_calidad_locales`](doctrinas/
 | Lint/formateo automático por fichero tocado (`PostToolUse`) | hook `PostToolUse` |
 | Handler `defer` (pausa para aprobación humana) | funciona solo en modo no interactivo (`-p`); en interactivo se ignora con warning |
 | pre-commit (secretos, lint-staged) | mecanismo de git, no del agente |
+| Aislar una tanda en su árbol de trabajo | `git worktree add` y `claude -p` con el directorio de trabajo en él (repositorio de código); para subagentes del vault, `isolation: "worktree"` (medido el 2026-10-11) |
 
 ## Plan antes de tocar código: sin excepción, ni siquiera "fase única"
 
@@ -93,18 +94,20 @@ Una comprobación por código de estado **no sirve** para una aplicación de una
 
 **Datos al probar un frontend con backend con estado:** o backend efímero, o intercepción de las llamadas de red; si se usa una base compartida, la prueba va envuelta en una transacción con marcha atrás. **Nunca credenciales ni base de datos de producción en una verificación — regla dura, sin excepción.**
 
-## Aislamiento por árbol de trabajo (`git worktree`) por tanda: NO se adopta, con umbral de revisión
+## Árbol de trabajo (`git worktree`) por tanda: SÍ cuando hay tandas en paralelo
 
-**Decisión: no se usa un árbol de trabajo aislado por tanda mientras no se corran dos o más sesiones en paralelo de verdad.** Con un runtime que sirve **una ruta fija** (el caso normal de este pack, ver `docs/emplazamiento-runtime.md`), el árbol paralelo trae un coste real y sin retorno si solo hay una sesión trabajando:
+**Decisión del director (2026-10-08): las tandas independientes se corren en paralelo, cada una en su árbol de trabajo.** El umbral que tenía esta sección ("en cuanto se corran dos o más sesiones de agente en paralelo de forma habitual") se da por cumplido. El procedimiento general, con el script que integra y retira, está en [[ciclo_de_tandas]] (`general/comun/scripts/worktree-tanda.mjs`).
 
-- **El árbol paralelo no queda servido** — el runtime apunta a la ruta original; el árbol hermano no responde.
+En un repositorio de código, la sesión de cada tanda es `claude -p` con el directorio de trabajo en su worktree, en una rama con prefijo propio (por ejemplo `claude/`) que **nunca** se promueve sola a la rama de producción. Al volver se comprueba, se integra en la rama de trabajo y se retira el worktree. Con **una sola tanda**, una rama normal con commits frecuentes sigue bastando.
+
+Cautelas, porque el árbol paralelo trae costes reales (ver `docs/emplazamiento-runtime.md`):
+
+- **El árbol paralelo no queda servido** — el runtime apunta a la ruta original; el árbol hermano no responde. Se prueba en el runtime **después de integrar**.
 - **Las dependencias no se comparten** — hay que reinstalarlas en cada árbol.
-- **Los ficheros no versionados no aparecen** — configuración local, variables de entorno; la aplicación no arranca en el árbol nuevo sin copiarlos a mano.
+- **Los ficheros no versionados no aparecen** — configuración local, variables de entorno; se copian a mano los que hagan falta, nunca credenciales de más.
 - **Los hooks de git se comparten entre todos los árboles** del mismo clon, con un caso documentado de que configurarlos mal en uno **deshabilita en silencio los de todos**.
 
-El beneficio de un árbol por tanda es el **paralelismo**, y solo existe si de verdad hay varias sesiones corriendo a la vez. Con una sola sesión, una rama normal con commits frecuentes cubre lo mismo sin el coste.
-
-**Umbral para revisar esta decisión:** en cuanto se corran dos o más sesiones de agente en paralelo de forma habitual sobre el mismo repositorio.
+Ningún asunto de este kit tiene hoy software: la primera vez se comprueba en ese repositorio antes de contar con ello.
 
 ## Añadir otro pack
 
