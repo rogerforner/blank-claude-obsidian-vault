@@ -10,7 +10,7 @@ La sintaxis de lanzamiento no está aquí: vive en la tabla "Ejecución" del `CL
 
 - En terminal: `cd <ruta>` y luego `claude`.
 - En la app: abre esa carpeta como directorio de trabajo.
-- **Si el vault usa Herdr:** **un espacio de trabajo de Herdr por espacio del vault** (por ejemplo, `casa`), con una pestaña por coordinador de sus asuntos, abierta en la carpeta del asunto y con `claude` dentro. El general tiene su propio espacio de trabajo, con el nombre del vault, y solo su pestaña, la de la raíz. El espacio de trabajo de Herdr se crea con el cwd de un asunto, nunca con el de la carpeta del espacio (sería un ámbito sin rol). Una pestaña de asunto:
+- **Si el vault usa Herdr:** **un espacio de trabajo de Herdr por espacio del vault** (por ejemplo, `casa`), con una pestaña por coordinador de sus asuntos, abierta en la carpeta del asunto y con `claude` dentro. Mientras el vault tenga un solo espacio, el general va como primera pestaña de ese espacio de trabajo, abierta en la raíz del vault; con varios espacios, tiene el suyo propio, con el nombre del vault y solo su pestaña. El espacio de trabajo de Herdr se crea con el cwd de un asunto, nunca con el de la carpeta del espacio (sería un ámbito sin rol). Una pestaña de asunto:
 
   ```
   herdr tab create --workspace <id del espacio de trabajo> --cwd "<vault>/<espacio>/<asunto>" --label <asunto>
