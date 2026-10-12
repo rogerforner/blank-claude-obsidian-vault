@@ -106,6 +106,13 @@ Que el asunto **nazca con las comprobaciones puestas** es mucho más barato que 
 
 Anota en `_meta/bitacora.md` lo que falló o mejoró en estos pasos y **fúndelo aquí**: el checklist es lo que mejora arranque a arranque, no la anécdota ([[mejora_continua_del_kit]]).
 
+## Si el asunto se reinicia (se retira y vuelve a nacer)
+
+- **Residuos fuera del vault que este checklist no ve:** transcritos de sesiones con la misma carpeta (que `/resume` sigue ofreciendo), claves en la configuración de usuario y accesos dados en máquinas de otro asunto (por ejemplo, una línea en `authorized_keys`). Estos últimos son frontera con ese otro asunto: se avisan por el canal entre sesiones, no se tocan desde aquí.
+- **El DoD de la raíz no mira los asuntos:** al crear o reiniciar un contenedor, el DoD se corre también desde dentro (`node ../../_meta/dod.mjs`).
+- **Borra con `git rm` y `rm` fichero a fichero:** `rm -rf` está denegado en el perfil del general, y la denegación no se salta.
+- **El primer bloque del coordinador nuevo** es acordar la frontera con los asuntos acoplados por el canal y escribirla en su charter, antes de tocar el sistema.
+
 ## Lo que no aplica en un vault con espacios (retirado a propósito)
 
 Para que la próxima regeneración no lo reintroduzca por descuido:
