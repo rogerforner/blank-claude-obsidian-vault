@@ -31,7 +31,10 @@
 //      acotado el 2026-10-05 por la decision D5: los hallazgos ajenos ni se muestran). Es el
 //      equivalente a la prueba basica de arranque del arnes de referencia: detectar lo que la
 //      sesion anterior dejo roto ANTES de tocar nada, en vez de descubrirlo al ir a commitear.
-//   5. VUELCA EL TRABAJO EN CURSO del PROPIO contenedor (desde 2026-08-23; acotado el 2026-10-05
+//   5. VUELCA EL ESTADO del PROPIO ambito si tiene `estado.json` (`[ESTADO]`, con `estado.mjs`; y avisa
+//      de doble fuente si su `trabajo-en-curso.md` aun tiene lineas abiertas). Si no lo tiene, vuelca
+//      el trabajo en curso como antes; esa via dura hasta que migren los asuntos. El trabajo en curso
+//      del PROPIO contenedor (desde 2026-08-23; acotado el 2026-10-05
 //      por la decision D5: cada coordinador ve solo lo suyo): las lineas abiertas de sus
 //      `trabajo-en-curso.md`. La raiz ve los que no estan bajo un asunto; un asunto, los de su
 //      carpeta (`<espacio>/<asunto>/`). Una sesion fuera de la raiz y de un asunto no tiene rol: ni
@@ -155,6 +158,9 @@ function raizDelVault() {
 // Si no carga, o ROOT no es la raiz ni un asunto, el ambito es invalido y no pasa nada.
 let ESP = null;
 try { ESP = await import(new URL('../scripts/espacios.mjs', import.meta.url).href); } catch { /* ambito invalido */ }
+// Estado por comando (`scripts/estado.mjs`), cargado igual: si no carga, el volcado de estado no sale.
+let EST = null;
+try { EST = await import(new URL('../scripts/estado.mjs', import.meta.url).href); } catch { /* sin volcado de estado */ }
 const INVALIDO = { tipo: 'invalido' };
 function ambitoDeLaSesion(raiz) {
   try { return raiz && ESP ? ESP.ambitoDe(raiz, ROOT) : INVALIDO; } catch { return INVALIDO; }
@@ -403,8 +409,26 @@ function main() {
   const raiz = raizDelVault();
   const curso = [];
   try {
-    const abiertos = trabajoEnCurso(raiz, ambitoDeLaSesion(raiz));
-    if (abiertos.length) {
+    const ambito = ambitoDeLaSesion(raiz);
+    const abiertos = trabajoEnCurso(raiz, ambito);
+    const rutaEst = EST && raiz && (ambito.tipo === 'general' || ambito.tipo === 'asunto') ? EST.rutaEstado(raiz, ambito) : null;
+    if (rutaEst && existsSync(rutaEst)) {
+      let est = null;
+      try { est = EST.leer(rutaEst); } catch (e) {
+        curso.push(`[ESTADO] ERROR: no se puede leer ${relative(raiz, rutaEst).replace(/\\/g, '/')} (${e.message}); corre estado.mjs --verificar antes de seguir.`);
+      }
+      const n = est && Array.isArray(est.elementos) ? est.elementos.filter((e) => EST.ACTIVAS.includes(e.situacion)).length : 0;
+      if (est && n) {
+        curso.push(`[ESTADO] ${n} elemento(s) activo(s) en tu ambito. El detalle de uno, con estado.mjs --id <Id>; el de otro coordinador, con estado.mjs --de <espacio>/<asunto> antes de mandarle un handoff; lo que abras o cierres va al estado en el mismo commit:`);
+        for (const l of EST.vista(est).split('\n')) curso.push('  ' + l);
+      } else if (est) curso.push('[ESTADO] Nada activo en tu ambito.');
+      const porFichero = new Map();
+      for (const [f] of abiertos) porFichero.set(f, (porFichero.get(f) || 0) + 1);
+      for (const [f, n] of porFichero) {
+        const dueno = f.startsWith(raiz) ? f.slice(raiz.length + 1).replace(/\\/g, '/') : f;
+        curso.push(`[ESTADO] AVISO: doble fuente — ${dueno} sigue con ${n} linea(s) abierta(s): pasalas al estado y retira el fichero.`);
+      }
+    } else if (abiertos.length) {
       curso.push(`[EN CURSO] ${abiertos.length} trabajo(s) abierto(s) en tu contenedor. Antes de abrir un frente nuevo, mira si ya esta aqui — y antes de mandar un handoff a otro coordinador, mira EN ESE MOMENTO el trabajo-en-curso.md del destinatario — y si abres uno que sobrevive a tu sesion, anadelo a su fichero en el mismo commit:`);
       for (const [f, fecha, texto] of abiertos) {
         const dueno = f.startsWith(raiz) ? f.slice(raiz.length + 1).replace(/\\/g, '/') : f;

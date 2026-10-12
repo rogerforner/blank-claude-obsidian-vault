@@ -11,6 +11,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const REAL = path.resolve(AQUI, '..', '..', '..');
+const EST = await import(pathToFileURL(path.join(AQUI, 'estado.mjs')).href);
 
 const AYUDA = `Uso:
   probar-espacios.mjs [--casos <M,H,V2,...>]
@@ -141,6 +142,14 @@ function hook(v, rel) {
   return node([path.join(v, ...HOOK)], dir, { LIMPIEZA_DRY_RUN: '1', CLAUDE_PROJECT_DIR: dir }).salida;
 }
 
+// Escribe un estado.json canonico con un elemento activo de titulo `titulo` en el asunto `base`.
+function estadoActivo(raiz, base, titulo) {
+  const e = EST.vacio();
+  e.siguiente_id = 2;
+  e.elementos.push({ id: 'E1', titulo, situacion: 'abierto', dueno: 'x', abierto: '2026-01-01' });
+  escribir(raiz, `${base}/coordinacion/estado.json`, EST.serializar(e));
+}
+
 const marcas = (s) => ['**uno**', '**dos**', '**raiz**', '[AMBITO]', '[EN CURSO]'].filter((m) => s.includes(m)).join(' ') || 'ninguna marca';
 
 const dod = (v, rel) => node([path.join(v, '_meta', 'dod.mjs'), '--sin-sello'], path.join(v, rel));
@@ -162,9 +171,30 @@ function casos(c, esp) {
     }],
 
     ['H1', () => { const s = hook(c.v1(), 'esp-uno/a1'); return R(s.includes('**uno**') && !s.includes('**dos**') && !s.includes('**raiz**'), `el hook vuelca ${marcas(s)}`); }],
-    ['H2', () => { const s = hook(c.v1(), 'esp-uno'); return R(/^\[AMBITO\]/m.test(s) && !s.includes('[EN CURSO]'), `el hook vuelca ${marcas(s)}`); }],
-    ['H3', () => { const s = hook(c.v1(), 'general/comun'); return R(/^\[AMBITO\]/m.test(s) && !s.includes('[EN CURSO]'), `el hook vuelca ${marcas(s)}`); }],
+    ['H2', () => { const s = hook(c.v1(), 'esp-uno'); return R(/^\[AMBITO\]/m.test(s) && !s.includes('[EN CURSO]') && !s.includes('[ESTADO]'), `el hook vuelca ${marcas(s)}`); }],
+    ['H3', () => { const s = hook(c.v1(), 'general/comun'); return R(/^\[AMBITO\]/m.test(s) && !s.includes('[EN CURSO]') && !s.includes('[ESTADO]'), `el hook vuelca ${marcas(s)}`); }],
     ['H4', () => { const s = hook(c.v1(), '.'); return R(s.includes('**raiz**') && !s.includes('**uno**') && !s.includes('**dos**'), `el hook vuelca ${marcas(s)}`); }],
+    ['H5', () => {
+      const v = c.clon(); estadoActivo(v, 'esp-uno/a1', 'estado-uno');
+      rmSync(path.join(v, 'esp-uno', 'a1', 'coordinacion', 'trabajo-en-curso.md'));
+      const s = hook(v, 'esp-uno/a1');
+      return R(s.includes('[ESTADO]') && s.includes('estado-uno') && !s.includes('**uno**'), `el hook vuelca ${marcas(s)}${s.includes('[ESTADO]') ? ' [ESTADO]' : ''}`);
+    }],
+    ['H6', () => {
+      const v = c.clon(); estadoActivo(v, 'esp-uno/a1', 'estado-uno');
+      const s = hook(v, 'esp-uno/a1');
+      return R(s.includes('doble fuente'), 'el hook no avisa de doble fuente con estado y trabajo-en-curso a la vez');
+    }],
+    ['H7', () => {
+      const v = c.clon(); estadoActivo(v, 'esp-uno/a1', 'estado-uno');
+      const s = hook(v, 'esp-dos/b1');
+      return R(s.includes('**dos**') && !s.includes('estado-uno'), `el hook vuelca ${marcas(s)}`);
+    }],
+    ['H8', () => {
+      const v = c.clon(); escribir(v, 'esp-uno/a1/coordinacion/estado.json', '{ roto');
+      const s = hook(v, 'esp-uno/a1');
+      return R(s.includes('[ESTADO] ERROR'), 'el hook calla ante un estado.json ilegible');
+    }],
 
     ['D1', () => { const r = dod(c.v1(), 'esp-uno/a1'); return R(r.salida.includes('coordinador de `a1`'), 'el DoD desde esp-uno/a1 no dice "coordinador de `a1`"'); }],
     ['D2', () => { const r = dod(c.v1(), 'general/comun'); return R(!r.salida.includes('coordinador general') && r.codigo !== 0, `desde general/comun: salida ${r.codigo} ${r.salida.includes('coordinador general') ? 'y se declara coordinador general' : ''}`); }],

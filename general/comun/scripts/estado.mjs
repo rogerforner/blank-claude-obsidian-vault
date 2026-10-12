@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { raizVault, ambitoDe, listarAsuntos } from './espacios.mjs';
 
 const SITUACIONES = ['abierto', 'en_curso', 'bloqueado', 'diferido', 'cerrado'];
-const ACTIVAS = ['abierto', 'en_curso', 'bloqueado'];
+export const ACTIVAS = ['abierto', 'en_curso', 'bloqueado'];
 const ORDEN_ACTIVAS = ['en_curso', 'bloqueado', 'abierto'];
 const CLAVES_ELEMENTO = ['id', 'titulo', 'situacion', 'dueno', 'abierto', 'caduca', 'bloqueado_por_decision', 'porque', 'nota', 'cerrado', 'resultado'];
 const CLAVES_RAIZ = ['_lee_esto_primero', 'siguiente_id', 'elementos'];
