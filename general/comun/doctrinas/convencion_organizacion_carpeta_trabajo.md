@@ -2,7 +2,7 @@
 name: Convención de organización de la carpeta de trabajo
 description: La carpeta de coordinación mantiene en su raíz solo lo activo y lo vivo. Handoffs y buffers son LOCALES (gitignored, nunca se versionan); los prompts ejecutados y los briefs con informe se versionan en vuelo y se BORRAN al cumplir (git rm; git conserva el histórico). No se acumulan ficheros obsoletos. Y lo que se lee entero en cada arranque —cola, bitácora— tiene TECHO escrito, igual que el CLAUDE.md: 40.960 y 30.720 bytes de `wc -c`, comparados sin convertir.
 type: convention
-version: 3.2
+version: 3.3
 index_summary: >-
   Raíz solo con lo activo/vivo; prompts/briefs ejecutados se BORRAN (git es el histórico); handoffs y buffers son locales/gitignored; hook `SessionStart` que es el **ritual de arranque** —borra lo **superado por su serie** y lo **caducado a los 14 días**, **sella la fecha del sistema** y **ejecuta el verificador avisando solo si sale en rojo**— (sin lo segundo, un handoff con nombre único no se borraba nunca). **Lo que se lee entero en cada arranque tiene TECHO**: **40.960 bytes** la cola de un asunto, **30.720** la bitácora, comparados contra `wc -c` sin convertir, y lo cerrado baja al histórico (en bytes y no en líneas: 620 líneas de párrafo denso son 197 KB) — el `CLAUDE.md` ya lo tenía y los ficheros de estado no, que es como una cola llegó a costar 53.000 tokens por arranque. **Resumir TARDE produce desfase**: la conclusión sube a la cola en el mismo commit que genera el dato, o el fichero de estado deja de contar el estado — y eso no lo arregla podar. En un asunto en ejecución las palancas se agotan y se puede llegar al 97 % legítimamente; **entonces no se sube el techo, se decide qué se cierra**. Los originales no son efímeros: no se borran.
 ---
@@ -20,7 +20,7 @@ La carpeta de coordinación de un asunto (`<espacio>/<asunto>/coordinacion/`) y 
 - En `_meta/`, el **plan de tandas** mientras vive: se versiona hasta que se cumple la última tanda.
 
 **Se borra (git es el histórico):**
-- El **prompt ya ejecutado**, cerrada su tanda y capturado el resultado (commits + entrada en `cola-pendientes.md`). **No se archiva: se borra.**
+- El **prompt ya ejecutado**, cerrada su tanda y capturado el resultado (commits y el elemento cerrado en el estado). **No se archiva: se borra.**
 - El **brief**, cuando ya existe su informe.
 - En `estudios/`, el prompt o el brief de un estudio cuando ya existe su informe: `<base>_prompt.md` con `<base>_informe.md` o `<base>_prompt_informe.md`, o `brief.md` con `informe.md` en la carpeta del tema. Antes de borrarlo se arreglan los enlaces que apuntan a él, porque si no el verificador marca el enlace colgado.
 - Los informes de `estudios/` cuya decisión ya está fundida en `docs/` (ficha de decisión, `docs_sin_fases`), después de rescatar lo que solo vive en ellos. Esto es criterio del coordinador del asunto: no lo detecta ninguna puerta, porque saber si una decisión está fundida exige juicio.
@@ -31,7 +31,7 @@ La carpeta de coordinación de un asunto (`<espacio>/<asunto>/coordinacion/`) y 
 
 ## Lo que se lee entero en cada arranque tiene TECHO
 
-La cola de pendientes, el charter y la bitácora **no son efímeros**: se conservan. Pero son lo que **cada sesión nueva lee entero antes de hacer nada**, así que su tamaño se paga en **todos** los arranques, para siempre. Un fichero de estado sin techo se convierte en un archivo histórico que nadie decidió crear.
+La cola de pendientes, el charter, la bitácora y el estado (`coordinacion/estado.json`) **no son efímeros**: se conservan. Pero son lo que **cada sesión nueva lee antes de hacer nada** (del estado, la vista que vuelca el hook), así que su tamaño se paga en **todos** los arranques, para siempre. Un fichero de estado sin techo se convierte en un archivo histórico que nadie decidió crear. → [[estado_vivo_por_comando]]
 
 - **Techo de la cola de un asunto: 40 KB = 40.960 bytes.** Al superarlo, lo **cerrado** baja a `coordinacion/referencia/historico-<asunto>.md` y la cola se queda con lo **vivo**: plazos, bloque activo, próximos bloques, decisiones pendientes. El histórico no se lee al arrancar; se abre cuando alguien pregunta por algo cerrado.
 - **Techo de la bitácora del kit: 30 KB = 30.720 bytes.** Al superarlo, las entradas cuyo aprendizaje **ya está fundido** en una doctrina, un checklist o una plantilla se resumen a una línea con el puntero a donde vive ahora. La bitácora registra la traza; lo vigente son las reglas.
@@ -115,3 +115,4 @@ Relacionada: [[feedback_prompt_delivery]], [[formato_prompts_markdown_limpio]], 
 > Pieza de catálogo `general/comun/doctrinas/`. **v2.9 (2026-08-28): el procedimiento de la comprobación de trabajo abierto antes de archivar, con su cobertura.** Se hacía a mano cada vez y ese día **falló**: el patrón capturó una etiqueta de dentro de una **cita de código**, abortó por falso positivo y por poco tapa dos hallazgos reales — que resultaron ser `PARA EL DIRECTOR` y `CADUCA`, **ninguna de las cuales salía con un patrón de solo *pendiente* y *abierto***. Quedan escritos los cuatro pasos: quitar literales antes de buscar (lo que las reglas del verificador ya hacían y la comprobación a mano no), barrer las ocho etiquetas, **rescatar antes de mover**, y escribir la cobertura y no solo el resultado. **No se automatiza del todo a propósito:** decidir si algo es trabajo abierto es criterio, y la etiqueta solo es el indicio. La versión vigente es la del frontmatter; el changelog de arriba la detalla. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente. *(Las copias ya instaladas se resincronizan por el coordinador del asunto; modelo snapshot.)*
 > Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
 > **v3.2 (2026-10-10)** — rutas de contenedor a `<espacio>/<asunto>/` (vault con espacios).
+> **v3.3 (2026-10-12)** — el resultado de una tanda se captura en commits y en el elemento cerrado del estado; lo que cada sesión lee al arrancar es la vista del estado, y `estado.json` no es efímero. La poda de las ocho etiquetas no cambia.

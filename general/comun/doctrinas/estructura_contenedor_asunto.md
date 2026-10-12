@@ -2,7 +2,7 @@
 name: Estructura uniforme del contenedor de asunto
 description: Todo asunto vive en <espacio>/<asunto>/ con la MISMA estructura (slug = nombre del asunto): ficheros raíz de coordinación, .claude/ con un settings por rol de sesión, y subcarpetas docs/estudios/memoria/coordinacion. Uniforme para todos los asuntos, para orientarse sin reaprender. En el perfil `asunto con software` el código vive FUERA del vault, donde el runtime lo sirve (docs/emplazamiento-runtime.md); repo/ dentro del contenedor es la excepción, no el caso normal. La instancia canónica es inicializador/plantilla-contenedor-asunto/.
 type: convention
-version: 1.8
+version: 1.9
 index_summary: >-
   Todo asunto en `<espacio>/<asunto>/` con la misma estructura (raíz de coordinación, `.claude/` con un settings por rol, docs/estudios/memoria/coordinacion). Lo recibido o entregado es intocable; el documento real gana a la nota. Instancia canónica: la plantilla del inicializador. **`memoria/` = doctrinas PROPIAS del asunto**: las del catálogo se **leen**, no se copian; un `[[wikilink]]` sin copia local resuelve al catálogo y **no es un olvido**; el valor por defecto es **no copiar**, y quien copia asume la resincronización.
 ---
@@ -30,7 +30,7 @@ Un **espacio** agrupa asuntos que comparten dominio (p. ej. `casa/`). Es una car
 ├── README.md                  mapa del contenedor y estado en dos líneas
 ├── charter-coordinador.md     mandato del coordinador del asunto
 ├── CLAUDE.md                  reglas siempre-activas del asunto (fichero canónico)
-├── cola-pendientes.md         estado vivo: hecho / en curso / pendiente (+ PLAZOS)
+├── cola-pendientes.md         el porqué y lo cerrado; lo abierto, en `coordinacion/estado.json`
 ├── .claude/
 │   ├── settings.json          coordinador del asunto (versionado, desde plantilla)
 │   ├── settings.local.json    rutas de la máquina (carpeta de escaneos, unidad de copias) — gitignored
@@ -39,7 +39,7 @@ Un **espacio** agrupa asuntos que comparten dominio (p. ej. `casa/`). Es una car
 ├── docs/                      documentación del asunto + originales recibidos/emitidos (+ emplazamiento-runtime.md si hay software)
 ├── estudios/                  estudios/<tema>/ (investigación → decisión)
 ├── memoria/                   doctrinas PROPIAS del asunto (las del catálogo se LEEN, no se copian)
-├── coordinacion/              prompts en vuelo, `trabajo-en-curso.md`, `tablero-tandas.md` y referencia/ (handoffs y buffers van gitignored)
+├── coordinacion/              prompts en vuelo, `estado.json`, `tablero-tandas.md` y referencia/ (handoffs y buffers van gitignored)
 └── repo/                      EXCEPCIÓN — perfil `asunto con software` sin runtime propio; ver docs/emplazamiento-runtime.md
 ```
 
@@ -111,3 +111,4 @@ Relacionada: [[convencion_organizacion_carpeta_trabajo]], [[sesion_consultor_par
 
 > Pieza de catálogo `general/comun/doctrinas/`. **v1.7 (2026-10-05):** el árbol nombra `trabajo-en-curso.md` y `tablero-tandas.md` en `coordinacion/`, que el contenedor plantilla ya trae (tanda T10 del plan relevo-tablero). **v1.6 (2026-10-04):** el árbol incluye `agents/` con las tres definiciones de subagente (`planificador`, `ejecutora`, `ejecutora-mecanica`), copias de las plantillas del inicializador, y la fila de las sesiones ejecutoras pasa a ser la de las tandas, que se lanzan como subagente y heredan el `settings.json` del contenedor (método 5.5, tanda C6). **v1.5 (2026-08-10):** invertido el supuesto — el caso normal pasa a ser el código **fuera del vault** (donde el runtime lo sirve, registrado en `docs/emplazamiento-runtime.md`), y `repo/` dentro del contenedor pasa de "añadido normal del perfil software" a **excepción declarada**; la subsección de convivencia de los dos `.git` se reclasifica como **red de seguridad del caso excepcional**, sin tocar su contenido medido (tanda `repo-fuera`, corrige la premisa que consolidó la tanda `pack-codigo`). **v1.4 (2026-08-10):** añadido `repo/` al mapa del contenedor —solo presente en el perfil `asunto con software`— y la subsección de convivencia de los dos `.git` (qué ve el vault, qué no debe versionar, cómo se evita el submódulo accidental), con el comportamiento de git **medido**, no supuesto (tanda `pack-codigo`). **v1.3 (2026-08-01):** declarada la política de `memoria/`, que era ambigua y parecía un olvido — la fuente de verdad es el catálogo, un wikilink sin copia local resuelve allí y es lo normal, el default es NO copiar, y quien copia asume el resync (una copia desfasada miente con autoridad de instalada). v1.2 (2026-06-15): cuadro "Qué vive dónde (canónico)". v1.1 (2026-06-12): sección de cross-links entre contenedores acoplados. v1.0 (2026-06-09). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente. Instancia canónica: `inicializador/plantilla-contenedor-asunto/`. **v1.8 (2026-10-10):** los contenedores pasan de `asuntos/<asunto>/` a `<espacio>/<asunto>/`, con sección "Espacios" (marcas, reservados, slug único, profundidad 2) y enlaces entre asuntos por nombre (decisión del director 2026-10-09: un solo vault con espacios).
 > Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29. Renombrada desde `estructura_contenedor_proyecto` (el contenedor pasa de `proyectos/…` a `asuntos/<asunto>/`).
+> **v1.9 (2026-10-12):** la cola pasa a guardar el porqué y lo cerrado, y lo abierto vive en `coordinacion/estado.json`, que sustituye a `trabajo-en-curso.md` en el árbol ([[estado_vivo_por_comando]]).
