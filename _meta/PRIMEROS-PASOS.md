@@ -8,7 +8,7 @@ Si abriste esta sesión con la **carpeta de trabajo** (`cwd`, *current working d
 
 1. **`CLAUDE.md`** de la raíz — reglas siempre activas. Ya se auto-carga; no hace falta que lo abras, pero sí que las cumplas.
 2. **`_meta/charter-coordinador.md`** — tu mandato y el modelo de trabajo de tres roles.
-3. **`_meta/cola-pendientes.md`** — el estado vivo: qué está en curso, qué falta, qué se dejó aparcado y por qué.
+3. **El estado vivo, por comando:** `node general/comun/scripts/estado.mjs`. El hook ya te lo vuelca; `--id` da el detalle de un elemento. La cola (`_meta/cola-pendientes.md`) guarda el porqué y lo cerrado: se abre por la entrada a la que apunta `porque`, y antes de tocar el kit se leen sus Reglas operativas.
 4. **`_meta/decisiones-abiertas.md`** — lo que está esperando una decisión del director. Si hay algo aquí, probablemente bloquea trabajo de la cola.
 5. **`_meta/bitacora.md`** — lo ya aprendido y fundido en el kit. Leerlo evita repetir un error que ya está resuelto.
 6. **`general/comun/doctrinas/MEMORY-doctrinas-index.md`** — el índice del catálogo. Lee el índice entero y **abre solo** las doctrinas que la tanda de hoy toque: no caben todas en un arranque, y el índice está escrito para que no haga falta abrirlas.
@@ -17,7 +17,7 @@ Y **mira el aviso del hook**: al arrancar la sesión, el hook de higiene te dice
 
 ## Saludo sugerido
 
-> "Hola, director. Coordinador general del vault arrancando. He leído el charter, la cola, las decisiones abiertas y el índice de doctrinas. Estado: *(dos o tres líneas)*. Decisiones esperándote: *(las que haya, o ninguna)*. ¿Inicializamos un asunto, mantenemos estructura, o entramos en algún pendiente de la cola?"
+> "Hola, director. Coordinador general del vault arrancando. He leído el charter, el estado, las decisiones abiertas y el índice de doctrinas. Estado: *(dos o tres líneas)*. Decisiones esperándote: *(las que haya, o ninguna)*. ¿Inicializamos un asunto, mantenemos estructura, o entramos en algún pendiente de la cola?"
 
 Dos o tres líneas de estado, no un informe. Y **una propuesta concreta**, no un menú de diez opciones.
 
@@ -28,7 +28,7 @@ Dos o tres líneas de estado, no un informe. Y **una propuesta concreta**, no un
 - **Cerrar cruzando el DoD** → `node _meta/dod.mjs`, solo y sin tubería, antes de irte y antes de dar por buena una tanda. El verificador dice si el kit está bien **escrito**; el DoD dice si el trabajo está bien **terminado**, que no es lo mismo: se puede estar en verde y aun así dejar un prompt cumplido sin borrar, una doctrina cambiada sin su changelog o el árbol a medio commitear ([[definition_of_done]]).
 - **Mejora continua** → cada arranque enseña algo. Anótalo en `_meta/bitacora.md` **y fúndelo** en el checklist, la plantilla o la doctrina que corresponda ([[mejora_continua_del_kit]]). La bitácora sola no cambia el comportamiento de nadie.
 - **Investigar novedades cuando el director lo pida** → conviertes la novedad en uno o varios briefs para el **chat web** (`_meta/plantilla-brief-chat-web.md`), sintetizas el resultado y **lo fundes** si pasa el filtro ([[vigilancia_tecnologica_bajo_demanda]]). **Investigar no es adoptar.**
-- **Llevar la cola y las decisiones** → estado en `cola-pendientes.md`, lo que necesita decisión en `decisiones-abiertas.md` con una **recomendación tuya**, no una lista neutra de opciones.
+- **Llevar el estado y las decisiones** → el estado con `estado.mjs`, el porqué en `cola-pendientes.md`, lo que necesita decisión en `decisiones-abiertas.md` con una **recomendación tuya**, no una lista neutra de opciones.
 
 ## Qué NO haces tú
 
@@ -56,7 +56,7 @@ Dos o tres líneas de estado, no un informe. Y **una propuesta concreta**, no un
 | `general/comun/packs/codigo/` | Pack **opcional**, solo si un asunto incluye software propio. El core no depende de él. |
 | `inicializador/` | **Procedimiento + plantillas** para arrancar un asunto: checklists, charter, contrato de tanda ejecutora, handoff, consultor, settings por rol y el árbol del contenedor. |
 | `<espacio>/<asunto>/` | Un contenedor por asunto, agrupados en espacios y todos con la misma estructura ([[estructura_contenedor_asunto]]). **No existe hasta el primer espacio.** |
-| `_meta/` | El kit tratado como asunto: charter, cola, decisiones, bitácora, estos primeros pasos y la plantilla de brief. |
+| `_meta/` | El kit tratado como asunto: charter, estado (`estado.json`), cola, decisiones, bitácora, estos primeros pasos y la plantilla de brief. |
 
 ## Punteros
 
