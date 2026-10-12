@@ -1,6 +1,6 @@
 # Cola de pendientes — el kit de este vault
 
-Estado vivo del **kit** (no de los asuntos: cada asunto lleva su propia cola en su contenedor). Bloques de trabajo en orden, el activo arriba. Lo cerrado se tacha o baja al final. **Este fichero y el charter son lo primero que lee una sesión nueva.**
+Esta cola guarda el **porqué** y lo **cerrado** del **kit** (no de los asuntos: cada asunto lleva su propia cola en su contenedor). Lo abierto (qué queda y de quién es) vive en `_meta/estado.json` y se consulta y se cambia con `estado.mjs`; cada elemento del estado apunta con `porque` a la entrada de aquí. La cola ya no es lo primero que se lee: lo primero es el estado y el charter.
 
 > **Arranca vacía a propósito.** Lo que sigue es la estructura con un ejemplo por sección, para que se vea la forma. Sustitúyelo por el trabajo real del vault y **borra este bloque**. No arrastres aquí pendientes de otro vault: la cola de otro no es tu estado.
 
@@ -8,9 +8,9 @@ Estado vivo del **kit** (no de los asuntos: cada asunto lleva su propia cola en 
 
 *Un solo bloque activo. Si hay dos, uno de los dos está parado y no lo sabes.*
 
-- [ ] **Bloque 1 — arranque del vault.** *(ejemplo)* Rellenar `_meta/charter-coordinador.md` con el tema del vault e inicializar el primer asunto con `inicializador/checklist-arranque.md`.
-  - [ ] Sustituir `{{TEMA}}` en el charter y anotar el estado actual.
-  - [ ] Elegir el primer asunto: **el que tenga el plazo más próximo**, no el más apetecible.
+- **Bloque 1 — arranque del vault.** *(ejemplo)* Rellenar `_meta/charter-coordinador.md` con el tema del vault e inicializar el primer asunto con `inicializador/checklist-arranque.md`.
+  - Sustituir `{{TEMA}}` en el charter y anotar el estado actual.
+  - Elegir el primer asunto: **el que tenga el plazo más próximo**, no el más apetecible.
 
 ## Próximos bloques
 

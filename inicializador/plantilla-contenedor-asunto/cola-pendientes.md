@@ -1,8 +1,8 @@
 # Cola de pendientes — {{ASUNTO}}
 
-Estado vivo del asunto: bloques de trabajo en orden, el activo arriba. Los cerrados se tachan o se mueven al histórico. **Este fichero y el charter son lo primero que lee una sesión nueva.**
+Esta cola guarda el **porqué** y lo **cerrado**. Lo abierto (qué queda y de quién es) vive en `coordinacion/estado.json` y se consulta y se cambia con `estado.mjs`; cada elemento del estado apunta con `porque` a la entrada de aquí. La cola ya no es lo primero que se lee: lo primero es el estado y el charter.
 
-> **Techo: 40.960 bytes.** Como este fichero se lee **entero en cada arranque**, su tamaño se paga en todas las sesiones futuras. Al superarlo, lo **cerrado** baja a `coordinacion/referencia/historico-<asunto>.md` y aquí queda solo lo **vivo**. Compruébalo con `wc -c` al cerrar tanda y compara el número **tal cual**, sin convertir a KB —y en bytes, no en líneas: un párrafo denso son 300 caracteres por línea— porque un fichero que crece no avisa ([[convencion_organizacion_carpeta_trabajo]]).
+> **Techo: 40.960 bytes.** Aunque ya no se lee entero en cada arranque, su tamaño se paga cada vez que se abre. Al superarlo, lo **cerrado** baja a `coordinacion/referencia/historico-<asunto>.md` y aquí queda solo lo **vivo**. Compruébalo con `wc -c` al cerrar tanda y compara el número **tal cual**, sin convertir a KB —y en bytes, no en líneas: un párrafo denso son 300 caracteres por línea— porque un fichero que crece no avisa ([[convencion_organizacion_carpeta_trabajo]]).
 
 ## Plazos (lo primero)
 
@@ -10,13 +10,13 @@ Estado vivo del asunto: bloques de trabajo en orden, el activo arriba. Los cerra
 |---|---|---|---|
 | {{AAAA-MM-DD}} | {{…}} | {{documento de `docs/` que lo fija}} | {{…}} |
 
-*Un plazo sin fecha no es un plazo. Si la fecha se deduce de un cómputo, escribe el cómputo.*
+*Un plazo es un elemento del estado con `caduca`; aquí se deja solo el porqué de cada uno y el documento del que sale. Un plazo sin fecha no es un plazo. Si la fecha se deduce de un cómputo, escribe el cómputo.*
 
 ## Bloque 1 — {{PRIMER_BLOQUE}}
 
 *(p. ej. reconocimiento del expediente y cronología, antes de redactar nada)*
 
-- [ ] …
+- …
 
 ## Próximos bloques
 

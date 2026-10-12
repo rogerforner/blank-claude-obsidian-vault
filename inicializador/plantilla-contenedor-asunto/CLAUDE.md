@@ -8,7 +8,7 @@ Eres el **coordinador del asunto {{ASUNTO}}**. **Perfil:** {{PERFIL}}.
 
 ## Al arrancar
 
-Lee `charter-coordinador.md`, `cola-pendientes.md` y el índice de doctrinas. **Empieza por los plazos**: es lo único que no se recupera con más trabajo.
+Lee `charter-coordinador.md`, el estado (el hook te lo vuelca; `../../general/comun/scripts/estado.mjs`) y el índice de doctrinas; la cola, cuando necesites el porqué de un elemento. **Empieza por los plazos**: son los elementos con `caduca`, y la vista los pone primero.
 
 ## Reglas propias de este asunto
 

@@ -13,7 +13,7 @@ Contenedor de **trabajo con IA** del asunto **{{ASUNTO}}** ({{MATERIA}}). Aquí 
 ├── README.md  charter-coordinador.md  CLAUDE.md  cola-pendientes.md
 ├── .claude/settings.json         aislamiento del coordinador (checklist paso 4)
 ├── .claude/settings.local.json   rutas de esta máquina — gitignored
-├── coordinacion/                 prompts en vuelo + referencia/ (handoffs y buffers, gitignored)
+├── coordinacion/                 estado.json (qué queda y de quién es) + prompts en vuelo + referencia/ (handoffs y buffers, gitignored)
 ├── docs/                         documentación del asunto + originales recibidos y emitidos
 ├── estudios/                     estudios/<tema>/ (investigación → decisión)
 └── memoria/                      doctrinas PROPIAS del asunto (las del catálogo se LEEN)
@@ -24,7 +24,7 @@ Contenedor de **trabajo con IA** del asunto **{{ASUNTO}}** ({{MATERIA}}). Aquí 
 ## Cómo se usa
 
 - **Los originales son intocables.** Lo que llegó de fuera (escaneo, resolución, acuse, factura firmada) y lo que se entregó se guardan tal cual en `docs/` y no se editan. Si hay que trabajar sobre uno, se trabaja sobre copia.
-- **Los plazos viven en `cola-pendientes.md` y en el charter**, con fecha y con el documento del que salen.
+- **Los plazos viven en el estado (`caduca`) y en el charter**, con fecha y con el documento del que salen.
 - **Entregar fuera es puerta humana**: el agente prepara el envío; el gesto de enviar, presentar o firmar es del director.
 
 ## Arranque
