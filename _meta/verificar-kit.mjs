@@ -7,6 +7,7 @@ import { join, relative, basename, dirname, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { listarAsuntos, listarEspacios, tipoDeCarpeta, RESERVADOS } from '../general/comun/scripts/espacios.mjs';
+import { verificar as verificarEstado, ambitosConEstado } from '../general/comun/scripts/estado.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const hallazgos = [];
@@ -266,8 +267,14 @@ try {
   }
 } catch { /* si el generador no esta, esta regla simplemente no aplica */ }
 
-// --- 12. el fichero de TRABAJO EN CURSO se mantiene legible para el hook ---
-// El hook de arranque vuelca las lineas abiertas de cada `trabajo-en-curso.md` por contexto:
+// --- 12. el estado vivo se mantiene legible -----------------------------
+// Que un frente abierto llegue a quien arranca depende de que su registro se lea sin adivinar.
+// Aqui se vigila: (1) el formato de las lineas `- [ABIERTO` de cada `trabajo-en-curso.md`;
+// (2) que cada `estado.json` pase las invariantes de `estado.mjs`; (3) que un ambito con estado
+// no conserve ademas lineas abiertas en su `trabajo-en-curso.md` (doble fuente); (4) que su cola
+// no guarde pendientes en prosa: un pendiente escrito solo ahi no lo vuelca nadie al arrancar
+// (asi se perdio de vista una linea abierta de un asunto durante semanas).
+// (1) El hook de arranque vuelca las lineas abiertas de cada `trabajo-en-curso.md` por contexto:
 // eso es lo unico que convierte el fichero en mecanismo, porque nadie tiene que acordarse de
 // abrirlo. El hook las reconoce solo por su prefijo `- [ABIERTO fecha]`, A PROPOSITO laxo: una
 // linea mal escrita se vuelca igual, mutilada, en vez de desaparecer del aviso. Fallar a la
@@ -289,6 +296,32 @@ for (const f of md.filter((x) => basename(x) === 'trabajo-en-curso.md')) {
       nota('trabajo en curso ilegible', f, `linea ${i + 1}: el hook la volcara sin dueño ni artefacto, o sea sin lo que sirve para algo — formato: - [ABIERTO AAAA-MM-DD] **que** · dueño: \`quien\` · artefacto: \`ruta DESDE LA RAIZ DEL VAULT\` — estado`);
     }
   });
+}
+
+// (2)-(4) ambitos con estado.json
+const PENDIENTE = /^\s*- \[ \]|\[(PENDIENTE|ABIERTO|EN CURSO|A CONFIRMAR|TODO|POR HACER|PARA EL DIRECTOR|EN STANDBY)\b/;
+for (const x of ambitosConEstado(RAIZ)) {
+  for (const h of verificarEstado(readFileSync(x.ruta, 'utf8'), { raiz: RAIZ, ambito: x.ambito })) nota('estado vivo', x.ruta, h.detalle);
+  const base = x.ambito.tipo === 'general' ? join(RAIZ, '_meta') : join(RAIZ, x.nombre);
+  const curso = x.ambito.tipo === 'general' ? join(RAIZ, '_meta', 'trabajo-en-curso.md') : join(base, 'coordinacion', 'trabajo-en-curso.md');
+  const cola = join(base, 'cola-pendientes.md');
+  const fuera = (f, fn) => {
+    let enCodigo = false;
+    readFileSync(f, 'utf8').split('\n').forEach((linea, i) => {
+      if (linea.startsWith('```')) { enCodigo = !enCodigo; return; }
+      if (!enCodigo) fn(linea, i);
+    });
+  };
+  if (existsSync(curso)) {
+    let abiertas = 0;
+    fuera(curso, (l) => { if (l.startsWith('- [ABIERTO')) abiertas++; });
+    if (abiertas) nota('estado vivo', curso, `doble fuente: ${abiertas} linea(s) abierta(s) aqui y el ambito ya tiene estado.json; pasalas al estado con estado.mjs --nuevo y vacia este fichero`);
+  }
+  if (existsSync(cola)) {
+    fuera(cola, (l, i) => {
+      if (PENDIENTE.test(sinLiterales(l))) nota('estado vivo', cola, `linea ${i + 1}: pendiente fuera del estado — pásalo al estado con estado.mjs --nuevo y deja aquí solo el porqué`);
+    });
+  }
 }
 
 // --- 13. cuantas reglas tiene el verificador NO se escribe a mano -------

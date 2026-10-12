@@ -150,6 +150,17 @@ function estadoActivo(raiz, base, titulo) {
   escribir(raiz, `${base}/coordinacion/estado.json`, EST.serializar(e));
 }
 
+// Estado canonico y valido (dueno coordinador-<asunto>) en `base`; `extra` mezcla campos en el elemento.
+function estadoValido(raiz, base, extra = {}) {
+  const e = EST.vacio();
+  e.siguiente_id = 2;
+  e.elementos.push({ id: 'E1', titulo: 'algo', situacion: 'abierto', dueno: `coordinador-${base.split('/')[1]}`, abierto: '2026-01-01', ...extra });
+  escribir(raiz, `${base}/coordinacion/estado.json`, EST.serializar(e));
+}
+// Lineas de la salida del verificador de la regla "estado vivo" que nombran `ruta`.
+const vivo = (salida, ruta) => salida.split('\n').filter((l) => /^\s*\[estado vivo\] /.test(l) && l.includes(ruta));
+const verif = (v) => node([path.join(v, '_meta', 'verificar-kit.mjs')], v).salida;
+
 const marcas = (s) => ['**uno**', '**dos**', '**raiz**', '[AMBITO]', '[EN CURSO]'].filter((m) => s.includes(m)).join(' ') || 'ninguna marca';
 
 const dod = (v, rel) => node([path.join(v, '_meta', 'dod.mjs'), '--sin-sello'], path.join(v, rel));
@@ -244,6 +255,31 @@ function casos(c, esp) {
       const lineas = node([path.join(v, '_meta', 'verificar-kit.mjs')], v).salida.split('\n').filter((l) => /residuo de la estructura vieja/.test(l));
       const enX = lineas.some((l) => l.includes('general/x.md')); const enY = lineas.some((l) => l.includes('general/y.md'));
       return R(enX && !enY, `regla 19: hallazgo en x.md=${enX} (se esperaba true), en y.md=${enY} (se esperaba false)`);
+    }],
+    ['V7', () => {
+      const v = c.clon(); estadoValido(v, 'esp-uno/a1', { dueno: 'director' });
+      const l = vivo(verif(v), 'esp-uno/a1/coordinacion/estado.json');
+      return R(l.length > 0, 'ningun hallazgo de estado vivo con un activo del director sin caduca');
+    }],
+    ['V8', () => {
+      const v = c.clon(); estadoValido(v, 'esp-uno/a1');
+      const l = vivo(verif(v), 'esp-uno/a1/coordinacion/trabajo-en-curso.md');
+      return R(l.some((x) => /doble fuente/.test(x)), 'ningun hallazgo de doble fuente sobre el trabajo-en-curso.md');
+    }],
+    ['V9', () => {
+      const v = c.clon(); estadoValido(v, 'esp-uno/a1');
+      rmSync(path.join(v, 'esp-uno', 'a1', 'coordinacion', 'trabajo-en-curso.md'));
+      writeFileSync(path.join(v, 'esp-uno', 'a1', 'cola-pendientes.md'), '# Cola de a1\n\n- [ ] algo\n');
+      writeFileSync(path.join(v, 'esp-dos', 'b1', 'cola-pendientes.md'), '# Cola de b1\n\n- [ ] algo\n');
+      const s = verif(v);
+      const a = vivo(s, 'esp-uno/a1/cola-pendientes.md'); const b = vivo(s, 'esp-dos/b1/cola-pendientes.md');
+      return R(a.length > 0 && b.length === 0, `hallazgos sobre la cola con estado=${a.length} (se esperaba >0), sin estado=${b.length} (se esperaba 0)`);
+    }],
+    ['V10', () => {
+      const v = c.clon(); estadoValido(v, 'esp-uno/a1');
+      rmSync(path.join(v, 'esp-uno', 'a1', 'coordinacion', 'trabajo-en-curso.md'));
+      const l = verif(v).split('\n').filter((x) => /^\s*\[estado vivo\] /.test(x));
+      return R(l.length === 0, `hallazgos de estado vivo con un estado valido: ${l.join(' | ')}`);
     }],
 
     ['G1', () => {
