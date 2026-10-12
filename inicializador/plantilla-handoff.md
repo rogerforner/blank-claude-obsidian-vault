@@ -6,7 +6,7 @@
 
 > **Antes de escribir el handoff, cierra tu DoD** (`node _meta/dod.mjs`). Un handoff redactado sobre un árbol a medio commitear, con efímeros sin retirar o una doctrina cambiada sin su changelog, le traslada el problema a la sesión siguiente **disfrazado de estado**. → [[definition_of_done]]
 
-> **Antes de escribir un handoff PARA OTRO coordinador, mira su `trabajo-en-curso.md`.** El hook de arranque te lo ha volcado al contexto: si el destinatario ya tiene abierto lo que ibas a encargarle, el handoff cambia — o no se manda. Sale de un caso real que reportó el coordinador de `climatizacion`, y es la razón de que el fichero exista.
+> **Antes de escribir un handoff PARA OTRO coordinador, mira su estado con `estado.mjs --de <espacio>/<asunto>`.** Si el destinatario ya tiene abierto lo que ibas a encargarle, el handoff cambia — o no se manda. Sale de un caso real que reportó el coordinador de `climatizacion`, y es la razón de esta comprobación.
 
 Eres el **COORDINADOR del asunto {{ASUNTO}}**. La sesión anterior llegó a su límite de contexto; tú la continúas. **No ejecutas el trabajo pesado directamente; coordinas.** El trabajo real lo hacen los subagentes `planificador` y `ejecutora` que lanzas tú, con el ciclo de tandas ([[ciclo_de_tandas]]).
 

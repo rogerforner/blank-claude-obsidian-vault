@@ -52,7 +52,7 @@ Guarda el inventario en `coordinacion/referencia/reconocimiento-<fecha>.md` (doc
 - Copia los ficheros **[ENTRA-AL-VAULT]** a `docs/`, **espejando la estructura de carpetas de origen** cuando ya tenga sentido, para no romper referencias entre documentos. Si el asunto tiene varios frentes (la obra, el seguro, la comunidad), organiza `docs/` **por frente**.
 - **Adapta** (puede diferirse a un bloque posterior, pero anótalo en la cola): arreglar referencias internas rotas; **quitar la narrativa histórica** de los documentos de consulta ([[docs_sin_fases]]); el estado y los pendientes **no van a `docs/`** sino a `cola-pendientes.md` + `coordinacion/`.
 - **Transcribe lo escaneado** con tooling local ([tooling-documentos](../general/comun/tooling-documentos.md)); la transcripción es un documento nuevo que **se coteja con el original** antes de darlo por bueno, y el original no se toca.
-- **Coordinación previa fuera del vault** (borradores, cálculos, la lista de pendientes que llevabas en una nota): tráela a `coordinacion/`/`estudios/`/`cola-pendientes.md` **preservando el estado y los plazos** — es lo crítico a no perder.
+- **Coordinación previa fuera del vault** (borradores, cálculos, la lista de pendientes que llevabas en una nota): tráela a `coordinacion/`/`estudios/`/`cola-pendientes.md` **preservando el estado y los plazos** — es lo crítico a no perder. Lo vivo (pendientes, plazos, qué está en curso) va al estado con `estado.mjs --nuevo` (los plazos como `--caduca`); el porqué, a la cola o al charter.
 
 ### 3.1 Reparar los enlaces internos — por script, y comprobado con un checker
 
@@ -68,7 +68,7 @@ Material que ya venía organizado con método (frontmatter, un nombrado propio d
 
 - **Reglas de coordinación** (cómo se trabaja, quién decide, qué se verifica) → **se sustituyen** por el `CLAUDE.md` del kit y las doctrinas del catálogo. **No se vuelcan** al `CLAUDE.md` del contenedor, que es de coordinación y se mantiene corto.
 - **Reglas de dominio** (frontmatter, nombrado, plantillas propias del tema) → **se conservan** en `docs/convenciones-dominio.md`, desde [plantilla-convenciones-dominio.md](plantilla-convenciones-dominio.md). Son valiosas y no las cubre el kit: perderlas obliga al coordinador a reinventar el criterio documento a documento.
-- **El estado vivo** (pendientes, plazos, qué está en curso) → charter + `cola-pendientes.md`. Nunca se queda en `docs/`.
+- **El estado vivo** (pendientes, plazos, qué está en curso) → el estado, con `estado.mjs --nuevo` (los plazos como `--caduca`); el porqué, a la cola o al charter. Nunca se queda en `docs/`.
 
 ## 4. Cross-links si hay asuntos acoplados
 
