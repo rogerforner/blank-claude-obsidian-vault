@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// estado.mjs: lee y verifica el estado vivo de un ambito (estado_vivo_por_comando).
+// estado.mjs: lee, verifica y escribe el estado vivo de un ambito (estado_vivo_por_comando).
 // Sin dependencias. Salidas: 0 bien, 1 error interno, 2 uso, 4 invariantes rotos, Id o fichero inexistente.
-import { readFileSync, existsSync, mkdtempSync, mkdirSync, writeFileSync, copyFileSync, rmSync, realpathSync } from 'node:fs';
+import { readFileSync, existsSync, mkdtempSync, mkdirSync, writeFileSync, copyFileSync, rmSync, realpathSync, renameSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
@@ -21,6 +22,11 @@ const AYUDA = `Uso:
   estado.mjs [--todo] [--mio <rol>] [--de <general|espacio/asunto>]
   estado.mjs --id <Id> [--de <ambito>]
   estado.mjs --verificar [--todos] [--de <ambito>]
+  estado.mjs --iniciar
+  estado.mjs --nuevo --titulo "<t>" --dueno <rol> [--situacion abierto|en_curso|bloqueado|diferido] [--porque <ruta>] [--caduca AAAA-MM-DD] [--bloqueado-por-decision <n>] [--nota "<n>"]
+  estado.mjs --cambiar <Id> [--titulo] [--situacion] [--dueno] [--porque] [--caduca|--sin-caduca] [--bloqueado-por-decision|--sin-bloqueado-por-decision] [--nota|--sin-nota]
+  estado.mjs --cerrar <Id> --resultado "<r>"
+  estado.mjs --podar [--dias N]
   estado.mjs --prueba
   estado.mjs --ayuda
 Sin modo: la vista de los activos del ambito del directorio de trabajo (la raiz o la carpeta de un asunto).
@@ -30,6 +36,13 @@ Sin modo: la vista de los activos del ambito del directorio de trabajo (la raiz 
   --de <a>     el mismo modo sobre el fichero de otro ambito (general o espacio/asunto), solo lectura.
   --verificar  invariantes del fichero propio; con --todos, los de todos los ambitos con fichero.
   --hoy AAAA-MM-DD  solo para pruebas; por defecto, la fecha local.
+  --iniciar    crea el fichero vacio del ambito (si ya existe, sale 4).
+  --nuevo      anade un elemento (situacion abierto por defecto, abierto = hoy) e imprime su id.
+  --cambiar    cambia campos de un elemento; para cerrarlo, --cerrar.
+  --cerrar     situacion cerrado, cerrado = hoy; pide --resultado.
+  --podar      quita los cerrados de hace mas de N dias (30 por defecto); siguiente_id no baja.
+  Los modos de escritura solo tocan el fichero del ambito del directorio de trabajo; con --de salen 2.
+  Antes de escribir se verifica el resultado: si sale un hallazgo nuevo, sale 4 y no se escribe.
   --prueba     bateria de pruebas en un vault temporal.
 Ficheros: general -> _meta/estado.json; asunto -> <espacio>/<asunto>/coordinacion/estado.json.
 Salidas: 0 bien, 1 error interno, 2 uso, 4 invariantes rotos, Id o fichero inexistente.`;
@@ -212,7 +225,10 @@ function ambitoNombrado(raiz, nombre) {
 }
 
 function parsear(args) {
-  const o = { todo: false, mio: null, id: null, de: null, verificar: false, todos: false, hoy: null, prueba: false, ayuda: false };
+  const o = { todo: false, mio: null, id: null, de: null, verificar: false, todos: false, hoy: null, prueba: false, ayuda: false,
+    iniciar: false, nuevo: false, cambiar: null, cerrar: null, podar: false, campos: {}, dias: null, resultado: null, sin: [] };
+  const CAMPOS = ['titulo', 'situacion', 'dueno', 'porque', 'caduca', 'bloqueado-por-decision', 'nota'];
+  const SIN = ['caduca', 'bloqueado-por-decision', 'nota'];
   const valor = (i, f) => { if (i + 1 >= args.length || args[i + 1].startsWith('--')) throw new Salida(2, `${f} pide un valor\n${AYUDA}`); return args[i + 1]; };
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
@@ -221,12 +237,98 @@ function parsear(args) {
     else if (a === '--todos') o.todos = true;
     else if (a === '--prueba') o.prueba = true;
     else if (a === '--ayuda') o.ayuda = true;
-    else if (a === '--mio' || a === '--id' || a === '--de' || a === '--hoy') { o[a.slice(2)] = valor(i, a); i++; }
+    else if (a === '--iniciar') o.iniciar = true;
+    else if (a === '--nuevo') o.nuevo = true;
+    else if (a === '--podar') o.podar = true;
+    else if (a === '--mio' || a === '--id' || a === '--de' || a === '--hoy' || a === '--cambiar' || a === '--cerrar' || a === '--dias' || a === '--resultado') { o[a.slice(2)] = valor(i, a); i++; }
+    else if (CAMPOS.includes(a.slice(2))) { o.campos[a.slice(2)] = valor(i, a); i++; }
+    else if (a.startsWith('--sin-') && SIN.includes(a.slice(6))) o.sin.push(a.slice(6));
     else throw new Salida(2, `argumento desconocido: ${a}\n${AYUDA}`);
   }
   if (o.todos && !o.verificar) throw new Salida(2, `--todos solo va con --verificar\n${AYUDA}`);
   if (o.hoy !== null && !fechaValida(o.hoy)) throw new Salida(2, `--hoy tiene que ser AAAA-MM-DD\n${AYUDA}`);
+  const modos = ['iniciar', 'nuevo', 'cambiar', 'cerrar', 'podar'].filter((m) => o[m] !== false && o[m] !== null);
+  o.modoEscritura = modos[0] || null;
+  if (modos.length > 1) throw new Salida(2, `un solo modo de escritura a la vez (${modos.join(', ')})\n${AYUDA}`);
+  if (o.modoEscritura) {
+    if (o.verificar || o.id !== null || o.todo || o.mio !== null || o.todos) throw new Salida(2, `--${o.modoEscritura} no se combina con modos de lectura\n${AYUDA}`);
+  }
+  const usados = [...Object.keys(o.campos), ...o.sin.map((x) => 'sin-' + x)];
+  const permitidos = { nuevo: CAMPOS, cambiar: [...CAMPOS, ...SIN.map((x) => 'sin-' + x)], cerrar: [], iniciar: [], podar: [] }[o.modoEscritura] || [];
+  for (const u of usados) if (!permitidos.includes(u)) throw new Salida(2, `--${u} no va con ${o.modoEscritura ? '--' + o.modoEscritura : 'ese modo'}\n${AYUDA}`);
+  if (o.resultado !== null && o.modoEscritura !== 'cerrar') throw new Salida(2, `--resultado solo va con --cerrar\n${AYUDA}`);
+  if (o.dias !== null && o.modoEscritura !== 'podar') throw new Salida(2, `--dias solo va con --podar\n${AYUDA}`);
+  if (o.dias !== null && !/^\d+$/.test(o.dias)) throw new Salida(2, `--dias tiene que ser un entero\n${AYUDA}`);
+  for (const x of SIN) if (o.sin.includes(x) && o.campos[x] !== undefined) throw new Salida(2, `--${x} y --sin-${x} a la vez\n${AYUDA}`);
+  if (o.campos['bloqueado-por-decision'] !== undefined && !/^\d+$/.test(o.campos['bloqueado-por-decision'])) throw new Salida(2, `--bloqueado-por-decision tiene que ser un entero\n${AYUDA}`);
+  const sit = o.campos.situacion;
+  if (sit !== undefined && !['abierto', 'en_curso', 'bloqueado', 'diferido'].includes(sit)) {
+    throw new Salida(2, sit === 'cerrado' ? 'para cerrar, usa --cerrar <Id> --resultado "<r>"' : `--situacion tiene que ser abierto, en_curso, bloqueado o diferido\n${AYUDA}`);
+  }
+  if (o.modoEscritura === 'nuevo' && (o.campos.titulo === undefined || o.campos.dueno === undefined)) throw new Salida(2, `--nuevo pide --titulo y --dueno\n${AYUDA}`);
+  if (o.modoEscritura === 'cambiar' && !usados.length) throw new Salida(2, `--cambiar no cambia nada: falta algun campo\n${AYUDA}`);
+  if (o.modoEscritura === 'cerrar' && (o.resultado === null || o.resultado.trim() === '')) throw new Salida(2, `--cerrar pide --resultado "<r>"\n${AYUDA}`);
   return o;
+}
+
+function guardar(ruta, estado, antes, ctx) {
+  const texto = serializar(estado);
+  const previos = new Set(antes === null ? [] : verificar(antes, ctx).map((f) => f.detalle));
+  const nuevos = verificar(texto, ctx).filter((f) => !previos.has(f.detalle));
+  if (nuevos.length) throw new Salida(4, `no se escribe ${relativa(ctx.raiz, ruta)}; el cambio deja hallazgos:\n` + nuevos.map((f) => f.detalle).join('\n'));
+  mkdirSync(path.dirname(ruta), { recursive: true });
+  const tmp = `${ruta}.${process.pid}.tmp`;
+  writeFileSync(tmp, texto);
+  renameSync(tmp, ruta);
+}
+
+function diasAtras(hoy, n) {
+  const [a, m, d] = hoy.split('-').map(Number);
+  return new Date(Date.UTC(a, m - 1, d - n)).toISOString().slice(0, 10);
+}
+
+function escribir(o, raiz, ambito, ruta, hoy) {
+  const ctx = { raiz, ambito, hoy };
+  if (o.modoEscritura === 'iniciar') {
+    if (existsSync(ruta)) throw new Salida(4, `${relativa(raiz, ruta)} ya existe; no se toca`);
+    guardar(ruta, vacio(), null, ctx);
+    console.log(`creado ${relativa(raiz, ruta)}`);
+    return;
+  }
+  if (!existsSync(ruta)) throw new Salida(4, `${relativa(raiz, ruta)} no existe: crea el estado con --iniciar`);
+  const antes = readFileSync(ruta, 'utf8');
+  const estado = leer(ruta);
+  if (!Array.isArray(estado.elementos)) throw new Salida(4, `${relativa(raiz, ruta)}: elementos no es una lista`);
+  const c = o.campos;
+  const poner = (e) => {
+    for (const k of ['titulo', 'situacion', 'dueno', 'porque', 'nota', 'caduca']) if (c[k] !== undefined) e[k] = c[k];
+    if (c['bloqueado-por-decision'] !== undefined) e.bloqueado_por_decision = Number(c['bloqueado-por-decision']);
+    for (const x of o.sin) delete e[x.replace(/-/g, '_')];
+  };
+  if (o.modoEscritura === 'nuevo') {
+    const sig = Number.isInteger(estado.siguiente_id) ? estado.siguiente_id : 1;
+    const e = { id: `E${sig}`, situacion: 'abierto', abierto: hoy };
+    poner(e);
+    estado.elementos.push(e);
+    estado.siguiente_id = sig + 1;
+    guardar(ruta, estado, antes, ctx);
+    console.log(e.id);
+    return;
+  }
+  if (o.modoEscritura === 'podar') {
+    const corte = diasAtras(hoy, o.dias === null ? 30 : Number(o.dias));
+    const fuera = estado.elementos.filter((e) => e.situacion === 'cerrado' && typeof e.cerrado === 'string' && e.cerrado < corte);
+    estado.elementos = estado.elementos.filter((e) => !fuera.includes(e));
+    guardar(ruta, estado, antes, ctx);
+    console.log(fuera.length ? fuera.map((e) => e.id).join(',') : '(nada que podar)');
+    return;
+  }
+  const id = o.modoEscritura === 'cambiar' ? o.cambiar : o.cerrar;
+  const e = estado.elementos.find((x) => x && x.id === id);
+  if (!e) throw new Salida(4, `${id} no existe en ${relativa(raiz, ruta)}`);
+  if (o.modoEscritura === 'cerrar') { e.situacion = 'cerrado'; e.cerrado = hoy; e.resultado = o.resultado; } else poner(e);
+  guardar(ruta, estado, antes, ctx);
+  console.log(`${id} actualizado`);
 }
 
 function faltante(raiz, ambito, ruta) {
@@ -241,6 +343,7 @@ function ejecutar(args) {
   const raiz = raizVault();
   if (!raiz) throw new Salida(2, 'no encuentro la raiz del vault');
   const hoy = o.hoy || fechaLocal();
+  if (o.modoEscritura && o.de !== null) throw new Salida(2, `--de es de solo lectura: --${o.modoEscritura} escribe solo el ambito del directorio de trabajo`);
   let ambito;
   if (o.de !== null) ambito = ambitoNombrado(raiz, o.de);
   else {
@@ -249,6 +352,7 @@ function ejecutar(args) {
       throw new Salida(2, 'el directorio de trabajo tiene que ser la raiz del vault o la carpeta de un asunto (o usa --de)');
     }
   }
+  if (o.modoEscritura) { escribir(o, raiz, ambito, rutaEstado(raiz, ambito), hoy); return; }
   if (o.verificar && o.todos) {
     const hall = [];
     for (const x of ambitosConEstado(raiz)) {
@@ -395,6 +499,66 @@ function prueba() {
     poner(FG, una(el('E1', { situacion: 'cerrado', cerrado: '2026-10-05', resultado: 'ok', bloqueado_por_decision: 1 })));
     r = run('.', ['--verificar']);
     caso('12 decision resuelta con el elemento cerrado pasa', r.code === 0, r.out);
+
+    // escritura
+    const huella = (f) => (existsSync(f) ? createHash('sha256').update(readFileSync(f)).digest('hex') : 'ausente');
+    const FD = path.join(tmp, 'casa', 'dos', 'coordinacion', 'estado.json');
+    rmSync(FG, { force: true }); rmSync(FU, { force: true });
+    r = run('casa/dos', ['--cambiar', 'E1', '--nota', 'x']);
+    caso('escribir sin fichero sale 4 y manda a --iniciar', r.code === 4 && /--iniciar/.test(r.out) && !existsSync(FD), r.out);
+    r = run('casa/dos', ['--iniciar']);
+    caso('--iniciar crea el fichero', r.code === 0 && existsSync(FD), r.out);
+    r = run('casa/dos', ['--verificar']);
+    caso('el fichero iniciado pasa --verificar', r.code === 0, r.out);
+    let h = huella(FD);
+    r = run('casa/dos', ['--iniciar']);
+    caso('--iniciar repetido sale 4 y no cambia el fichero', r.code === 4 && huella(FD) === h, r.out);
+    r = run('casa/dos', ['--nuevo', '--titulo', 'Primero', '--dueno', 'coordinador-dos']);
+    caso('--nuevo da E1', r.code === 0 && r.out.trim() === 'E1', r.out);
+    r = run('casa/dos', ['--nuevo', '--titulo', 'Segundo', '--dueno', 'coordinador-dos', '--situacion', 'en_curso', '--porque', 'casa/dos/README.md', '--nota', 'una nota']);
+    caso('--nuevo da E2', r.code === 0 && r.out.trim() === 'E2', r.out);
+    r = run('casa/dos', ['--verificar']);
+    caso('tras --nuevo el fichero pasa --verificar (formato canonico)', r.code === 0, r.out);
+    h = huella(FD);
+    r = run('casa/dos', ['--nuevo', '--titulo', 'Del director', '--dueno', 'director']);
+    caso('--nuevo de director sin --caduca sale 4 y no cambia el fichero', r.code === 4 && /8:/.test(r.out) && huella(FD) === h, r.out);
+    r = run('casa/dos', ['--nuevo', '--titulo', 'Cerrado', '--dueno', 'coordinador-dos', '--situacion', 'cerrado']);
+    caso('--nuevo con situacion cerrado sale 2', r.code === 2 && huella(FD) === h, r.out);
+    r = run('casa/dos', ['--cambiar', 'E1', '--titulo', 'Primero cambiado', '--situacion', 'bloqueado', '--nota', 'nota nueva', '--caduca', '2026-11-01']);
+    r = run('casa/dos', ['--id', 'E1']);
+    caso('--cambiar cambia los campos', /titulo: Primero cambiado/.test(r.out) && /situacion: bloqueado/.test(r.out) && /nota: nota nueva/.test(r.out) && /caduca: 2026-11-01/.test(r.out), r.out);
+    run('casa/dos', ['--cambiar', 'E1', '--sin-nota', '--sin-caduca']);
+    r = run('casa/dos', ['--id', 'E1']);
+    caso('--sin-nota y --sin-caduca quitan los campos', !/nota:/.test(r.out) && !/caduca:/.test(r.out), r.out);
+    r = run('casa/dos', ['--cambiar', 'E1', '--situacion', 'cerrado']);
+    caso('--cambiar no admite cerrado (sale 2)', r.code === 2, r.out);
+    r = run('casa/dos', ['--cambiar', 'E9', '--nota', 'x']);
+    caso('--cambiar de un id inexistente sale 4', r.code === 4, r.out);
+    h = huella(FD);
+    r = run('casa/dos', ['--cerrar', 'E1']);
+    caso('--cerrar sin --resultado sale 2 y no cambia el fichero', r.code === 2 && huella(FD) === h, r.out);
+    r = run('casa/dos', ['--cerrar', 'E1', '--resultado', 'hecho y comprobado']);
+    r = run('casa/dos', ['--id', 'E1']);
+    caso('--cerrar deja cerrado, fecha y resultado', /situacion: cerrado/.test(r.out) && /cerrado: 2026-10-12/.test(r.out) && /resultado: hecho y comprobado/.test(r.out), r.out);
+    poner(FD, estado([el('E1', { dueno: 'coordinador-dos', situacion: 'cerrado', cerrado: '2026-08-01', resultado: 'viejo' }),
+      el('E2', { dueno: 'coordinador-dos', situacion: 'cerrado', cerrado: '2026-10-05', resultado: 'reciente' }),
+      el('E3', { dueno: 'coordinador-dos' })], 4));
+    r = run('casa/dos', ['--podar']);
+    const sd = JSON.parse(readFileSync(FD, 'utf8'));
+    caso('--podar quita el cerrado viejo, conserva el reciente y no baja siguiente_id', r.code === 0 && r.out.trim() === 'E1' && sd.elementos.map((e) => e.id).join(',') === 'E2,E3' && sd.siguiente_id === 4, r.out);
+    r = run('casa/dos', ['--nuevo', '--titulo', 'Despues de podar', '--dueno', 'coordinador-dos']);
+    caso('un --nuevo tras --podar no reutiliza el id', r.code === 0 && r.out.trim() === 'E4', r.out);
+    r = run('casa/dos', ['--verificar']);
+    caso('tras cerrar, podar y crear el fichero pasa --verificar', r.code === 0, r.out);
+    poner(FG, estado(base()));
+    r = run('.', ['--nuevo', '--titulo', 'Con un caducado ajeno', '--dueno', 'coordinador-general']);
+    caso('un caducado ajeno al cambio no impide escribir', r.code === 0 && r.out.trim() === 'E20', r.out);
+    poner(FU, estado([el('E1', { dueno: 'coordinador-uno' })]));
+    h = huella(FU);
+    r = run('casa/dos', ['--de', 'casa/uno', '--nuevo', '--titulo', 'Intruso', '--dueno', 'coordinador-uno']);
+    caso('--de con escritura sale 2 y el fichero del otro no cambia', r.code === 2 && huella(FU) === h, r.out);
+    r = run('casa/dos', ['--de', 'casa/uno', '--iniciar']);
+    caso('--de con --iniciar sale 2', r.code === 2 && huella(FU) === h, r.out);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
