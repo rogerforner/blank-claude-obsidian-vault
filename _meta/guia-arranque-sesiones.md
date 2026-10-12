@@ -37,12 +37,12 @@ Porque **el estado no vive en el contexto de ninguna sesión: vive en ficheros v
 
 | Fichero | Qué guarda |
 |---|---|
-| `_meta/cola-pendientes.md` | lo abierto y lo cerrado, con su porqué |
-| `_meta/trabajo-en-curso.md` *(y el de cada asunto)* | una línea por frente vivo, con dueño y artefacto |
+| `_meta/estado.json` *(y el de cada asunto)* | qué queda y de quién es, por comando (`estado.mjs`) |
+| `_meta/cola-pendientes.md` | el porqué y lo cerrado |
 | `_meta/bitacora.md` | lo que se aprendió, para que no se repita |
 | `_meta/decisiones-abiertas.md` | lo que espera decisión del director |
 
-**Y no hace falta acordarse de abrirlos: el disparador de arranque los vuelca solo**, junto con la fecha sellada, el veredicto del verificador y si la sesión anterior cerró su DoD.
+**Y no hace falta acordarse de abrirlos: el disparador de arranque vuelca la vista del estado**, junto con la fecha sellada, el veredicto del verificador y si la sesión anterior cerró su DoD; la cola, la bitácora y las decisiones se abren.
 
 > **[MEDIDO 2026-10-04] El hook de arranque corre también tras un `/clear`**: al hacerlo vuelve a salir el bloque que empieza por `[FECHA]`, con el veredicto del verificador y los frentes abiertos. Lo que `/clear` no recarga son las definiciones de agente de una carpeta `.claude/agents/` creada después de arrancar, ni un `CLAUDE.md` cambiado: para eso, sesión nueva.
 
@@ -129,7 +129,7 @@ Desde el **2026-08-12** el modelo y el esfuerzo van escritos en el `settings.jso
 **Carpeta: la raíz del vault.** Mantiene la estructura —catálogo, plantillas, convenciones— e **inicializa los asuntos**. No trabaja dentro de ninguno.
 
 ```
-Arranca como coordinador general de este vault. Lee _meta/PRIMEROS-PASOS.md, el charter, la cola de pendientes, las decisiones abiertas y el índice de doctrinas. Salúdame con el estado en 2-3 líneas y tu propuesta de siguiente paso.
+Arranca como coordinador general de este vault. Lee _meta/PRIMEROS-PASOS.md, el charter, el estado (`estado.mjs`), las decisiones abiertas y el índice de doctrinas. Salúdame con el estado en 2-3 líneas y tu propuesta de siguiente paso.
 ```
 
 ---
@@ -141,7 +141,7 @@ Arranca como coordinador general de este vault. Lee _meta/PRIMEROS-PASOS.md, el 
 **No hace falta nombrar el asunto:** la carpeta ya lo determina, y **el mismo texto sirve para todos**.
 
 ```
-Arranca como coordinador de este asunto. Lee tu charter-coordinador.md, la cola de pendientes, las doctrinas propias de memoria/ y, si existe, el material de referencia en coordinacion/referencia/. Salúdame con el estado del asunto y tu plan de arranque.
+Arranca como coordinador de este asunto. Lee tu charter-coordinador.md, el estado (`estado.mjs`), las doctrinas propias de memoria/ y, si existe, el material de referencia en coordinacion/referencia/. Salúdame con el estado del asunto y tu plan de arranque.
 ```
 
 ---
@@ -151,7 +151,7 @@ Arranca como coordinador de este asunto. Lee tu charter-coordinador.md, la cola 
 **Misma carpeta que el anterior.** Lo que cambia es **qué comprueba antes de tocar nada**: en un asunto de software el código vive **fuera del vault**, donde el runtime lo sirve, con su propio ciclo de git. Un coordinador que arranca sin saber dónde está su repositorio, en qué rama o si el remoto existe **trabaja a ciegas**.
 
 ```
-Arranca como coordinador de este asunto de software. Antes de tocar nada: si docs/emplazamiento-runtime.md no existe o le falta algún punto de los siete de inicializador/plantilla-emplazamiento-runtime.md, pregúntamelo ahora y no sigas sin tenerlo. Si ya existe, léelo y confírmame que sigue siendo cierto (una ruta que cambió de sitio, un contenedor que ya no corre) antes de fiarte de él. Con la ficha en la mano, comprueba y repórtame: en qué rama está el repositorio, si tiene remoto configurado, qué puertas de calidad hay instaladas (hooks, pre-commit, script de definition-of-done) y si pasan HOY — todo dentro del runtime que la ficha indica, no en el host. Después lee tu charter-coordinador.md, la cola de pendientes, las doctrinas propias de memoria/ y, si existe, el material de referencia en coordinacion/referencia/. Salúdame con el estado del asunto, el resultado de esas comprobaciones y tu plan de arranque.
+Arranca como coordinador de este asunto de software. Antes de tocar nada: si docs/emplazamiento-runtime.md no existe o le falta algún punto de los siete de inicializador/plantilla-emplazamiento-runtime.md, pregúntamelo ahora y no sigas sin tenerlo. Si ya existe, léelo y confírmame que sigue siendo cierto (una ruta que cambió de sitio, un contenedor que ya no corre) antes de fiarte de él. Con la ficha en la mano, comprueba y repórtame: en qué rama está el repositorio, si tiene remoto configurado, qué puertas de calidad hay instaladas (hooks, pre-commit, script de definition-of-done) y si pasan HOY — todo dentro del runtime que la ficha indica, no en el host. Después lee tu charter-coordinador.md, el estado (`estado.mjs`), las doctrinas propias de memoria/ y, si existe, el material de referencia en coordinacion/referencia/. Salúdame con el estado del asunto, el resultado de esas comprobaciones y tu plan de arranque.
 ```
 
 **Dos cosas de este perfil que conviene tener presentes:**

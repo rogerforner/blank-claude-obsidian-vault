@@ -42,7 +42,7 @@ La respuesta de esta plantilla a cada uno. Como aparece aquí por primera vez el
 
 | Fallo | Respuesta |
 |---|---|
-| El trabajo se pierde | **El estado vivo está escrito**, no en el contexto de una conversación: cola de pendientes, charter, bitácora. Relevar una sesión no pierde nada. |
+| El trabajo se pierde | **El estado vivo está escrito**, no en el contexto de una conversación: el estado por comando (qué queda y de quién es), la cola de pendientes (el porqué), charter, bitácora. Relevar una sesión no pierde nada. |
 | La IA no trabaja igual | Las reglas viven en un **`CLAUDE.md` canónico** que se auto-carga, y en un catálogo de **doctrinas versionadas**. |
 | Los plazos | Van al charter y a la cola **con fecha**, y salen en la lectura de arranque de cada sesión. |
 | Lo irreversible | **Puerta humana**: entregar fuera, firmar, pagar y las decisiones jurídicas o económicas las aprueba una persona. La IA prepara, deja listo y para. |
@@ -314,7 +314,7 @@ Un caso completo y ficticio: **una reclamación a la aseguradora por daños de a
 **1. Abres el coordinador general** — sesión de Claude Code con la carpeta de trabajo en la **raíz del vault**:
 
 ```
-Arranca como coordinador general de este vault. Lee _meta/PRIMEROS-PASOS.md, el charter, la cola de pendientes, las decisiones abiertas y el índice de doctrinas. Salúdame con el estado en 2-3 líneas y tu propuesta de siguiente paso.
+Arranca como coordinador general de este vault. Lee _meta/PRIMEROS-PASOS.md, el charter, el estado (`estado.mjs`), las decisiones abiertas y el índice de doctrinas. Salúdame con el estado en 2-3 líneas y tu propuesta de siguiente paso.
 ```
 
 **2. Le pides que inicialice el asunto.** Como ya viene en marcha y con material sensible, el coordinador pasa por `inicializador/checklist-migracion-existentes.md` antes de copiar nada: reconocimiento del material y **puerta de confidencialidad** —qué entra al vault se decide, no se asume—. Después crea `casa/reclamacion-agua-2026/` desde la plantilla de contenedor, redacta el charter con **el plazo escrito con fecha**, y fija el perfil de permisos que le da el catálogo en solo lectura.
@@ -322,7 +322,7 @@ Arranca como coordinador general de este vault. Lee _meta/PRIMEROS-PASOS.md, el 
 **3. Abres el coordinador del asunto**, esta vez con la carpeta de trabajo en `casa/reclamacion-agua-2026/`:
 
 ```
-Arranca como coordinador de este asunto. Lee tu charter-coordinador.md, la cola de pendientes, las doctrinas propias de memoria/ y, si existe, el material de referencia en coordinacion/referencia/. Salúdame con el estado del asunto y tu plan de arranque.
+Arranca como coordinador de este asunto. Lee tu charter-coordinador.md, el estado (`estado.mjs`), las doctrinas propias de memoria/ y, si existe, el material de referencia en coordinacion/referencia/. Salúdame con el estado del asunto y tu plan de arranque.
 ```
 
 Su primer trabajo es **entender el expediente**: cronología y reconocimiento. Y eso lo hace con **subagentes de solo lectura**, que devuelven un resumen en vez de meterle los cuarenta documentos en el contexto.
