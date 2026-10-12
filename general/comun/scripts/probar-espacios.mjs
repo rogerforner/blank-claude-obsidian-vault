@@ -235,6 +235,24 @@ function casos(c, esp) {
       return R(ok, `raiz: doctrinas ${enRojo(raiz, 'doctrinas al dia')}, sincronia ${enRojo(raiz, 'sincronia con la plantilla')}; esp-uno/a1: doctrinas ${enRojo(asu, 'doctrinas al dia')}, sincronia ${enRojo(asu, 'sincronia con la plantilla')} (se esperaba true, true, false, false)`);
     }],
 
+    ['D6', () => {
+      const v = c.clon(); estadoValido(v, 'esp-uno/a1', { porque: 'no/existe.md#x' });
+      confirmarGit(v, 'add', '-A'); confirmarGit(v, 'commit', '-q', '-m', 'estado con porque roto');
+      const asu = puertaDod(dod(v, 'esp-uno/a1').salida, 'trabajo en curso') || '';
+      const raiz = dod(v, '.').salida;
+      const ok = enRojo(dod(v, 'esp-uno/a1').salida, 'trabajo en curso') && asu.includes('E1') && asu.includes('no/existe.md') && !raiz.includes('esp-uno/a1/coordinacion/estado.json');
+      return R(ok, `desde esp-uno/a1: rojo=${enRojo(dod(v, 'esp-uno/a1').salida, 'trabajo en curso')}, nombra E1=${asu.includes('E1')}; desde la raiz nombra la ruta=${raiz.includes('esp-uno/a1/coordinacion/estado.json')} (se esperaba true, true, false)`);
+    }],
+    ['D7', () => {
+      const v = c.clon();
+      const e = EST.vacio(); e.siguiente_id = 121;
+      for (let i = 1; i <= 120; i++) e.elementos.push({ id: `E${i}`, titulo: 'x'.repeat(140), situacion: 'abierto', dueno: 'coordinador-b1', abierto: '2026-01-01' });
+      escribir(v, 'esp-dos/b1/coordinacion/estado.json', EST.serializar(e));
+      confirmarGit(v, 'add', '-A'); confirmarGit(v, 'commit', '-q', '-m', 'estado grande');
+      const r = dod(v, 'esp-dos/b1').salida;
+      return R(enRojo(r, 'techos') && (puertaDod(r, 'techos') || '').includes('vista del estado'), 'el DoD desde esp-dos/b1 no marca techos en rojo con una vista del estado de mas de 16384 B');
+    }],
+
     ['T1', () => { const r = node([path.join(c.v1(), 'general', 'comun', 'scripts', 'tablero.mjs'), '--comprobar'], path.join(c.v1(), 'esp-uno', 'a1')); return R(r.codigo === 0, `sale ${r.codigo}: ${r.salida.trim()}`); }],
     ['T2', () => { const r = node([path.join(c.v1(), 'general', 'comun', 'scripts', 'tablero.mjs'), '--comprobar'], path.join(c.v1(), 'esp-uno')); return R(r.codigo === 2, `sale ${r.codigo}, se esperaba 2`); }],
 

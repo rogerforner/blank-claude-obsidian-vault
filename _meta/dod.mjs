@@ -35,9 +35,10 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync, realpathSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { join, dirname, basename } from 'node:path';
+import { join, dirname, basename, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ambitoDe, esDelAmbito, listarAsuntos } from '../general/comun/scripts/espacios.mjs';
+import { ambitosConEstado, leer as leerEstado, vista as vistaEstado, ACTIVAS } from '../general/comun/scripts/estado.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SELLO = join(RAIZ, '.dod-seal.json');
@@ -230,6 +231,8 @@ const TECHOS = [
   ['_meta/cola-pendientes.md', 40960],
   ['_meta/bitacora.md', 30720],
 ];
+// La vista del estado vivo (lo que el hook vuelca al arrancar) tambien entra entera en cada arranque.
+const TECHO_VISTA_ESTADO = 16384;
 function puertaTechos() {
   // Solo la cola de cada asunto descubierto: un patron generico `<x>/<y>/cola-pendientes.md`
   // casaria con `inicializador/plantilla-contenedor-asunto/`.
@@ -246,6 +249,19 @@ function puertaTechos() {
       anotaPorAmbito('techos', rel, `${rel}: ${bytes} B de ${techo} (${pct} %) — POR ENCIMA del techo, podalo antes de cerrar`);
     } else if (pct >= 85) {
       anotaPorAmbito('techos', rel, `${rel}: ${bytes} B (${pct} %) — cerca del techo, poda antes de escribir largo`, { bloquea: false });
+    }
+  }
+  for (const x of ambitosConEstado(RAIZ)) {
+    const rel = relative(RAIZ, x.ruta).split('\\').join('/');
+    if (!esMio(rel)) continue;
+    let bytes;
+    try { bytes = Buffer.byteLength(vistaEstado(leerEstado(x.ruta))); } catch { continue; }   // ilegible: lo dice el verificador
+    const pct = Math.round((bytes / TECHO_VISTA_ESTADO) * 100);
+    if (bytes > TECHO_VISTA_ESTADO) {
+      malos++;
+      anotaPorAmbito('techos', rel, `${rel} (vista del estado): ${bytes} B de ${TECHO_VISTA_ESTADO} (${pct} %) — POR ENCIMA del techo, cierra o poda antes de cerrar`);
+    } else if (pct >= 85) {
+      anotaPorAmbito('techos', rel, `${rel} (vista del estado): ${bytes} B de ${TECHO_VISTA_ESTADO} (${pct} %) — cerca del techo`, { bloquea: false });
     }
   }
   // "malos" solo cuenta los TUYOS: el mensaje tiene que decirlo o se contradice con la linea de
@@ -321,6 +337,18 @@ function puertaTrabajoEnCurso() {
       const destino = join(RAIZ, m[1].replace(/^\.\//, ''));
       if (!existsSync(destino)) fallos.push([rel, `${rel} linea ${i + 1}: el artefacto \`${m[1]}\` no existe — la ruta va DESDE LA RAIZ DEL VAULT, no desde el contenedor donde escribes`]);
     });
+  }
+  // El estado vivo: cada activo con `porque` apunta a algo que existe (la parte antes de `#`).
+  for (const x of ambitosConEstado(RAIZ)) {
+    const rel = relative(RAIZ, x.ruta).split('\\').join('/');
+    if (!esMio(rel)) continue;
+    let est;
+    try { est = leerEstado(x.ruta); } catch { continue; }
+    for (const e of Array.isArray(est.elementos) ? est.elementos : []) {
+      if (!ACTIVAS.includes(e.situacion) || typeof e.porque !== 'string' || !e.porque) continue;
+      const f = e.porque.split('#')[0];
+      if (f && !existsSync(join(RAIZ, f.replace(/^\.\//, '')))) fallos.push([rel, `${rel} ${e.id}: el porque \`${e.porque}\` no existe — la ruta va desde la raíz del vault`]);
+    }
   }
   const mios = fallos.filter(([rel]) => esMio(rel));          // lo ajeno ni se nombra (D5)
   if (!mios.length) return anota('trabajo en curso', true, 'los artefactos declarados existen en tu ambito');
