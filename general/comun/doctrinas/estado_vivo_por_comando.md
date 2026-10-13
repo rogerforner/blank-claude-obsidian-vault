@@ -2,7 +2,7 @@
 name: Estado vivo por comando — qué queda y de quién es, en un fichero de datos
 description: El estado vivo de cada coordinador (qué queda abierto y de quién es) es un fichero de datos que se consulta y se cambia por comando; el porqué sigue en prosa. Un pendiente vive en el estado o en la prosa, nunca en los dos, y se actualiza en el mismo commit que el trabajo. El hook vuelca la vista al arrancar, el verificador comprueba los invariantes y el DoD mide la vista.
 type: doctrine
-version: 1.0
+version: 1.1
 index_summary: >-
   **El estado vivo de cada coordinador es un fichero de datos** —qué queda abierto y de quién es— que **se consulta y se cambia por comando** (`estado.mjs`); el porqué sigue en prosa, en la cola y en `docs/`. **Un pendiente vive en el estado o en la prosa, nunca en los dos**, y se actualiza **en el mismo commit que el trabajo**. Cada coordinador escribe solo el suyo y lee el de otro con `--de` antes de mandarle un handoff. El **hook vuelca la vista** al arrancar (la cola ya no se lee entera), la **regla 12 del verificador** comprueba los invariantes, la doble fuente y los pendientes en prosa, y el **DoD** mide la vista contra su techo. Un activo del director lleva `caduca`; lo que espera un disparador sin fecha va `diferido`; la `nota` es corta.
 ---
@@ -36,7 +36,7 @@ El script es uno, común: `general/comun/scripts/estado.mjs`, y deduce el ficher
 ## Los mecanismos
 
 - **El hook de arranque vuelca la vista** del ámbito: una línea por elemento activo, sin la `nota` (se pide con `--id`), con los caducados y los que llevan `caduca` primero; si el fichero no se lee, lo dice en vez de callar. La cola no se lee entera al arrancar: se abre por la entrada a la que apunta `porque`.
-- **La regla 12 del verificador** da los invariantes del fichero, la doble fuente (un `trabajo-en-curso.md` con líneas abiertas junto a un estado) y los pendientes en prosa de un ámbito con estado.
+- **La regla 12 del verificador** da los invariantes del fichero, que todo ámbito tenga su `estado.json` (un `trabajo-en-curso.md` es hallazgo) y los pendientes en prosa, incluida la casilla en negrita (`- **[ ] …**`).
 - **El DoD** mide la vista de cada ámbito propio contra 16.384 B (aviso al 85 %) y comprueba que existe cada `porque`. El JSON no tiene techo: la `nota` va acotada y la poda quita lo cerrado.
 - Las escrituras se verifican antes de escribir y dejan el fichero en formato canónico; editarlo a mano sigue siendo posible y el formato lo delata.
 
@@ -44,23 +44,10 @@ El script es uno, común: `general/comun/scripts/estado.mjs`, y deduce el ficher
 
 Se cierra con `--cerrar` y un `resultado` corto: el elemento cerrado se queda un tiempo como constancia. `--podar` quita los cerrados de más de 30 días; git es el histórico, y `siguiente_id` no baja.
 
-## Transición
-
-Mientras un asunto no tenga `estado.json`, su `trabajo-en-curso.md` sigue valiendo: el hook, el verificador y el DoD lo leen como antes. Tener los dos con líneas abiertas es hallazgo de doble fuente. Cuando migran todos, esta sección y la vía vieja se retiran.
-
-## De dónde sale
-
-- Decisión del director del 2026-10-08.
-- El diseño viene del piloto en otro vault del director, donde el arranque pasó de 36.834 B a 2.756 B. No se trajo código: el script de aquí se escribió nuevo desde el comportamiento documentado.
-- Lo que no se trajo, y por qué: `comprobar` (nunca se usó, y ejecutaría comandos sacados de datos en cada arranque), `deriva_de`, `origen` y `criterios_de_exito` (uso casi nulo), el envoltorio por ámbito (aquí los scripts comunes se ejecutan desde el catálogo) y el script que parte colas en vivo e histórico (ninguna cola supera su techo; se trae si una poda a mano no cuadra o una cola lo supera).
-- Reabre el descarte del 2026-09-04 ("el piloto no se hace"), que fijó como umbral de reapertura una cola con más de 25 elementos abiertos. Medido el 2026-10-12, el umbral se cumple: 53 y 34 pendientes abiertos en dos colas.
-
-## Relacionadas
-
 - [[ciclo_de_tandas]] — el relevo y el paso de cierre leen el tablero y el estado.
-- [[definition_of_done]] — la puerta de techos y la de trabajo en curso.
+- [[definition_of_done]] — la puerta de techos y la de artefactos declarados.
 - [[convencion_organizacion_carpeta_trabajo]] — dónde cae cada fichero.
 - [[orquestacion_sesiones_por_herramienta]] — el handoff entre coordinadores.
 - [[scripts_adhoc_tareas_repetitivas]] — por qué esto es un script y no prosa.
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v1.0 (2026-10-12):** nace con la decisión del director del 2026-10-08 de llevar el estado vivo a un fichero de datos que se consulta y se cambia por comando. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado y **no se hereda** automáticamente.
+> Pieza de catálogo `general/comun/doctrinas/`. **v1.1 (2026-10-13): fuera la sección de transición**: migrados todos los asuntos, la vía del `trabajo-en-curso.md` se retiró del hook, el verificador y el DoD; todo ámbito necesita su `estado.json`. **v1.0 (2026-10-12):** nace con la decisión del director del 2026-10-08 de llevar el estado vivo a un fichero de datos que se consulta y se cambia por comando. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado y **no se hereda** automáticamente.
