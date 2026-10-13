@@ -321,23 +321,10 @@ function puertaDoctrinasVersionadas(commits) {
   for (const f of fallos) anota('doctrinas al dia', false, f);
 }
 
-// (b) Los artefactos que declara el trabajo en curso tienen que existir. Una linea que apunta a un
-//     fichero que ya no esta es peor que no tenerla: manda a la sesion siguiente a buscar humo.
-function puertaTrabajoEnCurso() {
-  const ficheros = git(['ls-files']).split('\n').filter((f) => basename(f) === 'trabajo-en-curso.md');
+// (b) Los artefactos que declara el estado vivo tienen que existir. Un `porque` que apunta a un
+//     fichero que ya no esta es peor que no tenerlo: manda a la sesion siguiente a buscar humo.
+function puertaArtefactos() {
   const fallos = [];
-  for (const rel of ficheros) {
-    const texto = readFileSync(join(RAIZ, rel), 'utf8');
-    let enEjemplo = false;
-    texto.split('\n').forEach((linea, i) => {
-      if (linea.startsWith('```')) { enEjemplo = !enEjemplo; return; }
-      if (enEjemplo || !linea.startsWith('- [ABIERTO')) return;
-      const m = linea.match(/artefacto: `([^`]+)`/);
-      if (!m || m[1] === '-') return;
-      const destino = join(RAIZ, m[1].replace(/^\.\//, ''));
-      if (!existsSync(destino)) fallos.push([rel, `${rel} linea ${i + 1}: el artefacto \`${m[1]}\` no existe — la ruta va DESDE LA RAIZ DEL VAULT, no desde el contenedor donde escribes`]);
-    });
-  }
   // El estado vivo: cada activo con `porque` apunta a algo que existe (la parte antes de `#`).
   for (const x of ambitosConEstado(RAIZ)) {
     const rel = relative(RAIZ, x.ruta).split('\\').join('/');
@@ -351,8 +338,8 @@ function puertaTrabajoEnCurso() {
     }
   }
   const mios = fallos.filter(([rel]) => esMio(rel));          // lo ajeno ni se nombra (D5)
-  if (!mios.length) return anota('trabajo en curso', true, 'los artefactos declarados existen en tu ambito');
-  for (const [rel, texto] of mios) anotaPorAmbito('trabajo en curso', rel, texto);
+  if (!mios.length) return anota('artefactos declarados', true, 'los artefactos declarados existen en tu ambito');
+  for (const [rel, texto] of mios) anotaPorAmbito('artefactos declarados', rel, texto);
 }
 
 // (c) Si la sesion toco el catalogo o el inicializador, la plantilla tiene que quedar sincronizada.
@@ -455,7 +442,7 @@ puertaArbolLimpio();
 puertaHigiene();
 puertaTechos();
 puertaDoctrinasVersionadas(commitsDeHoy);
-puertaTrabajoEnCurso();
+puertaArtefactos();
 puertaSincroniaPlantilla(commitsDeHoy);
 puertaWorktrees();
 

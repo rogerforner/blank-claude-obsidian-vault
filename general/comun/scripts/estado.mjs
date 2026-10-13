@@ -332,8 +332,7 @@ function escribir(o, raiz, ambito, ruta, hoy) {
 }
 
 function faltante(raiz, ambito, ruta) {
-  const tec = ambito.tipo === 'general' ? '_meta/trabajo-en-curso.md' : `${ambito.espacio}/${ambito.slug}/coordinacion/trabajo-en-curso.md`;
-  return new Salida(4, `${relativa(raiz, ruta)} no existe: ese ámbito aún no ha migrado; mira su ${tec}`);
+  return new Salida(4, `${relativa(raiz, ruta)} no existe: ese ámbito no tiene estado.json; créalo con --iniciar`);
 }
 
 function ejecutar(args) {
@@ -422,7 +421,7 @@ function prueba() {
   try {
     // lectura
     let r = run('.', []);
-    caso('sin fichero: sale 4 con el aviso de no migrado', r.code === 4 && /no existe: ese ámbito aún no ha migrado/.test(r.out), r.out);
+    caso('sin fichero: sale 4 con el aviso de que no tiene estado.json', r.code === 4 && /ese ámbito no tiene estado\.json/.test(r.out), r.out);
     poner(FG, estado([]));
     r = run('.', []);
     caso('vista vacia', r.code === 0 && r.out.trim() === '(nada activo en este ámbito)', r.out);

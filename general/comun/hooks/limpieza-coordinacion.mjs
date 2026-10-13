@@ -31,15 +31,12 @@
 //      acotado el 2026-10-05 por la decision D5: los hallazgos ajenos ni se muestran). Es el
 //      equivalente a la prueba basica de arranque del arnes de referencia: detectar lo que la
 //      sesion anterior dejo roto ANTES de tocar nada, en vez de descubrirlo al ir a commitear.
-//   5. VUELCA EL ESTADO del PROPIO ambito si tiene `estado.json` (`[ESTADO]`, con `estado.mjs`; y avisa
-//      de doble fuente si su `trabajo-en-curso.md` aun tiene lineas abiertas). Si no lo tiene, vuelca
-//      el trabajo en curso como antes; esa via dura hasta que migren los asuntos. El trabajo en curso
-//      del PROPIO contenedor (desde 2026-08-23; acotado el 2026-10-05
-//      por la decision D5: cada coordinador ve solo lo suyo): las lineas abiertas de sus
-//      `trabajo-en-curso.md`. La raiz ve los que no estan bajo un asunto; un asunto, los de su
-//      carpeta (`<espacio>/<asunto>/`). Una sesion fuera de la raiz y de un asunto no tiene rol: ni
-//      volcado ni hallazgos, solo la linea `[AMBITO]`. Antes de mandar un handoff a otro coordinador se mira el suyo en ese momento. Cierra dos huecos que
-//      estaban escritos por separado en la cola y eran el mismo: (a) la mejora que pidio el
+//   5. VUELCA EL ESTADO del PROPIO ambito (`[ESTADO]`, con `estado.mjs`; desde 2026-08-23 como
+//      trabajo en curso, acotado el 2026-10-05 por la decision D5: cada coordinador ve solo lo suyo).
+//      Un ambito sin `estado.json` recibe la linea que dice como crearlo. Una sesion fuera de la raiz
+//      y de un asunto no tiene rol: ni volcado ni hallazgos, solo la linea `[AMBITO]`. Antes de mandar
+//      un handoff a otro coordinador se mira el suyo en ese momento, con `estado.mjs --de`. Cierra dos
+//      huecos que estaban escritos por separado en la cola y eran el mismo: (a) la mejora que pidio el
 //      coordinador de `climatizacion` -- antes de mandar un handoff hay que saber si el
 //      destinatario ya tiene ese trabajo abierto --, y (b) el buzon para sesiones apagadas,
 //      que no necesitaba herramienta nueva porque el fichero YA es un buzon persistente; lo
@@ -149,9 +146,6 @@ function raizDelVault() {
   return null;
 }
 
-// Lineas `- [ABIERTO AAAA-MM-DD] ...` de los `trabajo-en-curso.md` del vault. El formato lo
-// comprueba el verificador (regla 12): si deriva, el hook deja de leerlas y el aviso se
-// perderia EN SILENCIO, que es el peor modo de fallo de una pieza de higiene.
 // AMBITO de la sesion (decision D5): un asunto responde de `<espacio>/<slug>/`; la raiz, de todo lo
 // que no esta bajo un asunto. Lo calcula `scripts/espacios.mjs`, cargado con import() dinamico
 // dentro de try (ruta relativa a este fichero) para que un fallo de carga no rompa el arranque.
@@ -167,41 +161,6 @@ function ambitoDeLaSesion(raiz) {
 }
 function esDelAmbito(ambito, ruta) {
   try { return ambito.tipo !== 'invalido' && ESP.esDelAmbito(ambito, ruta, ESP.listarAsuntos(raizDelVault())); } catch { return false; }
-}
-
-const ABIERTO = /^- \[ABIERTO (\d{4}-\d{2}-\d{2})\] (.+)$/;
-function trabajoEnCurso(raiz, ambito) {
-  if (!raiz) return [];
-  const encontrados = [];
-  const buscar = (dir, prof) => {
-    if (prof > 3) return;
-    let entries;
-    try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
-    for (const e of entries) {
-      if (e.isDirectory()) {
-        if (SKIP_DIRS.has(e.name)) continue;
-        buscar(join(dir, e.name), prof + 1);
-      } else if (e.isFile() && e.name === 'trabajo-en-curso.md') {
-        encontrados.push(join(dir, e.name));
-      }
-    }
-  };
-  buscar(raiz, 0);
-  const out = [];
-  for (const f of encontrados.sort()) {
-    if (!esDelAmbito(ambito, relative(raiz, f).replace(/\\/g, '/'))) continue;   // lo ajeno ni se lee
-    let texto;
-    try { texto = readFileSync(f, 'utf8'); } catch { continue; }
-    let enEjemplo = false;
-    for (const linea of texto.split('\n')) {
-      // Las lineas de dentro de un bloque de codigo son el EJEMPLO de formato, no trabajo real.
-      if (linea.startsWith('```')) { enEjemplo = !enEjemplo; continue; }
-      if (enEjemplo) continue;
-      const m = linea.match(ABIERTO);
-      if (m) out.push([f, m[1], m[2]]);
-    }
-  }
-  return out;
 }
 
 // Estado del sello del DoD de la sesion anterior. Devuelve null si este arbol no usa DoD.
@@ -267,9 +226,9 @@ function main() {
   // cortaba el hook entero cuando no habia ningun .md en `coordinacion/`, `estudios/` ni `_meta/`
   // bajo esta raiz. Pero de las seis cosas que hace este hook, solo las dos primeras -- borrar
   // efimeros y avisar de trackeados -- dependen de esa lista. Las otras cuatro NO: el sello de
-  // fecha, el verificador, el volcado de trabajo en curso y el aviso del DoD tienen que salir
+  // fecha, el verificador, el volcado del estado y el aviso del DoD tienen que salir
   // SIEMPRE. Con el `return`, una sesion abierta en una carpeta sin efimeros arrancaba sin fecha,
-  // sin saber si el kit estaba en rojo y sin ver el trabajo en curso de nadie -- y en silencio,
+  // sin saber si el kit estaba en rojo y sin ver el estado de nadie -- y en silencio,
   // que es el peor modo de fallo para una pieza cuyo trabajo es avisar. Lo cazo una tanda de
   // extraccion del propio metodo (2026-08-27) leyendo el codigo, no usandolo: por definicion,
   // el caso que rompe es aquel en el que el hook no dice nada.
@@ -374,7 +333,7 @@ function main() {
   // y un contenedor de asunto lo alcanza subiendo dos niveles. Si no aparece, no pasa nada.
   const rojo = [];
   if (ambitoDeLaSesion(raizDelVault()).tipo === 'invalido') {
-    rojo.push('[AMBITO] Esta sesion no esta en la raiz del vault ni en <espacio>/<asunto>: no tiene rol, y no se vuelcan trabajo en curso ni hallazgos del verificador.');
+    rojo.push('[AMBITO] Esta sesion no esta en la raiz del vault ni en <espacio>/<asunto>: no tiene rol, y no se vuelcan estado ni hallazgos del verificador.');
   }
   try {
     let dir = ROOT;
@@ -405,12 +364,11 @@ function main() {
     }
   } catch { /* el verificador nunca rompe el arranque */ }
 
-  // --- trabajo en curso del propio contenedor (SIEMPRE que haya alguno) ---
+  // --- estado del propio ambito (SIEMPRE: sin estado.json tambien se avisa) ---
   const raiz = raizDelVault();
   const curso = [];
   try {
     const ambito = ambitoDeLaSesion(raiz);
-    const abiertos = trabajoEnCurso(raiz, ambito);
     const rutaEst = EST && raiz && (ambito.tipo === 'general' || ambito.tipo === 'asunto') ? EST.rutaEstado(raiz, ambito) : null;
     if (rutaEst && existsSync(rutaEst)) {
       let est = null;
@@ -422,19 +380,8 @@ function main() {
         curso.push(`[ESTADO] ${n} elemento(s) activo(s) en tu ambito. El detalle de uno, con estado.mjs --id <Id>; el de otro coordinador, con estado.mjs --de <espacio>/<asunto> antes de mandarle un handoff; lo que abras o cierres va al estado en el mismo commit:`);
         for (const l of EST.vista(est).split('\n')) curso.push('  ' + l);
       } else if (est) curso.push('[ESTADO] Nada activo en tu ambito.');
-      const porFichero = new Map();
-      for (const [f] of abiertos) porFichero.set(f, (porFichero.get(f) || 0) + 1);
-      for (const [f, n] of porFichero) {
-        const dueno = f.startsWith(raiz) ? f.slice(raiz.length + 1).replace(/\\/g, '/') : f;
-        curso.push(`[ESTADO] AVISO: doble fuente — ${dueno} sigue con ${n} linea(s) abierta(s): pasalas al estado y retira el fichero.`);
-      }
-    } else if (abiertos.length) {
-      curso.push(`[EN CURSO] ${abiertos.length} trabajo(s) abierto(s) en tu contenedor. Antes de abrir un frente nuevo, mira si ya esta aqui — y antes de mandar un handoff a otro coordinador, mira EN ESE MOMENTO el trabajo-en-curso.md del destinatario — y si abres uno que sobrevive a tu sesion, anadelo a su fichero en el mismo commit:`);
-      for (const [f, fecha, texto] of abiertos) {
-        const dueno = f.startsWith(raiz) ? f.slice(raiz.length + 1).replace(/\\/g, '/') : f;
-        curso.push(`  - (desde ${fecha}) ${texto}`);
-        curso.push(`      ${dueno}`);
-      }
+    } else if (rutaEst) {
+      curso.push('[ESTADO] Tu ámbito no tiene estado.json: créalo con estado.mjs --iniciar.');
     }
   } catch { /* el volcado nunca rompe el arranque */ }
 

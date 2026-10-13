@@ -33,7 +33,6 @@ ${SEPARADOR}
 `;
 
 const marca = (tipo, nombre) => `---\ntipo: ${tipo}\n---\n# ${nombre}\n`;
-const lineaCurso = (que, artefacto) => `- [ABIERTO 2026-01-01] **${que}** · dueño: \`x\` · artefacto: \`${artefacto}\` — x\n`;
 
 function escribir(raiz, rel, texto) {
   const f = path.join(raiz, rel);
@@ -71,7 +70,7 @@ function asunto(raiz, espacio, slug, que) {
   const base = `${espacio}/${slug}`;
   escribir(raiz, `${base}/charter-coordinador.md`, `# Charter de ${slug}\n`);
   escribir(raiz, `${base}/cola-pendientes.md`, `# Cola de ${slug}\n`);
-  escribir(raiz, `${base}/coordinacion/trabajo-en-curso.md`, lineaCurso(que, `${base}/cola-pendientes.md`));
+  estadoActivo(raiz, base, `marca-${que}`);
   escribir(raiz, `${base}/coordinacion/tablero-tandas.md`, TABLERO);
 }
 
@@ -82,7 +81,7 @@ function vault1(dir) {
   escribir(dir, 'adjuntos/README.md', marca('libre', 'adjuntos'));
   asunto(dir, 'esp-uno', 'a1', 'uno');
   asunto(dir, 'esp-dos', 'b1', 'dos');
-  escribir(dir, '_meta/trabajo-en-curso.md', lineaCurso('raiz', '_meta/trabajo-en-curso.md'));
+  estadoGeneral(dir, 'marca-raiz');
   confirmarGit(dir, 'init', '-q');
   confirmarGit(dir, 'add', '-A');
   confirmar(gitSiembra(dir, 'commit', '-q', '-m', 'vault de prueba'), 'git commit');
@@ -102,7 +101,7 @@ function vault2(dir) {
   escribir(dir, 'esp-uno/a1/.claude/agents/ejecutora.md', 'distinto de su plantilla\n');
   escribir(dir, 'esp-uno/CLAUDE.md', '# Reglas\n\nTexto.\n');
   escribir(dir, 'esp-uno/x/notas.md', '# Notas\n\nUna carpeta sin charter.\n');
-  escribir(dir, '_meta/trabajo-en-curso.md', lineaCurso('raiz', '_meta/trabajo-en-curso.md'));
+  estadoGeneral(dir, 'marca-raiz');
   confirmarGit(dir, 'init', '-q');
   confirmarGit(dir, 'add', '-A');
   confirmar(gitSiembra(dir, 'commit', '-q', '-m', 'vault de prueba 2'), 'git commit');
@@ -146,8 +145,16 @@ function hook(v, rel) {
 function estadoActivo(raiz, base, titulo) {
   const e = EST.vacio();
   e.siguiente_id = 2;
-  e.elementos.push({ id: 'E1', titulo, situacion: 'abierto', dueno: 'x', abierto: '2026-01-01' });
+  e.elementos.push({ id: 'E1', titulo, situacion: 'abierto', dueno: `coordinador-${base.split('/')[1]}`, abierto: '2026-01-01' });
   escribir(raiz, `${base}/coordinacion/estado.json`, EST.serializar(e));
+}
+
+// Lo mismo para el general: `_meta/estado.json`.
+function estadoGeneral(raiz, titulo) {
+  const e = EST.vacio();
+  e.siguiente_id = 2;
+  e.elementos.push({ id: 'E1', titulo, situacion: 'abierto', dueno: 'coordinador-general', abierto: '2026-01-01' });
+  escribir(raiz, '_meta/estado.json', EST.serializar(e));
 }
 
 // Estado canonico y valido (dueno coordinador-<asunto>) en `base`; `extra` mezcla campos en el elemento.
@@ -161,7 +168,7 @@ function estadoValido(raiz, base, extra = {}) {
 const vivo = (salida, ruta) => salida.split('\n').filter((l) => /^\s*\[estado vivo\] /.test(l) && l.includes(ruta));
 const verif = (v) => node([path.join(v, '_meta', 'verificar-kit.mjs')], v).salida;
 
-const marcas = (s) => ['**uno**', '**dos**', '**raiz**', '[AMBITO]', '[EN CURSO]'].filter((m) => s.includes(m)).join(' ') || 'ninguna marca';
+const marcas = (s) => ['marca-uno', 'marca-dos', 'marca-raiz', '[AMBITO]', '[ESTADO]'].filter((m) => s.includes(m)).join(' ') || 'ninguna marca';
 
 const dod = (v, rel) => node([path.join(v, '_meta', 'dod.mjs'), '--sin-sello'], path.join(v, rel));
 
@@ -181,25 +188,24 @@ function casos(c, esp) {
       return R(ok, 'esDelAmbito no reparte esp-uno/README.md al general y esp-uno/a1/x.md al asunto');
     }],
 
-    ['H1', () => { const s = hook(c.v1(), 'esp-uno/a1'); return R(s.includes('**uno**') && !s.includes('**dos**') && !s.includes('**raiz**'), `el hook vuelca ${marcas(s)}`); }],
-    ['H2', () => { const s = hook(c.v1(), 'esp-uno'); return R(/^\[AMBITO\]/m.test(s) && !s.includes('[EN CURSO]') && !s.includes('[ESTADO]'), `el hook vuelca ${marcas(s)}`); }],
-    ['H3', () => { const s = hook(c.v1(), 'general/comun'); return R(/^\[AMBITO\]/m.test(s) && !s.includes('[EN CURSO]') && !s.includes('[ESTADO]'), `el hook vuelca ${marcas(s)}`); }],
-    ['H4', () => { const s = hook(c.v1(), '.'); return R(s.includes('**raiz**') && !s.includes('**uno**') && !s.includes('**dos**'), `el hook vuelca ${marcas(s)}`); }],
+    ['H1', () => { const s = hook(c.v1(), 'esp-uno/a1'); return R(s.includes('marca-uno') && !s.includes('marca-dos') && !s.includes('marca-raiz'), `el hook vuelca ${marcas(s)}`); }],
+    ['H2', () => { const s = hook(c.v1(), 'esp-uno'); return R(/^\[AMBITO\]/m.test(s) && !s.includes('[ESTADO]'), `el hook vuelca ${marcas(s)}`); }],
+    ['H3', () => { const s = hook(c.v1(), 'general/comun'); return R(/^\[AMBITO\]/m.test(s) && !s.includes('[ESTADO]'), `el hook vuelca ${marcas(s)}`); }],
+    ['H4', () => { const s = hook(c.v1(), '.'); return R(s.includes('marca-raiz') && !s.includes('marca-uno') && !s.includes('marca-dos'), `el hook vuelca ${marcas(s)}`); }],
     ['H5', () => {
       const v = c.clon(); estadoActivo(v, 'esp-uno/a1', 'estado-uno');
-      rmSync(path.join(v, 'esp-uno', 'a1', 'coordinacion', 'trabajo-en-curso.md'));
       const s = hook(v, 'esp-uno/a1');
-      return R(s.includes('[ESTADO]') && s.includes('estado-uno') && !s.includes('**uno**'), `el hook vuelca ${marcas(s)}${s.includes('[ESTADO]') ? ' [ESTADO]' : ''}`);
+      return R(s.includes('[ESTADO]') && s.includes('estado-uno') && !s.includes('marca-uno'), `el hook vuelca ${marcas(s)}${s.includes('[ESTADO]') ? ' [ESTADO]' : ''}`);
     }],
     ['H6', () => {
-      const v = c.clon(); estadoActivo(v, 'esp-uno/a1', 'estado-uno');
+      const v = c.clon(); rmSync(path.join(v, 'esp-uno', 'a1', 'coordinacion', 'estado.json'));
       const s = hook(v, 'esp-uno/a1');
-      return R(s.includes('doble fuente'), 'el hook no avisa de doble fuente con estado y trabajo-en-curso a la vez');
+      return R(s.includes('[ESTADO] Tu ámbito no tiene estado.json: créalo con estado.mjs --iniciar.'), `el hook no avisa de que falta el estado.json; vuelca ${marcas(s)}`);
     }],
     ['H7', () => {
       const v = c.clon(); estadoActivo(v, 'esp-uno/a1', 'estado-uno');
       const s = hook(v, 'esp-dos/b1');
-      return R(s.includes('**dos**') && !s.includes('estado-uno'), `el hook vuelca ${marcas(s)}`);
+      return R(s.includes('marca-dos') && !s.includes('estado-uno'), `el hook vuelca ${marcas(s)}`);
     }],
     ['H8', () => {
       const v = c.clon(); escribir(v, 'esp-uno/a1/coordinacion/estado.json', '{ roto');
@@ -238,10 +244,10 @@ function casos(c, esp) {
     ['D6', () => {
       const v = c.clon(); estadoValido(v, 'esp-uno/a1', { porque: 'no/existe.md#x' });
       confirmarGit(v, 'add', '-A'); confirmarGit(v, 'commit', '-q', '-m', 'estado con porque roto');
-      const asu = puertaDod(dod(v, 'esp-uno/a1').salida, 'trabajo en curso') || '';
+      const asu = puertaDod(dod(v, 'esp-uno/a1').salida, 'artefactos declarados') || '';
       const raiz = dod(v, '.').salida;
-      const ok = enRojo(dod(v, 'esp-uno/a1').salida, 'trabajo en curso') && asu.includes('E1') && asu.includes('no/existe.md') && !raiz.includes('esp-uno/a1/coordinacion/estado.json');
-      return R(ok, `desde esp-uno/a1: rojo=${enRojo(dod(v, 'esp-uno/a1').salida, 'trabajo en curso')}, nombra E1=${asu.includes('E1')}; desde la raiz nombra la ruta=${raiz.includes('esp-uno/a1/coordinacion/estado.json')} (se esperaba true, true, false)`);
+      const ok = enRojo(dod(v, 'esp-uno/a1').salida, 'artefactos declarados') && asu.includes('E1') && asu.includes('no/existe.md') && !raiz.includes('esp-uno/a1/coordinacion/estado.json');
+      return R(ok, `desde esp-uno/a1: rojo=${enRojo(dod(v, 'esp-uno/a1').salida, 'artefactos declarados')}, nombra E1=${asu.includes('E1')}; desde la raiz nombra la ruta=${raiz.includes('esp-uno/a1/coordinacion/estado.json')} (se esperaba true, true, false)`);
     }],
     ['D7', () => {
       const v = c.clon();
@@ -280,24 +286,38 @@ function casos(c, esp) {
       return R(l.length > 0, 'ningun hallazgo de estado vivo con un activo del director sin caduca');
     }],
     ['V8', () => {
-      const v = c.clon(); estadoValido(v, 'esp-uno/a1');
-      const l = vivo(verif(v), 'esp-uno/a1/coordinacion/trabajo-en-curso.md');
-      return R(l.some((x) => /doble fuente/.test(x)), 'ningun hallazgo de doble fuente sobre el trabajo-en-curso.md');
+      const v = c.clon();
+      escribir(v, 'esp-uno/a1/coordinacion/trabajo-en-curso.md', '# Trabajo en curso\n');
+      escribir(v, '_meta/trabajo-en-curso.md', '# Trabajo en curso\n');
+      const s = verif(v);
+      const a = hallazgo(s, 'esp-uno/a1/coordinacion/trabajo-en-curso.md'); const g = hallazgo(s, '_meta/trabajo-en-curso.md');
+      return R(a && g, `hallazgo sobre un trabajo-en-curso.md: en un asunto=${a}, en el general=${g} (se esperaba true, true)`);
     }],
     ['V9', () => {
       const v = c.clon(); estadoValido(v, 'esp-uno/a1');
-      rmSync(path.join(v, 'esp-uno', 'a1', 'coordinacion', 'trabajo-en-curso.md'));
       writeFileSync(path.join(v, 'esp-uno', 'a1', 'cola-pendientes.md'), '# Cola de a1\n\n- [ ] algo\n');
       writeFileSync(path.join(v, 'esp-dos', 'b1', 'cola-pendientes.md'), '# Cola de b1\n\n- [ ] algo\n');
       const s = verif(v);
       const a = vivo(s, 'esp-uno/a1/cola-pendientes.md'); const b = vivo(s, 'esp-dos/b1/cola-pendientes.md');
-      return R(a.length > 0 && b.length === 0, `hallazgos sobre la cola con estado=${a.length} (se esperaba >0), sin estado=${b.length} (se esperaba 0)`);
+      return R(a.length > 0 && b.length > 0, `hallazgos sobre la cola de a1=${a.length} y de b1=${b.length} (se esperaba >0 en las dos: todo ambito tiene estado)`);
     }],
     ['V10', () => {
       const v = c.clon(); estadoValido(v, 'esp-uno/a1');
-      rmSync(path.join(v, 'esp-uno', 'a1', 'coordinacion', 'trabajo-en-curso.md'));
       const l = verif(v).split('\n').filter((x) => /^\s*\[estado vivo\] /.test(x));
       return R(l.length === 0, `hallazgos de estado vivo con un estado valido: ${l.join(' | ')}`);
+    }],
+    ['V11', () => {
+      const v = c.clon();
+      rmSync(path.join(v, 'esp-dos', 'b1', 'coordinacion', 'estado.json')); rmSync(path.join(v, '_meta', 'estado.json'));
+      const s = verif(v);
+      const a = vivo(s, 'esp-dos/b1').length; const g = vivo(s, '_meta/estado.json').length;
+      return R(a > 0 && g > 0, `hallazgos por falta de estado.json: asunto=${a}, general=${g} (se esperaba >0 en los dos)`);
+    }],
+    ['V12', () => {
+      const v = c.clon();
+      writeFileSync(path.join(v, 'esp-uno', 'a1', 'cola-pendientes.md'), '# Cola de a1\n\n- **[ ] casilla en negrita**\n');
+      const l = vivo(verif(v), 'esp-uno/a1/cola-pendientes.md');
+      return R(l.length > 0, 'ningun hallazgo con una casilla en negrita (- **[ ] ...**) en la cola');
     }],
 
     ['G1', () => {

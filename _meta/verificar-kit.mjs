@@ -269,41 +269,27 @@ try {
 
 // --- 12. el estado vivo se mantiene legible -----------------------------
 // Que un frente abierto llegue a quien arranca depende de que su registro se lea sin adivinar.
-// Aqui se vigila: (1) el formato de las lineas `- [ABIERTO` de cada `trabajo-en-curso.md`;
-// (2) que cada `estado.json` pase las invariantes de `estado.mjs`; (3) que un ambito con estado
-// no conserve ademas lineas abiertas en su `trabajo-en-curso.md` (doble fuente); (4) que su cola
-// no guarde pendientes en prosa: un pendiente escrito solo ahi no lo vuelca nadie al arrancar
-// (asi se perdio de vista una linea abierta de un asunto durante semanas).
-// (1) El hook de arranque vuelca las lineas abiertas de cada `trabajo-en-curso.md` por contexto:
-// eso es lo unico que convierte el fichero en mecanismo, porque nadie tiene que acordarse de
-// abrirlo. El hook las reconoce solo por su prefijo `- [ABIERTO fecha]`, A PROPOSITO laxo: una
-// linea mal escrita se vuelca igual, mutilada, en vez de desaparecer del aviso. Fallar a la
-// vista es mejor que fallar en silencio. Lo que esta regla protege es lo OTRO -- que la linea
-// diga de QUIEN es el trabajo y DONDE vive --, porque sin esos dos campos el volcado no sirve
-// para lo unico que existe: saber a quien preguntar antes de abrir el mismo frente.
-// (La primera redaccion de este comentario decia que el hook dejaria de volcarla. Se probo y era
-// FALSO; queda escrito porque el error es el que el kit persigue: justificar sin comprobar.)
-// Las lineas de dentro de un bloque de codigo son el ejemplo de formato, no trabajo declarado.
-const EN_CURSO_OK = /^- \[ABIERTO \d{4}-\d{2}-\d{2}\] \*\*.+\*\* · dueño: `[^`]+` · artefacto: `[^`]+` — .+$/;
-for (const f of md.filter((x) => basename(x) === 'trabajo-en-curso.md')) {
-  const lineas = readFileSync(f, 'utf8').split('\n');
-  let enEjemplo = false;
-  lineas.forEach((linea, i) => {
-    if (linea.startsWith('```')) { enEjemplo = !enEjemplo; return; }
-    if (enEjemplo) return;
-    if (!linea.startsWith('- [ABIERTO')) return;
-    if (!EN_CURSO_OK.test(linea)) {
-      nota('trabajo en curso ilegible', f, `linea ${i + 1}: el hook la volcara sin dueño ni artefacto, o sea sin lo que sirve para algo — formato: - [ABIERTO AAAA-MM-DD] **que** · dueño: \`quien\` · artefacto: \`ruta DESDE LA RAIZ DEL VAULT\` — estado`);
-    }
-  });
+// Aqui se vigila: (1) que todo ambito (el general y cada asunto) tenga su `estado.json`; (2) que
+// ningun fichero del trabajo en curso de antes siga versionado: lo sustituye el estado y dos fuentes derivan;
+// (3) que cada `estado.json` pase las invariantes de `estado.mjs`; (4) que su cola no guarde
+// pendientes en prosa: un pendiente escrito solo ahi no lo vuelca nadie al arrancar (asi se perdio
+// de vista una linea abierta de un asunto durante semanas).
+// (1) y (2)
+if (!existsSync(join(RAIZ, '_meta', 'estado.json'))) nota('estado vivo', join(RAIZ, '_meta', 'estado.json'), 'el general no tiene estado.json: crealo con estado.mjs --iniciar');
+for (const a of listarAsuntos(RAIZ)) {
+  const f = join(RAIZ, a.rel, 'coordinacion', 'estado.json');
+  if (!existsSync(f)) nota('estado vivo', f, `el asunto ${a.rel} no tiene coordinacion/estado.json: crealo con estado.mjs --iniciar desde su carpeta`);
+}
+const VIEJO = 'trabajo-en-curso.md';   // el nombre de la via retirada: aqui solo se nombra para vetarlo
+for (const f of md.filter((x) => basename(x) === VIEJO)) {
+  nota('estado vivo', f, 'el trabajo en curso vive en estado.json (estado.mjs --nuevo); retira este fichero con git rm');
 }
 
-// (2)-(4) ambitos con estado.json
-const PENDIENTE = /^\s*- \[ \]|\[(PENDIENTE|ABIERTO|EN CURSO|A CONFIRMAR|TODO|POR HACER|PARA EL DIRECTOR|EN STANDBY)\b/;
+// (3)-(4) ambitos con estado.json
+const PENDIENTE = /^\s*- (?:\*\*)?\[ \]|\[(PENDIENTE|ABIERTO|EN CURSO|A CONFIRMAR|TODO|POR HACER|PARA EL DIRECTOR|EN STANDBY)\b/;
 for (const x of ambitosConEstado(RAIZ)) {
   for (const h of verificarEstado(readFileSync(x.ruta, 'utf8'), { raiz: RAIZ, ambito: x.ambito })) nota('estado vivo', x.ruta, h.detalle);
   const base = x.ambito.tipo === 'general' ? join(RAIZ, '_meta') : join(RAIZ, x.nombre);
-  const curso = x.ambito.tipo === 'general' ? join(RAIZ, '_meta', 'trabajo-en-curso.md') : join(base, 'coordinacion', 'trabajo-en-curso.md');
   const cola = join(base, 'cola-pendientes.md');
   const fuera = (f, fn) => {
     let enCodigo = false;
@@ -312,11 +298,6 @@ for (const x of ambitosConEstado(RAIZ)) {
       if (!enCodigo) fn(linea, i);
     });
   };
-  if (existsSync(curso)) {
-    let abiertas = 0;
-    fuera(curso, (l) => { if (l.startsWith('- [ABIERTO')) abiertas++; });
-    if (abiertas) nota('estado vivo', curso, `doble fuente: ${abiertas} linea(s) abierta(s) aqui y el ambito ya tiene estado.json; pasalas al estado con estado.mjs --nuevo y vacia este fichero`);
-  }
   if (existsSync(cola)) {
     fuera(cola, (l, i) => {
       if (PENDIENTE.test(sinLiterales(l))) nota('estado vivo', cola, `linea ${i + 1}: pendiente fuera del estado — pásalo al estado con estado.mjs --nuevo y deja aquí solo el porqué`);
