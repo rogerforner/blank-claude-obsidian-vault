@@ -2,7 +2,7 @@
 name: Modelos y nivel de esfuerzo — catálogo, curvas y tabla de situaciones
 description: Documento de REFERENCIA (no doctrina) con los hechos de plataforma que cambian solos: qué modelos hay, qué niveles de esfuerzo admite cada uno, cuánto rinde cada nivel, qué cuesta cambiar de modelo o de esfuerzo a media sesión, y la tabla situación → modelo → esfuerzo. Lo consulta el coordinador antes de repartir trabajo y el director antes de abrir una sesión. El CRITERIO vive en [[modelo_por_tarea]]; aquí viven los DATOS y su origen.
 type: knowledge
-version: 2.0
+version: 2.1
 caduca: 2026-12-31
 ---
 
@@ -74,7 +74,7 @@ Fechas de salida, Fable en el plan y consumo de cuota son del informe; el contra
 
 *`[OFICIAL]`. El fabricante da 60 días de aviso mínimo.*
 
-- **Haiku 4.5: retirada tentativa el 2026-10-15** (el resumen de modelos dice *"no antes del 15 de octubre de 2026"*). **Haiku 4.5 sale del método**, y esa fecha es la razón de hacerlo ahora. Haiku 5.5 está anunciado, sin fecha y sin salir a 2026-10-04 `[COMUNIDAD, vía informe]`. **[CADUCA 2026-10-15]**
+- **Haiku 4.5: retirada tentativa el 2026-10-15** (el resumen de modelos dice *"no antes del 15 de octubre de 2026"*). **Haiku 4.5 sale del método**, y esa fecha es la razón de hacerlo ahora. Haiku 5.5 ya está en servicio: el 2026-10-14 un agente integrado corrió en `claude-haiku-5-5` (§6.1). Lo que esta fecha amenazaba —que los agentes integrados que traían Haiku 4.5 fallasen al lanzarse sin `model`— está medido en §6.1 y no pasa.
 - **Sonnet 4.5: 2026-11-30**, con `claude-sonnet-5-5` como sustituto `[OFICIAL, vía informe]`. No lo usamos.
 - Los que sí usamos aguantan, **no antes del**: Fable 5.1 2027-09-01, Opus 5.5 2027-09-22 y Sonnet 5.5 2027-09-28 (los tres, en el resumen de modelos). Del legado, según el informe y sin contrastar: Opus 4.8 2027-05-28, Sonnet 5 2027-06-30 y Opus 5 2027-07-24.
 - El informe decía *"ninguna retirada de los modelos en uso"*: **es falso**, por Haiku 4.5.
@@ -256,6 +256,7 @@ Haiku ya no está en el método, pero el argumento vale para cualquier modelo m�
 - La variable es solo el modelo por defecto de un subagente que no declara ninguno. Por eso las tres definiciones del kit fijan `model` en su frontmatter y no dependen de ella.
 - Entre el parámetro de la llamada y el `model` del frontmatter: `[POR MEDIR]`, no se midió.
 - Al cambiar con `/model`, el cambio llega también a los subagentes que heredan el modelo `[OFICIAL, vía informe]`.
+- **Agentes integrados lanzados sin `model`** `[MEDIDO 2026-10-14, modelo autodeclarado por el subagente desde su prompt de sistema]`: ninguno falla. `Explore` hereda el de la sesión (Opus 5.5) y `claude-code-guide` corre en el que fija su propia definición (Haiku 5.5). No hace falta pasar `model` al lanzar un agente integrado; si se quiere otro, se pasa. Que `claude-code-guide` use Haiku no lo mete en el método: es una pieza del cliente, no un rol del reparto.
 
 **Esfuerzo de un subagente** `[MEDIDO 2026-10-04]`: el `effort:` del frontmatter se respeta; sin él, el subagente hereda el de la sesión.
 
@@ -293,5 +294,7 @@ Haiku ya no está en el método, pero el argumento vale para cualquier modelo m�
 *Documento de referencia. **Se refresca por tanda periódica, no por goteo.** Origen: el informe de investigación del 2026-10-04 y su contraste del mismo día contra seis páginas oficiales de la API, que son las claves siguientes. `PE` = `https://platform.claude.com/docs/es/build-with-claude/prompt-engineering/` (con `prompting-claude-opus-5-5`, `prompting-claude-sonnet-5-5`, `prompting-claude-fable-5-1` y `claude-prompting-best-practices`); `OV` = `https://platform.claude.com/docs/es/models/overview`; `CH` = `https://platform.claude.com/docs/es/about-claude/models/choosing-a-model`. Mediciones propias del 2026-10-04: el esfuerzo del perfil (§1) y el comportamiento de los subagentes (§5, §6.1). Lo demás de Claude Code llega por informe y no se ha leído en su fuente primaria. Caduca el **2026-12-31**, a la vez que [[modelo_por_tarea]], a propósito: cuando toque repasar, se repasa todo junto.*
 
 *v1.0 (2026-09-02) — primera versión. Catálogo con Fable 5.1 y Mythos 5.1, curvas de esfuerzo de Opus 5 y Fable 5.1, caché por modelo y por esfuerzo, higiene de `/clear` y `/compact` y tabla de situaciones.*
+
+*v2.1 (2026-10-14) — M9 medido: los agentes integrados lanzados sin `model` no fallan tras la retirada de Haiku 4.5 (`Explore` hereda, `claude-code-guide` va en Haiku 5.5) (§6.1); Haiku 5.5 ya en servicio y fuera la caducidad del 2026-10-15 (§1.1).*
 
 *v2.0 (2026-10-04) — refresco para el método 5.5. Catálogo y curvas de Opus 5.5 y Sonnet 5.5 en la escala v4.3.2 (§1, §2); la caché por esfuerzo se matiza (API invalida, Claude Code sin medir) y la regla de no cambiarlo se mantiene por diseño (§3); tabla por situación con planificador, ejecutora y ejecutora-mecanica (§5); precedencia de modelo y esfuerzo en subagentes, medida (§6.1); vetos de `/fast`, Fable en `-p` y `ultracode` (§7). Haiku sale del método.*
