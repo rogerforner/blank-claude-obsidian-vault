@@ -72,9 +72,10 @@ desktop.ini
 /.claude/worktrees/
 
 # Sello del Definition of Done: es el estado de ESTA copia de trabajo, no contenido del vault.
-# Lo escribe `_meta/dod.mjs` al cerrar en verde y lo compara el hook de arranque. Versionarlo
-# haria que un sello de otra maquina se leyera aqui como si fuera propio, que es justo la mentira
-# que el sello existe para impedir.
+# Es POR AMBITO (`_meta/dod-sello.local.json` y `<espacio>/<asunto>/coordinacion/dod-sello.local.json`),
+# lo escribe `_meta/dod.mjs` al cerrar en verde y lo cubre `**/*.local.json`. Versionarlo haria que
+# un sello de otra maquina se leyera aqui como propio, que es la mentira que el sello impide.
+# `/.dod-seal.json` es LEGADO del sello unico: se ignora para que una copia vieja no ensucie el arbol.
 /.dod-seal.json
 
 # Instantaneas de pagina que escribe Playwright CLI en la carpeta de trabajo.

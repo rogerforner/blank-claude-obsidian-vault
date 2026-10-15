@@ -23,11 +23,13 @@
 //   node _meta/dod.mjs --sin-sello  → corre las puertas y no escribe el sello (ensayo)
 //   node _meta/dod.mjs --estado     → solo dice si el sello vigente cuadra con el arbol de ahora
 //
-// EL SELLO (`.dod-seal.json`, local y gitignored) guarda una HUELLA DEL CONTENIDO del arbol
-// -- por contenido y no por commit, asi que incluye lo que aun no esta commiteado, y tambien los
-// ficheros NUEVOS sin trackear -- mas la fecha y que puertas corrieron. El hook de arranque lo
-// compara con el arbol: si tocas o creas algo despues de sellar, el sello CADUCA SOLO. Lo unico
-// que queda fuera es lo gitignored, que es estado de esta copia y no del vault.
+// EL SELLO es POR AMBITO (`_meta/dod-sello.local.json` el general; `<espacio>/<asunto>/coordinacion/
+// dod-sello.local.json` un asunto; locales y gitignored). Guarda una HUELLA DEL CONTENIDO de los
+// ficheros de SU ambito -- por contenido y no por commit, asi que incluye lo que aun no esta
+// commiteado y los ficheros NUEVOS sin trackear -- mas la fecha, el commit (HEAD al sellar) y que
+// puertas corrieron. El hook de arranque lo compara con el arbol: si tocas o creas algo de tu
+// ambito despues de sellar, el sello CADUCA SOLO; lo de otros ambitos no lo toca. Lo gitignored
+// queda fuera: es estado de esta copia y no del vault. Logica en `sello-dod.mjs`.
 //
 // El veredicto esta en el bloque de resumen, y el codigo de salida es 0/1. No lo encadenes con
 // tuberia: `node _meta/dod.mjs` a secas, igual que el verificador.
@@ -38,10 +40,10 @@ import { createHash } from 'node:crypto';
 import { join, dirname, basename, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ambitoDe, esDelAmbito, listarAsuntos } from '../general/comun/scripts/espacios.mjs';
+import { huella as huellaDe, escribirSello, leerSello, estadoSello } from '../general/comun/scripts/sello-dod.mjs';
 import { ambitosConEstado, leer as leerEstado, vista as vistaEstado, ACTIVAS } from '../general/comun/scripts/estado.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SELLO = join(RAIZ, '.dod-seal.json');
 const ARGS = new Set(process.argv.slice(2));
 
 const puertas = [];   // {nombre, ok, detalle}
@@ -60,30 +62,8 @@ function fechaLocal() {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().replace('Z', '');
 }
 
-// --- huella del contenido del arbol -------------------------------------
-// Por CONTENIDO: se leen los ficheros del disco, no el arbol de un commit. Un sello que colgara
-// del commit diria "todo bien" con cambios sin guardar encima, que es justo el caso que mas duele.
-// Y entran TAMBIEN los ficheros sin trackear que no esten ignorados (`--others --exclude-standard`),
-// no solo los del indice. La primera version usaba `ls-files` a secas y por tanto un fichero NUEVO
-// creado despues de sellar no invalidaba el sello -- justo lo que el comentario de arriba promete
-// que no puede pasar. Lo cazo una tanda de extraccion del propio metodo y se reprodujo en vivo:
-// tres ficheros sin trackear en el arbol y `--estado` respondiendo SELLO VALIDO. Los ignorados se
-// quedan fuera a proposito: son estado de esta copia de trabajo (el propio sello, la config local,
-// los handoffs), y meterlos haria caducar el sello por cosas que no son el vault.
-function huella() {
-  const ficheros = git(['ls-files', '--cached', '--others', '--exclude-standard'])
-    .split('\n').filter(Boolean).sort();
-  const h = createHash('sha256');
-  let contados = 0;
-  for (const f of ficheros) {
-    const ruta = join(RAIZ, f);
-    if (!existsSync(ruta)) continue;             // borrado y aun sin commitear
-    h.update(f);
-    h.update(readFileSync(ruta));
-    contados++;
-  }
-  return { hash: h.digest('hex').slice(0, 16), ficheros: contados };
-}
+// --- huella del contenido del ambito: vive en `sello-dod.mjs` (misma para dod, hook y relevo) ---
+const huella = () => huellaDe(RAIZ, AMBITO_ESP);
 
 // --- 1. el kit esta en verde, EN TU AMBITO -------------------------------
 // El verificador sigue mirando el vault entero (lo corre el general entero al mantener el kit),
@@ -401,16 +381,17 @@ function puertaSincroniaPlantilla(commits) {
 
 // --- modo --estado: solo mirar si el sello vigente sigue valiendo -------
 function estadoDelSello() {
-  if (!existsSync(SELLO)) {
+  const e = estadoSello(RAIZ, AMBITO_ESP);
+  const s = e && e.sello;
+  if (!s) {
     console.log('SELLO: NO HAY. Esta sesion todavia no ha cerrado su DoD (`node _meta/dod.mjs`).');
     process.exit(1);
   }
-  const s = JSON.parse(readFileSync(SELLO, 'utf8'));
-  const ahora = huella();
-  if (s.hash === ahora.hash) {
+  if (e.ok) {
     console.log(`SELLO: VALIDO — sellado el ${s.fecha} sobre ${s.ficheros} ficheros, y el arbol no ha cambiado desde entonces.`);
     process.exit(0);
   }
+  const ahora = huella();
   console.log(`SELLO: CADUCADO — se sello el ${s.fecha} y el arbol ha cambiado desde entonces (${s.ficheros} → ${ahora.ficheros} ficheros).`);
   console.log('  Es lo que tiene que pasar si has seguido trabajando: vuelve a correr `node _meta/dod.mjs` antes de cerrar.');
   process.exit(1);
@@ -419,23 +400,29 @@ function estadoDelSello() {
 // --- principal ----------------------------------------------------------
 if (ARGS.has('--estado')) estadoDelSello();
 
-// QUE COMMITS MIRAN LAS PUERTAS DE DOCUMENTACION: los hechos DESDE EL ULTIMO SELLO. Esa es la
-// definicion util de "lo que llevo sin cerrar", y no "los de hoy": un sello es justamente la marca
-// de que hasta ahi estaba todo revisado, asi que volver a juzgar lo ya sellado solo produce ruido
-// que se acaba ignorando. Sin sello previo -- primera vez, o sello borrado -- se cae a los de hoy,
-// que es la aproximacion mas cercana a "esta sesion" que git puede dar.
+// QUE COMMITS MIRAN LAS PUERTAS DE DOCUMENTACION: los hechos DESDE EL ULTIMO SELLO DE TU AMBITO.
+// Esa es la definicion util de "lo que llevo sin cerrar": un sello es la marca de que hasta ahi
+// estaba todo revisado. Se cuenta por RANGO (`git log <commit sellado>..HEAD`), que no depende del
+// reloj ni de la granularidad de `--since`; si el commit ya no es ancestro de HEAD, se cae a la
+// fecha del sello, y sin sello -- primera vez, o borrado -- a los de hoy.
 const desde = (() => {
-  if (existsSync(SELLO)) {
-    try {
-      const f = JSON.parse(readFileSync(SELLO, 'utf8')).fecha;
-      if (f) return { since: f, que: `desde el ultimo sello (${f.slice(0, 16).replace('T', ' ')})` };
-    } catch { /* sello ilegible: se cae a hoy */ }
+  const s = leerSello(RAIZ, AMBITO_ESP);
+  if (s && !s.ilegible) {
+    const f = s.fecha;
+    const cuando = f ? String(f).slice(0, 16).replace('T', ' ') : 's/f';
+    if (s.commit) {
+      try {
+        git(['merge-base', '--is-ancestor', s.commit, 'HEAD'], { stdio: 'ignore' });
+        return { rango: `${s.commit}..HEAD`, que: `desde el ultimo sello de tu ambito (${cuando})` };
+      } catch { /* no es ancestro: se cae a la fecha */ }
+    }
+    if (f) return { since: f, que: `desde el ultimo sello de tu ambito (${cuando})` };
   }
   const d = new Date();
   const hoy = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   return { since: `${hoy} 00:00`, que: `de hoy, ${hoy} (no hay sello previo)` };
 })();
-const commitsDeHoy = git(['log', '--since', desde.since, '--format=%H']).split('\n').filter(Boolean);
+const commitsDeHoy = git(['log', ...(desde.rango ? [desde.rango] : ['--since', desde.since]), '--format=%H']).split('\n').filter(Boolean);
 
 puertaVerificador();
 puertaArbolLimpio();
@@ -465,13 +452,16 @@ if (fallidas.length) {
 }
 
 const h = huella();
+let SELLO_ESCRITO = null;
 if (!ARGS.has('--sin-sello')) {
-  writeFileSync(SELLO, JSON.stringify({
+  SELLO_ESCRITO = escribirSello(RAIZ, AMBITO_ESP, {
+    ambito: AMBITO_ESP.tipo === 'asunto' ? `${AMBITO_ESP.espacio}/${AMBITO_ESP.slug}` : 'general',
+    commit: git(['rev-parse', 'HEAD']).trim(),
     hash: h.hash, ficheros: h.ficheros, fecha: fechaLocal(), puertas: nombres,
     cerradoPor: AMBITO.quien,
     ajenoPendienteAlSellar: ajenoPendiente.length,
-  }, null, 2) + '\n');
+  });
 }
 console.log(`\nRESULTADO: CERRADO — ${nombres.length} puertas en verde sobre ${h.ficheros} ficheros versionados.`);
-console.log(ARGS.has('--sin-sello') ? '  (--sin-sello: no se ha escrito el sello.)\n' : `  Sello escrito en .dod-seal.json (huella ${h.hash}). Si tocas algo mas, caduca solo.\n`);
+console.log(ARGS.has('--sin-sello') ? '  (--sin-sello: no se ha escrito el sello.)\n' : `  Sello escrito en ${relative(RAIZ, SELLO_ESCRITO)} (huella ${h.hash}). Si tocas algo mas, caduca solo.\n`);
 process.exit(0);
