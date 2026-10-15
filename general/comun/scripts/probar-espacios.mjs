@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // probar-espacios.mjs: humo de la estructura en espacios. Construye en un temporal, fuera del
 // vault, dos vaults de prueba con copias de los scripts reales y comprueba el modulo espacios.mjs
-// (casos M) y que el hook, el DoD, el tablero y el verificador respetan los espacios (H, D, T, V, G).
+// (casos M) y que el hook, el DoD, el tablero y el verificador respetan los espacios (H, D, T, V, G),
+// y el sello del DoD por ambito (S y H9).
 // Sin dependencias. Salidas: 0 si todos los casos pasan, 1 si alguno falla, 2 uso.
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync, realpathSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -16,7 +17,7 @@ const EST = await import(pathToFileURL(path.join(AQUI, 'estado.mjs')).href);
 const AYUDA = `Uso:
   probar-espacios.mjs [--casos <M,H,V2,...>]
   probar-espacios.mjs --ayuda
-Sin --casos corre todos (M, H, D, T, V, G). --casos filtra por prefijo o por id suelto.
+Sin --casos corre todos (M, H, D, T, V, G, S). --casos filtra por prefijo o por id suelto.
 Salidas: 0 todos bien, 1 algun caso falla, 2 uso.`;
 
 class Salida extends Error { constructor(codigo, msg) { super(msg); this.codigo = codigo; } }
@@ -82,6 +83,10 @@ function vault1(dir) {
   asunto(dir, 'esp-uno', 'a1', 'uno');
   asunto(dir, 'esp-dos', 'b1', 'dos');
   estadoGeneral(dir, 'marca-raiz');
+  // Destinos de los enlaces del CLAUDE.md y del catalogo copiados, para que el verificador cierre en verde (sello S).
+  escribir(dir, '_meta/memoria/libertad-tecnica-del-agente.md', '# Libertad tecnica\n');
+  escribir(dir, '_meta/guia-arranque-sesiones.md', '# Guia de arranque\n');
+  escribir(dir, '_meta/bitacora.md', '# Bitacora\n');
   confirmarGit(dir, 'init', '-q');
   confirmarGit(dir, 'add', '-A');
   confirmar(gitSiembra(dir, 'commit', '-q', '-m', 'vault de prueba'), 'git commit');
@@ -171,6 +176,19 @@ const verif = (v) => node([path.join(v, '_meta', 'verificar-kit.mjs')], v).salid
 const marcas = (s) => ['marca-uno', 'marca-dos', 'marca-raiz', '[AMBITO]', '[ESTADO]'].filter((m) => s.includes(m)).join(' ') || 'ninguna marca';
 
 const dod = (v, rel) => node([path.join(v, '_meta', 'dod.mjs'), '--sin-sello'], path.join(v, rel));
+// El DoD de verdad (escribe el sello del ambito de `rel`); solo se corre dentro de un vault temporal.
+const dodSella = (v, rel) => node([path.join(v, '_meta', 'dod.mjs')], path.join(v, rel));
+// Motivo de un sello que no cierra: la puerta o puertas en rojo, para arreglar el vault de prueba.
+const noCierra = (rel, r) => `el sello de ${rel} no cierra (sale ${r.codigo}): ${r.salida.split('\n').filter((l) => /\[FALLO|^\s{3,}\S/.test(l) && !/\[OK/.test(l)).join(' | ').slice(0, 900)}`;
+const dodEstado = (v, rel) => node([path.join(v, '_meta', 'dod.mjs'), '--estado'], path.join(v, rel));
+const espera = (ms) => { spawnSync('sleep', [String(ms / 1000)]); };
+// Cambia el cuerpo de una doctrina sin subir la version y lo commitea (como D5).
+function doctrinaCambiada(v) {
+  const doc = readdirSync(path.join(v, 'general', 'comun', 'doctrinas')).find((n) => n.endsWith('.md') && !n.startsWith('MEMORY-'));
+  const f = path.join(v, 'general', 'comun', 'doctrinas', doc);
+  writeFileSync(f, readFileSync(f, 'utf8') + '\nLinea de prueba que cambia el cuerpo sin subir la version.\n');
+  confirmarGit(v, 'add', '-A'); confirmarGit(v, 'commit', '-q', '-m', 'doctrina cambiada');
+}
 
 function casos(c, esp) {
   const R = (cond, motivo) => (cond ? null : motivo);
@@ -318,6 +336,54 @@ function casos(c, esp) {
       writeFileSync(path.join(v, 'esp-uno', 'a1', 'cola-pendientes.md'), '# Cola de a1\n\n- **[ ] casilla en negrita**\n');
       const l = vivo(verif(v), 'esp-uno/a1/cola-pendientes.md');
       return R(l.length > 0, 'ningun hallazgo con una casilla en negrita (- **[ ] ...**) en la cola');
+    }],
+
+    ['S1', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      espera(1200); doctrinaCambiada(v); espera(1200);
+      const b = dodSella(v, 'esp-uno/a1'); if (b.codigo !== 0) return noCierra('esp-uno/a1', b);
+      return R(enRojo(dod(v, '.').salida, 'doctrinas al dia'), 'tras sellar el asunto, el DoD de la raiz no marca doctrinas al dia en rojo: el sello del asunto movio la ventana del general');
+    }],
+    ['S2', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      espera(1200);
+      writeFileSync(path.join(v, 'esp-uno', 'a1', 'cola-pendientes.md'), '# Cola de a1\n\nCambio de otro ambito.\n');
+      confirmarGit(v, 'add', '-A'); confirmarGit(v, 'commit', '-q', '-m', 'cola de a1');
+      const r = dodEstado(v, '.');
+      return R(r.codigo === 0 && r.salida.includes('VALIDO'), `--estado desde la raiz sale ${r.codigo}: ${r.salida.trim()}`);
+    }],
+    ['S3', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      writeFileSync(path.join(v, 'esp-uno', 'README.md'), marca('espacio', 'esp-uno') + 'cambio sin commitear\n');
+      const r = dodEstado(v, '.');
+      return R(r.codigo === 1, `--estado desde la raiz sale ${r.codigo} con un cambio propio sin commitear (se esperaba 1): ${r.salida.trim()}`);
+    }],
+    ['S4', () => {
+      const v = c.clon();
+      const a = dodSella(v, 'esp-uno/a1'); if (a.codigo !== 0) return noCierra('esp-uno/a1', a);
+      const local = existsSync(path.join(v, 'esp-uno', 'a1', 'coordinacion', 'dod-sello.local.json'));
+      const raiz = existsSync(path.join(v, '.dod-seal.json'));
+      const limpio = git(v, 'status', '--porcelain').salida.trim() === '';
+      return R(local && !raiz && limpio, `esp-uno/a1/coordinacion/dod-sello.local.json existe=${local}, .dod-seal.json en la raiz existe=${raiz}, arbol limpio=${limpio} (se esperaba true, false, true)`);
+    }],
+    ['S5', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const r = dodEstado(v, 'esp-uno/a1');
+      return R(r.codigo === 1 && r.salida.includes('NO HAY'), `--estado desde esp-uno/a1 sale ${r.codigo} (se esperaba 1 con NO HAY): ${r.salida.trim()}`);
+    }],
+    ['H9', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      espera(1200);
+      writeFileSync(path.join(v, 'esp-uno', 'a1', 'cola-pendientes.md'), '# Cola de a1\n\nCambio de otro ambito.\n');
+      confirmarGit(v, 'add', '-A'); confirmarGit(v, 'commit', '-q', '-m', 'cola de a1');
+      const g = hook(v, '.'); const s = hook(v, 'esp-uno/a1');
+      const ok = !g.includes('[DoD]') && s.includes('[DoD]') && s.includes('../../_meta/dod.mjs');
+      return R(ok, `hook en la raiz: [DoD]=${g.includes('[DoD]')} (se esperaba false); hook en esp-uno/a1: [DoD]=${s.includes('[DoD]')}, nombra ../../_meta/dod.mjs=${s.includes('../../_meta/dod.mjs')} (se esperaba true, true)`);
     }],
 
     ['G1', () => {
