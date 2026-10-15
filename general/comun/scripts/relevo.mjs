@@ -10,6 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { leerTablero } from './tablero.mjs';
 import { ambitoDe, listarAsuntos, pathspecDe } from './espacios.mjs';
+import { estadoSello } from './sello-dod.mjs';
 
 const AQUI = fileURLToPath(import.meta.url);
 const TABLERO_MJS = path.join(path.dirname(AQUI), 'tablero.mjs');
@@ -30,6 +31,8 @@ Salidas: 0 bien; 1 error interno; 2 uso; 3 entorno (fuera de Herdr, sin servidor
   4 precondicion, no se releva y no se ha tocado nada; 5 no se abrio el panel B;
   6 B no arranco (B cerrado, A vivo); 7 B no confirmo (B cerrado, A vivo);
   8 fallo la continuacion (B cerrado, A vivo); 9 A no se cerro o, en --tomar, A sigue vivo.
+El fichero de relevo sigue una de las dos plantillas de ciclo_de_tandas (con plan de tandas o sin plan) y el DoD del
+ambito tiene que estar sellado y vigente (node _meta/dod.mjs) antes de relevarse.
 Si el proceso tiene CLAUDE_CONFIG_DIR, el panel B la recibe con --env (la cuenta de la sucesora es la de esta sesion).`;
 
 class Salida extends Error { constructor(codigo, msg) { super(msg); this.codigo = codigo; } }
@@ -121,7 +124,7 @@ function contexto(cwd, prueba) {
   const ambito = tipo ? pathspecDe(amb, listarAsuntos(raiz)) : ['.'];
   const script = tipo === 'asunto' ? '../../general/comun/scripts/relevo.mjs' : 'general/comun/scripts/relevo.mjs';
   return {
-    cwd, tipo, slug, espacio, dirCoord, ambito, script,
+    cwd, raiz, amb, tipo, slug, espacio, dirCoord, ambito, script,
     titulo: tipo === 'general' ? 'coordinador general' : `coordinador de ${slug}`,
     rutaEstado: path.join(dirCoord, prueba ? 'relevo-prueba-estado.local.json' : 'relevo-estado.local.json'),
   };
@@ -141,8 +144,8 @@ function hashAmbito(ctx) { return git(['log', '-1', '--format=%h', '--', ...ctx.
 
 // ---------- el prompt de relevo ----------
 
-function leerRelevo(ruta) {
-  const r = { existe: false, plan: null, cerrado: null, hash: null, siguiente: null, ninguna: false };
+export function leerRelevo(ruta) {
+  const r = { existe: false, modo: null, plan: null, cerrado: null, hash: null, siguiente: null, siguienteTexto: null, ninguna: false };
   if (!existsSync(ruta)) return r;
   let texto;
   try { texto = readFileSync(ruta, 'utf8'); } catch { return r; }
@@ -151,7 +154,9 @@ function leerRelevo(ruta) {
   const m1 = (l[0] || '').match(/`([^`]*plan-tanda-[^`]+\.md)`/);
   if (m1) r.plan = m1[1];
   const m2 = (l[1] || '').match(/Último bloque cerrado: ([A-Z][0-9]?), en el commit ([0-9a-f]{7,40})\. Siguiente: bloque ([A-Z][0-9]?) — /);
-  if (m2) { r.cerrado = m2[1]; r.hash = m2[2]; r.siguiente = m2[3]; }
+  const m3 = (l[1] || '').match(/^Último cierre: (.+), en el commit ([0-9a-f]{7,40})\. Siguiente: (.+)$/);
+  if (r.plan && m2) { r.modo = 'plan'; r.cerrado = m2[1]; r.hash = m2[2]; r.siguiente = m2[3]; }
+  else if (!r.plan && m3) { r.modo = 'sinplan'; r.cerrado = m3[1]; r.hash = m3[2]; r.siguienteTexto = m3[3].trim(); }
   r.ninguna = /: ninguna\.\s*$/.test(l[2] || '');
   return r;
 }
@@ -234,14 +239,19 @@ function precondiciones(ctx, a, opts) {
 
   const rutaRelevo = opts.relevo || path.join(ctx.dirCoord, 'relevo-actual.local.md');
   const rel = leerRelevo(path.resolve(ctx.cwd, rutaRelevo));
-  add(rel.existe && rel.plan && rel.cerrado, rel.existe ? (rel.plan && rel.cerrado ? 'fichero de relevo legible (plan y bloques)' : 'fichero de relevo: no casan las lineas 1 o 2 con la plantilla') : `fichero de relevo inexistente: ${rutaRelevo}`);
+  add(rel.existe && rel.modo, rel.existe ? (rel.modo ? `fichero de relevo legible (${rel.modo === 'plan' ? 'con plan y bloques' : 'sin plan'})` : 'fichero de relevo: no casan las lineas 1 o 2 con ninguna de las dos plantillas') : `fichero de relevo inexistente: ${rutaRelevo}`);
   add(hashVigente(ctx, rel.hash), `el hash del relevo (${rel.hash || 'ninguno'}) es el ultimo del ambito y ancestro de HEAD`);
   add(rel.ninguna, 'la linea 3 del relevo dice "ninguna" (sin decisiones por escribir)');
+
+  const sello = ctx.raiz && ctx.amb ? estadoSello(ctx.raiz, ctx.amb) : null;
+  if (!sello) add(true, 'DoD del ambito: este arbol no usa sello');
+  else if (sello.ok) add(true, `DoD del ambito sellado y vigente (${sello.por})`);
+  else add(false, `DoD del ambito: ${sello.por} — corre ${ctx.tipo === 'general' ? 'node _meta/dod.mjs' : 'node ../../_meta/dod.mjs'} antes de relevarte`);
 
   const rutaTab = opts.tablero || path.join(ctx.dirCoord, 'tablero-tandas.md');
   const tabAbs = path.resolve(ctx.cwd, rutaTab);
   let tab = null;
-  if (!existsSync(tabAbs)) add(false, `tablero inexistente: ${rutaTab}`);
+  if (!existsSync(tabAbs)) { if (rel.modo === 'sinplan') add(true, 'sin plan: el tablero no hace falta'); else add(false, `tablero inexistente: ${rutaTab}`); }
   else {
     let valido = true; let detalle = '';
     try { execFileSync('node', [TABLERO_MJS, '--comprobar', tabAbs], { stdio: 'pipe', encoding: 'utf8' }); }
@@ -249,7 +259,17 @@ function precondiciones(ctx, a, opts) {
     add(valido, valido ? 'el tablero pasa --comprobar' : `el tablero no pasa --comprobar: ${detalle}`);
     if (valido) tab = leerTablero(readFileSync(tabAbs, 'utf8'));
   }
-  if (tab) {
+  if (rel.modo === 'sinplan') {
+    const sig = rel.siguienteTexto || '';
+    add(sig !== '' && !/^(nada|ninguno|ninguna)\b/i.test(sig), sig !== '' && !/^(nada|ninguno|ninguna)\b/i.test(sig) ? 'hay trabajo siguiente (la linea 2 lo nombra)' : 'sin trabajo siguiente: no se releva, se para');
+    if (tab) {
+      const abiertas = tab.filas.filter((f) => f.estado === '[EN CURSO]' || f.estado.startsWith('[BLOQUEADA'));
+      add(abiertas.length === 0, abiertas.length ? `hay filas en curso o bloqueadas: ${abiertas.map((f) => f.id).join(', ')}` : 'ninguna fila en curso ni bloqueada');
+      const vivas = tab.filas.filter((f) => !/^\[HECHA/.test(f.estado));
+      const vivo = tab.plan && tab.plan !== 'ninguno' && vivas.length > 0;
+      add(!vivo, vivo ? `el tablero tiene un plan vivo (${tab.plan}) con filas sin HECHA: usa el relevo con plan` : 'el tablero no tiene un plan vivo');
+    }
+  } else if (tab) {
     add(rel.plan && tab.plan === rel.plan, `el Plan del tablero (${tab.plan}) es el plan del relevo (${rel.plan})`);
     const versionado = rel.plan ? git(['ls-files', '--error-unmatch', rel.plan], ctx.cwd) !== null : false;
     add(versionado, `el plan del relevo existe y esta versionado (${rel.plan})`);
@@ -258,7 +278,7 @@ function precondiciones(ctx, a, opts) {
     const abiertas = tab.filas.filter((f) => f.estado === '[EN CURSO]' || f.estado.startsWith('[BLOQUEADA'));
     add(abiertas.length === 0, abiertas.length ? `hay filas en curso o bloqueadas: ${abiertas.map((f) => f.id).join(', ')}` : 'ninguna fila en curso ni bloqueada');
     const pend = tab.filas.filter((f) => f.bloque === rel.siguiente && f.estado === '[PENDIENTE]');
-    add(pend.length > 0, `el bloque siguiente ${rel.siguiente} tiene filas PENDIENTE (si no, el plan se acabo)`);
+    add(pend.length > 0, `el bloque siguiente ${rel.siguiente} tiene filas PENDIENTE (si no, el plan se acabo: si queda trabajo, escribe el relevo sin plan)`);
     add(!tab.paradas.includes(rel.cerrado), tab.paradas.includes(rel.cerrado) ? `el bloque cerrado ${rel.cerrado} es una parada declarada` : 'el bloque cerrado no es una parada declarada');
   }
 
@@ -353,7 +373,8 @@ async function lanzar(args, prueba) {
   const estado = {
     modo: prueba ? 'prueba' : 'lanzar', fecha: ahora(), contenedor: ctx.tipo === 'general' ? '.' : `${ctx.espacio}/${ctx.slug}`,
     relevo: opts.relevo || path.join(ctx.dirCoord, 'relevo-actual.local.md'), hash,
-    bloqueCerrado: rel.cerrado, bloqueSiguiente: rel.siguiente,
+    modoRelevo: rel.modo,
+    bloqueCerrado: rel.modo === 'plan' ? rel.cerrado : null, bloqueSiguiente: rel.modo === 'plan' ? rel.siguiente : null,
     paneA: a.paneId, nombreA, paneB: null, nombreB: opts.nombreB, seguidos, fase: 'lanzado',
     confirmacion: null, resultado: null,
   };
