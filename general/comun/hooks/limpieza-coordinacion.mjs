@@ -47,9 +47,12 @@
 //      coordinadores y las dos sesiones arrancaron SIN ENTERARSE, porque un handoff es un fichero
 //      y nadie les dijo que estaba. El aviso cuesta cuatro lineas y cierra el hueco que quedaba
 //      del "buzon para sesiones apagadas": el fichero ya era el buzon, pero nadie lo abria.
-//   6. DICE SI LA SESION ANTERIOR CERRO SU DoD (desde 2026-08-24). El DoD (`_meta/dod.mjs`) sella
-//      una huella del contenido del arbol al cerrar; aqui se compara esa huella con lo que hay.
-//      Si no hay sello, o el arbol cambio despues de sellarlo, la anterior cerro sin cruzar la
+//   6. DICE SI LA SESION ANTERIOR CERRO SU DoD (desde 2026-08-24; por ambito desde 2026-10-15).
+//      El DoD (`_meta/dod.mjs`) sella, al cerrar, una huella del contenido de los ficheros de SU
+//      ambito (el general, `_meta/dod-sello.local.json`; un asunto, el de su `coordinacion/`); aqui
+//      se compara con lo que hay en el ambito de esta sesion, con `scripts/sello-dod.mjs`, asi que
+//      un commit de otro ambito no caduca tu sello. Con un ambito invalido no hay aviso.
+//      Si no hay sello, o el ambito cambio despues de sellarlo, la anterior cerro sin cruzar la
 //      puerta y esta sesion se entera ANTES de tocar nada. El aviso va al arranque a proposito:
 //      un hook de cierre no lo lee nadie, y bloquear el cierre castiga al que si esta delante.
 //
@@ -68,7 +71,6 @@
 //   raíz:       node ${CLAUDE_PROJECT_DIR}/general/comun/hooks/limpieza-coordinacion.mjs
 
 import { readdirSync, statSync, rmSync, existsSync, readFileSync } from 'node:fs';
-import { createHash } from 'node:crypto';
 import { join, basename, dirname, relative } from 'node:path';
 import { homedir } from 'node:os';
 import { execFileSync } from 'node:child_process';
@@ -155,6 +157,9 @@ try { ESP = await import(new URL('../scripts/espacios.mjs', import.meta.url).hre
 // Estado por comando (`scripts/estado.mjs`), cargado igual: si no carga, el volcado de estado no sale.
 let EST = null;
 try { EST = await import(new URL('../scripts/estado.mjs', import.meta.url).href); } catch { /* sin volcado de estado */ }
+// Sello del DoD por ambito (`scripts/sello-dod.mjs`), cargado igual: si no carga, no hay aviso.
+let SELLO = null;
+try { SELLO = await import(new URL('../scripts/sello-dod.mjs', import.meta.url).href); } catch { /* sin aviso del DoD */ }
 const INVALIDO = { tipo: 'invalido' };
 function ambitoDeLaSesion(raiz) {
   try { return raiz && ESP ? ESP.ambitoDe(raiz, ROOT) : INVALIDO; } catch { return INVALIDO; }
@@ -163,34 +168,14 @@ function esDelAmbito(ambito, ruta) {
   try { return ambito.tipo !== 'invalido' && ESP.esDelAmbito(ambito, ruta, ESP.listarAsuntos(raizDelVault())); } catch { return false; }
 }
 
-// Estado del sello del DoD de la sesion anterior. Devuelve null si este arbol no usa DoD.
-// Se compara por CONTENIDO -- misma huella que escribe `_meta/dod.mjs` -- para que tocar un
-// fichero despues de sellar invalide el sello solo, sin que nadie tenga que acordarse.
+// Estado del sello del DoD de la sesion anterior, en SU ambito. Devuelve null si este arbol no usa
+// DoD o el ambito es invalido. La huella y el veredicto viven en `scripts/sello-dod.mjs`, que
+// comparten `_meta/dod.mjs` y `relevo.mjs`: asi los tres dan el mismo veredicto sobre el mismo sello.
 function estadoDoD(raiz) {
-  if (!raiz || !existsSync(join(raiz, '_meta', 'dod.mjs'))) return null;
-  const sello = join(raiz, '.dod-seal.json');
-  if (!existsSync(sello)) return { ok: false, por: 'no hay sello: la sesion anterior cerro sin correr el DoD' };
-  let s;
-  try { s = JSON.parse(readFileSync(sello, 'utf8')); } catch { return { ok: false, por: 'el sello esta ilegible' }; }
-  let ficheros;
-  try {
-    // MISMA lista que `_meta/dod.mjs` calcula en su `huella()`: trackeados + nuevos sin ignorar.
-    // Si las dos no coinciden, el hook y el DoD dan veredictos distintos sobre el mismo sello, que
-    // es el fallo de fuente duplicada que este kit persigue. (La primera version de las dos usaba
-    // `ls-files` a secas y dejaba pasar los ficheros nuevos.)
-    ficheros = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'],
-      { cwd: raiz, encoding: 'utf8' }).split('\n').filter(Boolean).sort();
-  } catch { return null; }                                  // sin git no hay nada que comparar
-  const h = createHash('sha256');
-  let contados = 0;
-  for (const f of ficheros) {
-    const ruta = join(raiz, f);
-    if (!existsSync(ruta)) continue;
-    h.update(f); h.update(readFileSync(ruta)); contados++;
-  }
-  const actual = h.digest('hex').slice(0, 16);
-  if (actual === s.hash) return { ok: true, por: `sellado el ${String(s.fecha).slice(0, 16).replace('T', ' ')} sobre ${s.ficheros} ficheros` };
-  return { ok: false, por: `el sello es del ${String(s.fecha).slice(0, 16).replace('T', ' ')} y el arbol ha cambiado desde entonces (${s.ficheros} → ${contados} ficheros)` };
+  if (!raiz || !SELLO) return null;
+  const ambito = ambitoDeLaSesion(raiz);
+  if (ambito.tipo === 'invalido') return null;
+  return SELLO.estadoSello(raiz, ambito);
 }
 
 // Cuenta con la que arranca la sesion. Devuelve lineas y NUNCA lanza. No imprime correo ni orgId.
@@ -406,8 +391,8 @@ function main() {
   try {
     const e = estadoDoD(raiz);
     if (e && !e.ok) {
-      dod.push(`[DoD] La sesion anterior NO cerro su Definition of Done — ${e.por}.`);
-      dod.push('  Antes de dar por bueno lo que encuentres, corre `node _meta/dod.mjs` y mira que puerta esta en rojo: puede haber efimeros sin retirar, una doctrina cambiada sin subir version, una cola por encima de su techo o trabajo sin commitear.');
+      dod.push(`[DoD] La sesion anterior de tu ambito NO cerro su Definition of Done — ${e.por}.`);
+      dod.push('  Antes de dar por bueno lo que encuentres, corre `node _meta/dod.mjs` (desde la raiz) o `node ../../_meta/dod.mjs` (desde un asunto) y mira que puerta esta en rojo: puede haber efimeros sin retirar, una doctrina cambiada sin subir version, una cola por encima de su techo o trabajo sin commitear.');
     }
   } catch { /* el estado del DoD nunca rompe el arranque */ }
 
