@@ -177,7 +177,7 @@ La condición del final es la que hace útil la respuesta: **sin ella, un consul
 
 ## Relevar una sesión
 
-**El caso normal no necesita handoff ni que tú hagas nada:** si el vault usa Herdr, el coordinador se releva solo al cerrar cada bloque y la sesión nueva sigue en la misma pestaña. Si para o el relevo falla, te lo dice, y el prompt de relevo está en `relevo-actual.local.md` (`_meta/` o `coordinacion/`) para pegarlo en una sesión nueva con la misma carpeta. Lo que tiene que sobrevivir ya está en el plan, la cola, el tablero y los commits.
+**El caso normal no necesita handoff ni que tú hagas nada:** si el vault usa Herdr, el coordinador se releva solo al cerrar una tanda o un bloque, haya plan o no, y la sesión nueva sigue en la misma pestaña. Si para o el relevo falla, te lo dice, y el prompt de relevo está en `relevo-actual.local.md` (`_meta/` o `coordinacion/`) para pegarlo en una sesión nueva con la misma carpeta. Lo que tiene que sobrevivir ya está en el plan, la cola, el tablero y los commits.
 
 **El handoff queda para cuando la sesión muere a mitad de bloque**, sin haber llegado a un punto de parada. Entonces son dos pasos: **le pides el handoff a la sesión que se acaba, y abres una nueva con la MISMA carpeta que lo lee.**
 
