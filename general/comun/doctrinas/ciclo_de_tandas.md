@@ -1,10 +1,10 @@
 ---
 name: Ciclo de trabajo por tandas — planificar, ejecutar en pequeño, parar
-description: Todo coordinador trabaja igual. Lo no trivial lo planifica un subagente Opus en un plan partido en tandas pequeñas; cada tanda la ejecuta un subagente Sonnet, una tras otra, o en paralelo cada una en su worktree si son independientes; y al cerrar una tanda suelta o un bloque el coordinador guarda el estado y el tablero y escribe el prompt de relevo; si el bloque siguiente es del mismo plan y no hay nada abierto, se releva él mismo en una sesión nueva (relevo autónomo por Herdr, con un script común); si no, para y pregunta. La tabla viva está en un tablero de nombre fijo, y lo repetitivo se hace con scripts.
+description: Todo coordinador trabaja igual. Lo no trivial lo planifica un subagente Opus en un plan partido en tandas pequeñas; cada tanda la ejecuta un subagente Sonnet, una tras otra, o en paralelo cada una en su worktree si son independientes; y al cerrar una tanda o un bloque el coordinador guarda el estado, cierra el DoD de su ámbito y escribe el prompt de relevo; si queda trabajo y no hay nada abierto, se releva él mismo en una sesión nueva, haya plan o no (relevo autónomo por Herdr, con un script común); si no, para y pregunta. La tabla viva está en un tablero de nombre fijo, y lo repetitivo se hace con scripts.
 type: doctrine
-version: 2.3
+version: 2.4
 index_summary: >-
-  **Todo coordinador trabaja con el mismo ciclo.** Lo no trivial lo **planifica un subagente Opus** en un plan partido en **tandas pequeñas**; cada tanda la **ejecuta un subagente Sonnet**, una tras otra (o en paralelo, cada una en su worktree, si son independientes), y la comprueba el coordinador, que **commitea por pathspec**. Al cerrar una tanda suelta o un bloque, el coordinador **guarda el estado y el tablero y escribe el prompt de relevo**; si el bloque siguiente es del mismo plan y no hay nada abierto, **se releva él mismo en una sesión nueva** (relevo autónomo por Herdr, con un script común), y si no, **para y pregunta**. Así los bloques se encadenan sin acumular contexto, que es lo que degrada la precisión mucho antes de llenar la ventana. La tabla viva está en un **tablero de nombre fijo**, y lo repetitivo se hace con scripts. El estado vive en ficheros, no en la conversación.
+  **Todo coordinador trabaja con el mismo ciclo.** Lo no trivial lo **planifica un subagente Opus** en un plan partido en **tandas pequeñas**; cada tanda la **ejecuta un subagente Sonnet**, una tras otra (o en paralelo, cada una en su worktree, si son independientes), y la comprueba el coordinador, que **commitea por pathspec**. Al cerrar una tanda o un bloque, el coordinador **guarda el estado, cierra el DoD de su ámbito y escribe el prompt de relevo**; si queda trabajo y no hay nada abierto, **se releva él mismo en una sesión nueva**, haya plan o no (relevo autónomo por Herdr, con un script común), y si no, **para y pregunta**. Así los bloques se encadenan sin acumular contexto, que es lo que degrada la precisión mucho antes de llenar la ventana. La tabla viva está en un **tablero de nombre fijo**, y lo repetitivo se hace con scripts. El estado vive en ficheros, no en la conversación.
 ---
 
 Todo coordinador —el general y el de cada asunto— trabaja con el mismo ciclo. Existe por una razón: lo que devuelve un subagente entra entero en el contexto de quien lo lanza, y la calidad de una sesión baja mucho antes de llenar la ventana. Tandas pequeñas, informes cortos y un relevo o una parada al cerrar cada bloque mantienen ese contexto corto, y el estado vive en ficheros, no en la conversación.
@@ -14,17 +14,16 @@ Todo coordinador —el general y el de cada asunto— trabaja con el mismo ciclo
 1. **Encargo.** Si el trabajo no es trivial —toca varios ficheros, estrena una forma de trabajar o se apoya en premisas sin comprobar—, el coordinador escribe un encargo corto: decisiones ya tomadas, fuentes y restricciones. Lo trivial lo hace él o lo manda directamente a una tanda.
 2. **Plan.** Lanza el subagente `planificador` (Opus) con la ruta del encargo. El planificador escribe `plan-tanda-<nombre>.md` —en `_meta/` el general y en `coordinacion/` un asunto— con las premisas falsas del encargo, el inventario, las decisiones abiertas, la tabla de tandas y, por cada tanda, los ficheros, el cambio, el criterio de aceptación y el comando que lo comprueba. Al volver, el coordinador comprueba con `git status --short` que solo existe el plan, lo lee y corrige su encargo. Este es el punto de corrección barato: si nadie va a leer el plan, no se lanza. Después pasa la tabla de tandas al tablero con `tablero.mjs --desde-plan <plan>`: desde ahí la tabla vive en el tablero y el plan remite a él, para que no haya dos copias.
 3. **Ejecución.** Cada tanda la ejecuta un subagente `ejecutora` (Sonnet) o `ejecutora-mecanica` si la tanda es literal y no pide criterio, uno por tanda y uno detrás de otro, salvo las tandas independientes, que van a la vez cada una en su worktree (sección "Tandas en paralelo"). El coordinador le pasa la tanda tal como está en el plan. Al volver, comprueba que `git status --short` solo muestra los ficheros de esa tanda, corre su comando de comprobación y commitea por pathspec. En el mismo commit deja la tanda como hecha con `tablero.mjs --estado <Id> HECHA`, y el mensaje del commit empieza por el Id ("T03 …"), de modo que se encuentra con `git log --oneline --grep "^T03 "`. Las tandas que van juntas de forma natural forman un bloque.
-4. **Relevo o parada.** Al cerrar una tanda suelta o un bloque, el coordinador guarda el estado: un commit con el tablero y el estado (`estado.mjs`) al día, y el prompt de relevo en `relevo-actual.local.md` (en `_meta/` el general, en `coordinacion/` un asunto). Después:
+4. **Relevo o parada.** Al cerrar una tanda (la suelta, sin plan) o un bloque (con plan), el coordinador cierra en este orden: commit con el trabajo y, si hay plan, el tablero y el estado (`estado.mjs`) al día; el DoD de su ámbito, que lo sella (`node _meta/dod.mjs`, o `node ../../_meta/dod.mjs` desde un asunto); y el prompt de relevo en `relevo-actual.local.md` (en `_meta/` el general, en `coordinacion/` un asunto). Después:
    - **Si el vault usa Herdr** y no se da ninguna condición de parada, se releva: `node <ruta>/general/comun/scripts/relevo.mjs --lanzar`, en primer plano y con un tope de Bash de 10 minutos, porque el script espera a que la sesión nueva confirme. Si el vault no usa Herdr, la parada de siempre.
    - **Condiciones de parada:**
      - hay premisas falsas o decisiones abiertas sin resolver;
      - una comprobación de tanda falla;
-     - el bloque siguiente toca una puerta humana, o el tablero declara una parada tras el bloque cerrado;
-     - el plan se acabó;
+     - el trabajo siguiente toca una puerta humana: en un plan lo declara la línea `Paradas:` del tablero; sin plan no hay `Paradas:` y la ve el coordinador, porque el script no puede;
+     - no queda trabajo por hacer (con plan, el bloque siguiente no tiene filas pendientes; sin plan, la línea 2 del relevo no nombra trabajo);
      - van tres relevos seguidos sin que intervenga el director;
-     - no hay tablero;
      - el script devuelve un código distinto de 0;
-     - quedan worktrees de tanda sin integrar (`worktree-tanda.mjs --listar` sale 4).
+     - quedan worktrees de tanda sin integrar (`worktree-tanda.mjs --listar` sale 4); la puerta "worktrees de tanda" del DoD ya lo exige antes de relevarse.
    - **Al parar,** remite al tablero (o enseña la tabla si el director la pide) y para; el director decide si sigue en la misma sesión o hace `/clear` y pega el relevo. Si el relevo falla, la sesión vieja sigue viva y avisa, y el director puede pegar a mano `relevo-actual.local.md` en una sesión nueva con la misma carpeta.
    - **Cuando el director interviene,** el coordinador corre `relevo.mjs --reiniciar-cuenta`: la cuenta de relevos seguidos vuelve a cero. Si se olvida, la sesión para antes de tiempo, que es el lado seguro.
 5. **Los bloques se encadenan con relevo, no en la misma sesión.** Que la ventana sea de un millón de tokens no es motivo para gastarla: cada turno relee todo lo acumulado y la precisión cae mucho antes de llenarla. El relevo es justo lo que deja encadenar bloques sin acumular contexto: cada bloque lo empieza una sesión con el contexto limpio.
@@ -32,7 +31,7 @@ Todo coordinador —el general y el de cada asunto— trabaja con el mismo ciclo
 ## El relevo autónomo
 
 El script `general/comun/scripts/relevo.mjs` lo corre la sesión que se va. En cinco líneas:
-1. Comprueba todas las precondiciones y las lista juntas; si alguna falla, no toca nada.
+1. Comprueba todas las precondiciones y las lista juntas, entre ellas el DoD del ámbito sellado y vigente; si alguna falla, no toca nada.
 2. Abre un panel nuevo en la misma pestaña, con la misma carpeta, y arranca en él la sesión nueva con las mismas opciones que la vieja.
 3. La sesión nueva corre `--confirmar`, que recalcula el commit del ámbito y lo escribe en `relevo-estado.local.json`; la vieja lee ese fichero y no la pantalla de la nueva.
 4. Se le pasa el relevo: la nueva corre `--tomar`, que espera a que la vieja desaparezca, se renombra con el nombre de la vieja y sigue con `relevo-actual.local.md`.
@@ -50,7 +49,7 @@ El script `general/comun/scripts/relevo.mjs` lo corre la sesión que se va. En c
 
 La tabla viva del plan en curso está en `_meta/tablero-tandas.md` el general y en `coordinacion/tablero-tandas.md` un asunto. Tiene el plan al que remite (`Plan:`), las paradas declaradas (`Paradas:`) y la tabla de tandas. Es la fuente única de la tabla: el plan remite a él y no la copia. Se reemplaza al empezar un plan, con `tablero.mjs --desde-plan`, y se edita con `tablero.mjs --estado` y se valida con `tablero.mjs --comprobar`; `--ayuda` da el uso y los códigos de salida. Cada coordinador mantiene y lee solo el suyo. Mientras un plan vive, su coordinador tiene en el estado un elemento `en_curso` con `porque` al plan, y la tabla no se copia al estado (ver [[estado_vivo_por_comando]]).
 
-Lo que se pierde respecto a enseñar la tabla en el chat en cada bloque es verla sin pedirla; a cambio, el director abre el tablero cuando quiere, sin interrumpir la sesión. El relevo lo lee y se niega a lanzarse si no existe o no es válido.
+Lo que se pierde respecto a enseñar la tabla en el chat en cada bloque es verla sin pedirla; a cambio, el director abre el tablero cuando quiere, sin interrumpir la sesión. El relevo con plan lo lee y se niega a lanzarse si no existe o no es válido; el relevo sin plan no necesita tablero, pero si hay uno con un plan vivo se niega.
 
 ## Tamaño de una tanda
 
@@ -104,12 +103,23 @@ Estados: `[PENDIENTE]`, `[EN CURSO]`, `[HECHA]` y `[BLOQUEADA: motivo]`, sin has
 
 ## Plantilla del prompt de relevo
 
+Con plan de tandas:
+
     Retomas el trabajo "<nombre>" como <coordinador general | coordinador de <asunto>>. El estado vive en ficheros, no en la conversación anterior: lee `<ruta del plan>`, el tablero (`<ruta del tablero>`) y el estado (`estado.mjs`).
     Último bloque cerrado: <letra>, en el commit <hash corto>. Siguiente: bloque <letra> — <objetivo en una frase>.
     Decisiones de la sesión anterior que no estén ya escritas en el plan o en la cola: ninguna.
     Antes de lanzar nada, comprueba que el último commit de tu ámbito es <hash corto> (`git log -1 --format=%h -- <ámbito>`); si te ha lanzado el relevo autónomo, eso ya lo ha comprobado el script. Si el plan, el tablero y el estado versionado discrepan, gana el estado: dímelo y para. Si no, sigue con el bloque siguiente mientras se cumplan las condiciones de relevo de `ciclo_de_tandas`; cuando dejen de cumplirse, dime en tres líneas dónde estamos y para.
 
-La tercera línea tiene que decir "ninguna". Si no puede, lo que falte se escribe en el plan o en la cola antes de parar, porque lo que solo está en el relevo se pierde con él. El script lee las tres primeras líneas con expresiones fijas (el plan entre acentos graves, `Último bloque cerrado: <letra>, en el commit <hash>. Siguiente: bloque <letra> — ` y el final `: ninguna.`), así que la plantilla se sigue al pie de la letra.
+Sin plan de tandas (una tanda suelta, o el plan acabado con trabajo por delante):
+
+    Retomas el trabajo "<nombre>" como <coordinador general | coordinador de <asunto>>, sin plan de tandas. El estado vive en ficheros, no en la conversación anterior: lee el estado (`estado.mjs`) y lo que nombre la línea siguiente.
+    Último cierre: <qué se cerró, en una frase>, en el commit <hash corto>. Siguiente: <qué hacer, en una frase, o la ruta del handoff que lo cuenta>.
+    Decisiones de la sesión anterior que no estén ya escritas en el estado o en la cola: ninguna.
+    Antes de lanzar nada, comprueba que el último commit de tu ámbito es <hash corto> (`git log -1 --format=%h -- <ámbito>`); si te ha lanzado el relevo autónomo, eso ya lo ha comprobado el script. Si el estado versionado y este prompt discrepan, gana el estado: dímelo y para. Si no, haz lo que dice la línea 2 y, al cerrar, vuelve a relevarte o para según las condiciones de `ciclo_de_tandas`.
+
+El fichero es siempre `relevo-actual.local.md`; un handoff no lo sustituye (si el estado no cabe en la línea 2, esta nombra la ruta del handoff). El script distingue las dos plantillas por la línea 1: si nombra un `plan-tanda-*.md` entre acentos graves es con plan, y si no, sin plan. Sin plan se niega si la línea 2 dice `nada`, `ninguno` o `ninguna`, si el tablero tiene filas en curso o bloqueadas, o si tiene un plan vivo (`Plan:` distinto de `ninguno` con filas sin HECHA): entonces se usa el relevo con plan.
+
+La tercera línea tiene que decir "ninguna". Si no puede, lo que falte se escribe en el plan o en la cola antes de parar, porque lo que solo está en el relevo se pierde con él. El script lee las tres primeras líneas con expresiones fijas (con plan: el plan entre acentos graves, `Último bloque cerrado: <letra>, en el commit <hash>. Siguiente: bloque <letra> — `; sin plan: `Último cierre: <texto>, en el commit <hash>. Siguiente: <texto>`; y en las dos el final `: ninguna.`), así que la plantilla se sigue al pie de la letra.
 
 Relacionada: [[orquestacion_sesiones_por_herramienta]], [[scripts_adhoc_tareas_repetitivas]], [[modelo_por_tarea]], [[higiene_contexto_y_tokens]], [[definition_of_done]].
 
@@ -118,3 +128,4 @@ Relacionada: [[orquestacion_sesiones_por_herramienta]], [[scripts_adhoc_tareas_r
 > **v2.1 (2026-10-10):** con el vault en espacios, el ámbito del general es `.` menos cada asunto y lo da `espacios.mjs --pathspec .`.
 > **v2.2 (2026-10-11):** las tandas independientes de un plan van en paralelo, cada una en su worktree, con `worktree-tanda.mjs` para integrarlas y retirarlas (decisión del director del 2026-10-08; vía medida el 2026-10-11).
 > **v2.3 (2026-10-12):** el estado vivo se guarda y se lee con `estado.mjs`: el paso 4 y la plantilla del relevo nombran el estado en vez de los ficheros sueltos de antes, y el plan vivo tiene su elemento `en_curso` ([[estado_vivo_por_comando]]).
+> **v2.4 (2026-10-14):** decisión del director del 2026-10-14 (E22): el relevo se hace al cerrar una tanda o un bloque, haya plan o no, con el DoD del ámbito sellado como precondición; se añade la plantilla sin plan y salen de las paradas "el plan se acabó" y "no hay tablero".
