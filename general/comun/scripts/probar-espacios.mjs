@@ -2,7 +2,7 @@
 // probar-espacios.mjs: humo de la estructura en espacios. Construye en un temporal, fuera del
 // vault, dos vaults de prueba con copias de los scripts reales y comprueba el modulo espacios.mjs
 // (casos M) y que el hook, el DoD, el tablero y el verificador respetan los espacios (H, D, T, V, G),
-// y el sello del DoD por ambito (S y H9).
+// y el sello del DoD por ambito (S y H9) y las precondiciones de relevo.mjs --comprobar (R).
 // Sin dependencias. Salidas: 0 si todos los casos pasan, 1 si alguno falla, 2 uso.
 import { spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync, realpathSync } from 'node:fs';
@@ -13,11 +13,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const REAL = path.resolve(AQUI, '..', '..', '..');
 const EST = await import(pathToFileURL(path.join(AQUI, 'estado.mjs')).href);
+const ESPACIOS = await import(pathToFileURL(path.join(AQUI, 'espacios.mjs')).href);
 
 const AYUDA = `Uso:
   probar-espacios.mjs [--casos <M,H,V2,...>]
   probar-espacios.mjs --ayuda
-Sin --casos corre todos (M, H, D, T, V, G, S). --casos filtra por prefijo o por id suelto.
+Sin --casos corre todos (M, H, D, T, V, G, S, R). --casos filtra por prefijo o por id suelto.
 Salidas: 0 todos bien, 1 algun caso falla, 2 uso.`;
 
 class Salida extends Error { constructor(codigo, msg) { super(msg); this.codigo = codigo; } }
@@ -181,6 +182,56 @@ const dodSella = (v, rel) => node([path.join(v, '_meta', 'dod.mjs')], path.join(
 // Motivo de un sello que no cierra: la puerta o puertas en rojo, para arreglar el vault de prueba.
 const noCierra = (rel, r) => `el sello de ${rel} no cierra (sale ${r.codigo}): ${r.salida.split('\n').filter((l) => /\[FALLO|^\s{3,}\S/.test(l) && !/\[OK/.test(l)).join(' | ').slice(0, 900)}`;
 const dodEstado = (v, rel) => node([path.join(v, '_meta', 'dod.mjs'), '--estado'], path.join(v, rel));
+// ---- relevo.mjs --comprobar (casos R) ----
+// Hash corto del ultimo commit del ambito de `rel` (lo que el relevo tiene que citar).
+function hashAmbito(v, rel) {
+  const amb = ESPACIOS.ambitoDe(v, path.join(v, rel));
+  return git(v, 'log', '-1', '--format=%h', '--', ...ESPACIOS.pathspecDe(amb, ESPACIOS.listarAsuntos(v))).salida.trim();
+}
+// Escribe el texto del relevo en el directorio de coordinacion del ambito y corre `relevo.mjs --comprobar`
+// con cwd en el ambito, sin entorno Herdr. Devuelve las lineas [OK]/[NO].
+function comprobarRelevo(v, rel, textoRelevo, { tablero } = {}) {
+  const dir = path.join(v, rel);
+  escribir(dir, path.join(rel === '.' ? '_meta' : 'coordinacion', 'relevo-actual.local.md'), textoRelevo);
+  const args = [path.join(v, 'general', 'comun', 'scripts', 'relevo.mjs'), '--comprobar'];
+  if (tablero) args.push('--tablero', tablero);
+  const r = node(args, dir, { HERDR_ENV: '', HERDR_PANE_ID: '' });
+  return r.salida.split('\n').filter((l) => /^\[(OK|NO)\] /.test(l));
+}
+// Las lineas que dependen de la maquina (entorno y nombre libre) no se evaluan.
+const dependeMaquina = (l) => /^\[(OK|NO)\] (entorno|el nombre |herdr agent list falla)/.test(l);
+const noOtras = (L) => L.filter((l) => l.startsWith('[NO]') && !dependeMaquina(l));
+const con = (L, pref, texto) => L.filter((l) => l.startsWith(pref) && l.includes(texto));
+const PLAN_REL = '_meta/plan-tanda-prueba.md';
+const tituloRel = (rel) => (rel === '.' ? 'coordinador general' : `coordinador de ${rel.split('/')[1]}`);
+function relevoConPlan(rel, hash, { cerrado = 'A', siguiente = 'B' } = {}) {
+  return [
+    `Retomas el trabajo "prueba" como ${tituloRel(rel)}. El estado vive en ficheros, no en la conversación anterior: lee \`${PLAN_REL}\`, el tablero (\`_meta/tablero-tandas.md\`) y el estado (\`estado.mjs\`).`,
+    `Último bloque cerrado: ${cerrado}, en el commit ${hash}. Siguiente: bloque ${siguiente} — objetivo de prueba.`,
+    'Decisiones de la sesión anterior que no estén ya escritas en el plan o en la cola: ninguna.',
+    'Antes de lanzar nada, comprueba el último commit de tu ámbito.',
+  ].join('\n') + '\n';
+}
+function relevoSinPlan(rel, hash, { siguiente = 'revisar la cola', decisiones = 'ninguna' } = {}) {
+  return [
+    `Retomas el trabajo "prueba" como ${tituloRel(rel)}, sin plan de tandas. El estado vive en ficheros, no en la conversación anterior: lee el estado (\`estado.mjs\`) y lo que nombre la línea siguiente.`,
+    `Último cierre: se cerró una tarea suelta, en el commit ${hash}. Siguiente: ${siguiente}.`,
+    `Decisiones de la sesión anterior que no estén ya escritas en el estado o en la cola: ${decisiones}.`,
+    'Antes de lanzar nada, comprueba el último commit de tu ámbito.',
+  ].join('\n') + '\n';
+}
+// Tablero de prueba fuera del repositorio de prueba (para no ensuciar el arbol); `filas` = [[id, bloque, estado]].
+function tableroPrueba(v, nombre, plan, filas) {
+  const f = path.join(path.dirname(v), `tablero-${nombre}.md`);
+  const cuerpo = filas.map(([id, b, e]) => `| ${id} | ${b} | objetivo | \`x.md\` | ejecutora | — | ${e} |`).join('\n');
+  writeFileSync(f, `# Tablero de tandas\n\nPlan: ${plan === 'ninguno' ? 'ninguno' : '`' + plan + '`'}\nParadas: ninguna\n\n${CABECERA}\n${SEPARADOR}\n${cuerpo}\n`);
+  return f;
+}
+// Commitea un plan de prueba en el general.
+function planCommiteado(v) {
+  escribir(v, PLAN_REL, '# Plan de prueba\n');
+  confirmarGit(v, 'add', '-A'); confirmarGit(v, 'commit', '-q', '-m', 'plan de prueba');
+}
 const espera = (ms) => { spawnSync('sleep', [String(ms / 1000)]); };
 // Cambia el cuerpo de una doctrina sin subir la version y lo commitea (como D5).
 function doctrinaCambiada(v) {
@@ -386,6 +437,76 @@ function casos(c, esp) {
       return R(ok, `hook en la raiz: [DoD]=${g.includes('[DoD]')} (se esperaba false); hook en esp-uno/a1: [DoD]=${s.includes('[DoD]')}, nombra ../../_meta/dod.mjs=${s.includes('../../_meta/dod.mjs')} (se esperaba true, true)`);
     }],
 
+    ['R1', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const L = comprobarRelevo(v, '.', relevoSinPlan('.', hashAmbito(v, '.')));
+      return R(noOtras(L).length === 0 && con(L, '[OK]', 'DoD').length === 1, `sin plan y sellado: [NO] ajenas a la maquina=${JSON.stringify(noOtras(L))}, lineas [OK] con DoD=${con(L, '[OK]', 'DoD').length} (se esperaba 0 y 1)`);
+    }],
+    ['R2', () => {
+      const v = c.clon();
+      const L = comprobarRelevo(v, '.', relevoSinPlan('.', hashAmbito(v, '.')));
+      return R(con(L, '[NO]', 'DoD').length === 1, `sin sello: lineas [NO] con DoD=${con(L, '[NO]', 'DoD').length} (se esperaba 1)`);
+    }],
+    ['R3', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      writeFileSync(path.join(v, '_meta', 'bitacora.md'), '# Bitacora\n\nCambio posterior al sello.\n');
+      confirmarGit(v, 'add', '-A'); confirmarGit(v, 'commit', '-q', '-m', 'cambio en el ambito');
+      const L = comprobarRelevo(v, '.', relevoSinPlan('.', hashAmbito(v, '.')));
+      return R(con(L, '[NO]', 'DoD').length === 1, `sello caducado por un commit del ambito: lineas [NO] con DoD=${con(L, '[NO]', 'DoD').length} (se esperaba 1)`);
+    }],
+    ['R4', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const L1 = comprobarRelevo(v, 'esp-uno/a1', relevoSinPlan('esp-uno/a1', hashAmbito(v, 'esp-uno/a1')));
+      const b = dodSella(v, 'esp-uno/a1'); if (b.codigo !== 0) return noCierra('esp-uno/a1', b);
+      const L2 = comprobarRelevo(v, 'esp-uno/a1', relevoSinPlan('esp-uno/a1', hashAmbito(v, 'esp-uno/a1')));
+      return R(con(L1, '[NO]', 'DoD').length === 1 && con(L2, '[OK]', 'DoD').length === 1, `a1 con solo el general sellado: [NO] con DoD=${con(L1, '[NO]', 'DoD').length} (se esperaba 1); tras sellar a1: [OK] con DoD=${con(L2, '[OK]', 'DoD').length} (se esperaba 1)`);
+    }],
+    ['R5', () => {
+      const v = c.clon();
+      const L = comprobarRelevo(v, '.', relevoSinPlan('.', hashAmbito(v, '.'), { decisiones: 'queda por escribir un criterio' }));
+      return R(con(L, '[NO]', 'linea 3').length === 1, `linea 3 distinta de "ninguna": lineas [NO] de decisiones=${con(L, '[NO]', 'linea 3').length} (se esperaba 1)`);
+    }],
+    ['R6', () => {
+      const v = c.clon();
+      const L = comprobarRelevo(v, '.', relevoSinPlan('.', hashAmbito(v, '.'), { siguiente: 'nada' }));
+      return R(con(L, '[NO]', 'trabajo siguiente').length === 1, `Siguiente: nada: lineas [NO] con "trabajo siguiente"=${con(L, '[NO]', 'trabajo siguiente').length} (se esperaba 1)`);
+    }],
+    ['R7', () => {
+      const v = c.clon();
+      const tab = tableroPrueba(v, 'r7', PLAN_REL, [['T01', 'A', '[HECHA]'], ['T02', 'B', '[PENDIENTE]']]);
+      const L = comprobarRelevo(v, '.', relevoSinPlan('.', hashAmbito(v, '.')), { tablero: tab });
+      return R(con(L, '[NO]', 'plan vivo').length === 1, `sin plan con un plan vivo en el tablero: lineas [NO] con "plan vivo"=${con(L, '[NO]', 'plan vivo').length} (se esperaba 1)`);
+    }],
+    ['R8', () => {
+      const v = c.clon();
+      planCommiteado(v);
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const tab = tableroPrueba(v, 'r8', PLAN_REL, [['T01', 'A', '[HECHA]'], ['T02', 'B', '[PENDIENTE]']]);
+      const L = comprobarRelevo(v, '.', relevoConPlan('.', hashAmbito(v, '.')), { tablero: tab });
+      return R(noOtras(L).length === 0 && con(L, '[OK]', 'DoD').length === 1, `con plan y sellado: [NO] ajenas a la maquina=${JSON.stringify(noOtras(L))}, lineas [OK] con DoD=${con(L, '[OK]', 'DoD').length} (se esperaba 0 y 1)`);
+    }],
+    ['R9', () => {
+      const v = c.clon();
+      planCommiteado(v);
+      const tab = tableroPrueba(v, 'r9', PLAN_REL, [['T01', 'A', '[HECHA]'], ['T02', 'B', '[HECHA]']]);
+      const L = comprobarRelevo(v, '.', relevoConPlan('.', hashAmbito(v, '.')), { tablero: tab });
+      return R(con(L, '[NO]', 'bloque siguiente').length === 1, `bloque siguiente sin filas PENDIENTE: lineas [NO] del bloque siguiente=${con(L, '[NO]', 'bloque siguiente').length} (se esperaba 1)`);
+    }],
+    ['R10', async () => {
+      const v = c.clon();
+      const mod = await import(pathToFileURL(path.join(v, 'general', 'comun', 'scripts', 'relevo.mjs')).href);
+      if (typeof mod.leerRelevo !== 'function') return 'relevo.mjs no exporta leerRelevo';
+      const lee = (nombre, texto) => { const f = path.join(path.dirname(v), nombre); writeFileSync(f, texto); return mod.leerRelevo(f); };
+      const p = lee('r10-plan.md', relevoConPlan('.', 'abc1234'));
+      const s = lee('r10-sinplan.md', relevoSinPlan('.', 'abc1234'));
+      const n = lee('r10-ninguna.md', 'Un texto que no casa con ninguna plantilla.\nNi esta linea.\n');
+      const ok = p.modo === 'plan' && p.hash === 'abc1234' && s.modo === 'sinplan' && s.hash === 'abc1234' && n.existe === true && n.modo === null;
+      return R(ok, `leerRelevo: plan=${JSON.stringify([p.modo, p.hash])}, sinplan=${JSON.stringify([s.modo, s.hash])}, ninguna=${JSON.stringify([n.existe, n.modo])}`);
+    }],
+
     ['G1', () => {
       const v = c.clon();
       escribir(v, 'esp-uno/a1/repo/f', 'x\n');
@@ -415,7 +536,7 @@ async function main() {
     if (!lista.length) throw new Salida(2, `ningun caso coincide con ${args[1]}`);
     for (const [id, fn] of lista) {
       let motivo;
-      try { motivo = fn(); } catch (e) { motivo = `error: ${e && e.message ? e.message : e}`; }
+      try { motivo = await fn(); } catch (e) { motivo = `error: ${e && e.message ? e.message : e}`; }
       if (motivo) { fallos++; console.log(`[FALLA] ${id}: ${motivo}`); } else console.log(`[OK] ${id}`);
     }
     console.log(fallos ? `\n${fallos} caso(s) fallan de ${lista.length}.` : `\nTodos los casos pasan (${lista.length}).`);
