@@ -2,7 +2,7 @@
 name: Modelos y nivel de esfuerzo — catálogo, curvas y tabla de situaciones
 description: Documento de REFERENCIA (no doctrina) con los hechos de plataforma que cambian solos: qué modelos hay, qué niveles de esfuerzo admite cada uno, cuánto rinde cada nivel, qué cuesta cambiar de modelo o de esfuerzo a media sesión, y la tabla situación → modelo → esfuerzo. Lo consulta el coordinador antes de repartir trabajo y el director antes de abrir una sesión. El CRITERIO vive en [[modelo_por_tarea]]; aquí viven los DATOS y su origen.
 type: knowledge
-version: 2.1
+version: 2.2
 caduca: 2026-12-31
 ---
 
@@ -50,6 +50,7 @@ caduca: 2026-12-31
 | **Fable 5.1** (`claude-fable-5-1`) | 53 | $10 / $50 (lectura de caché $0,25) | 1M / 128K | low–max; `high` por defecto en la API |
 | **Opus 5.5** (`claude-opus-5-5`, 2026-09-22) | **58** (57,6) | $4 / $20 (caché $0,20) | 1M / 128K *(300K solo en la Batch API, beta: no cuenta)* | low, medium, high, xhigh, max; **API: `medium`**; **en este cliente con `effortLevel: "high"`, se aplica `high`** `[MEDIDO 2026-10-04]`; pensamiento adaptativo siempre activo |
 | **Sonnet 5.5** (`claude-sonnet-5-5`, 2026-09-28) | **56** (56,0) | $2 / $10 (caché $0,20) | 1M / 128K | low, medium, high, xhigh, max; API: `high`; **por defecto en Claude Code sin ajuste: `[POR MEDIR]`** (el informe dice `medium`, el contraste no lo confirma) |
+| **Haiku 5.5** (`claude-haiku-5-5`) — **solo mecánica literal, siempre `high`** | sin dato propio: Artificial Analysis 38 en `high`, 34 en `medium` (frente a 35,8 de Sonnet 5.5 `low`) `[TERCERO, vía pd-dev; sin contrastar]` | 0,10 $ / 0,50 $ `[TERCERO, vía pd-dev; sin contrastar; cifra rara frente a Haiku 4.5, no es oficial]` | 1M / 128K `[TERCERO, vía pd-dev; sin contrastar]` | low–max `[TERCERO, vía pd-dev; sin contrastar]`; en servicio `[MEDIDO 2026-10-14]`; **`effort: high` aceptado en un subagente y respondiendo `claude-haiku-5-5` `[MEDIDO 2026-10-22]`** |
 | Haiku 4.5 — **fuera del método** | sin dato en v4.3.2 | $1 / $5 | **200K** / 64K | **NINGUNO** |
 | *Opus 5 (legado)* | 51 | $5 / $25 *(del informe; el contraste no lo verifica)* | 1M / 128K | low–max; `high` por defecto en la API |
 | *Sonnet 5 (legado)* | 38 | $2 / $10 *(del informe; el contraste no lo verifica)* | 1M / 128K | low–max; `high` |
@@ -234,14 +235,15 @@ Haiku ya no está en el método, pero el argumento vale para cualquier modelo m�
 | **Escribir doctrina o método** | Opus 5.5 | `high` | Gana el conocimiento y la redacción, no más razonamiento `[informe :122]` |
 | **Planificar** una tanda no trivial (refutar premisas) | subagente `planificador` | el modelo es Opus, fijado en su definición; el esfuerzo es el de la sesión | Detectar errores pide capacidad, no generación. Sin `effort:` en su frontmatter hereda el de la sesión `[MEDIDO 2026-10-04]` |
 | **Tandas**: ejecutar un plan revisado | subagente `ejecutora` | Sonnet 5.5, `medium` fijado en su definición | El contrato ya fija el resultado; subir esfuerzo solo añade tokens. Un `effort:` en el frontmatter de un subagente se respeta `[MEDIDO 2026-10-04]` |
-| **Mecánica**: cambios literales, copiar, mover | subagente `ejecutora-mecanica` | Sonnet 5.5, `low` fijado en su definición | Patrón obvio: subir esfuerzo no mejora y puede empeorar. Sonnet 5.5 `low` (35,8) cuesta 0,41 $ por tarea (§2) |
+| **Mecánica**: cambios literales, copiar, mover, repetitivo de volumen sin decisión | subagente `ejecutora-mecanica` | Haiku 5.5, `high` fijado en su definición | `[MEDIDO 2026-10-22]`. Nunca en análisis, planificación, programar, seguridad, interfaces, textos para personas ni nada que obligue a elegir; si mezcla, manda la más exigente. Índice de Haiku 5.5 `high` 38 frente a 35,8 de Sonnet 5.5 `low` `[TERCERO, vía pd-dev; sin contrastar]` |
+| **`claude -p` de implementación** | Sonnet 5.5 | `high` | En `low` o `medium` tiende a preguntar y en `-p` nadie contesta |
 | **Consultor** de solo lectura | Sonnet 5.5 | `medium` | Leer y contestar. Pedirle que consulte el fichero aunque esté seguro: de memoria acierta menos que Opus `[TERCERO, vía informe]` |
 | **Brief para el chat web** | el capaz | `xhigh` | Allí no hay perfil: se elige a mano. `max` tampoco ahí |
-| **Escalada** en tarea agéntica larga | Fable 5.1 | `high`, edición quirúrgica | Solo tras comparar con Opus 5.5 `xhigh`, que supera a Fable `max` (§2). Fable con `xhigh` o `max` puede redactar el entregable en el pensamiento y repetirlo `[OFICIAL, contraste :53]` |
+| **Escalada** en tarea agéntica larga | Fable 5.1 | `high`, edición quirúrgica | Solo si el director lo pide en el prompt, caso por caso; no se propone; vetado en seguridad. Antes, comparar con Opus 5.5 `xhigh`, que supera a Fable `max` (§2). Fable con `xhigh` o `max` puede redactar el entregable en el pensamiento y repetirlo `[OFICIAL, contraste :53]` |
 
 **Dos reglas que la tabla aplica, y no se repiten fila a fila.** Para pensar más se sube de modelo y no de esfuerzo, dentro de lo que dice el matiz de §2: Sonnet 5.5 solo llega a `high`. Y el esfuerzo se regula con el parámetro, no con frases del tipo "piensa poco" en el fichero de reglas: bajar el esfuerzo reduce el pensamiento de forma más fiable que una instrucción `[OFICIAL, contraste :46]`.
 
-**Lo que cambió respecto a septiembre.** La fase de análisis dejó de ser una fila con modelo y esfuerzo y pasó a ser el subagente `planificador`; las tandas pasaron de sesiones `claude -p` a subagentes `ejecutora`. El motivo de entonces se conserva: subirle el esfuerzo a Sonnet para refutar premisas era el error, y la respuesta era cambiar de modelo. La fila de subagentes de lectura con Haiku desaparece con el modelo.
+**Línea roja:** la cuota nunca se ahorra bajando modelo ni esfuerzo. **Lo que cambió respecto a septiembre.** La fase de análisis dejó de ser una fila con modelo y esfuerzo y pasó a ser el subagente `planificador`; las tandas pasaron de sesiones `claude -p` a subagentes `ejecutora`. El motivo de entonces se conserva: subirle el esfuerzo a Sonnet para refutar premisas era el error, y la respuesta era cambiar de modelo. La fila de subagentes de lectura con Haiku desaparece; Haiku 5.5 vuelve solo en la mecánica.
 
 ---
 
@@ -287,13 +289,15 @@ Haiku ya no está en el método, pero el argumento vale para cualquier modelo m�
 
 **`ultracode`, para quien tenga que decidir.** No da más inteligencia por turno: aporta orquestación, y ataca tres fallos de una sola ventana (abandonar tareas largas a medias, autoevaluarse con indulgencia, perder el hilo al compactar). No choca con el veto de [[modelo_por_tarea]], que es el fan-out masivo y no repartir una revisión en tres o cuatro lectores. Evidencia propia: el 2026-09-01 y 02, cuatro repartos de 2 a 4 agentes de lectura; tres auditores adversariales cazaron cuatro cifras estructurales mal en un documento ya dado por bueno, y dos agentes de análisis evitaron dos errores de forma; coste medido, 1,70 M de tokens de subagentes. Rinde en auditoría amplia y en trabajo donde la verificación independiente valga más que el ahorro; no rinde en tareas de un paso ni en la coordinación ordinaria. Activarlo a media sesión es un cambio de esfuerzo: se decide al abrir.
 
-**Decisión abierta: Fable 5.1.** Con el índice de v4.3.2 no es la mejor compra: Opus 5.5 `high` (53,6) supera a Fable `max` (53) y `xhigh` (56,0) la supera con holgura, a menos de la mitad de tarifa (§2). El informe da el tope del 50 % del semanal en Max como vigente `[OFICIAL, vía informe]`; el contraste no lo verifica, así que se trata como dato del informe y no como confirmado. La escalada sigue la regla de la tabla de §5.
+**Fable 5.1: solo cuando el director lo pide en el prompt, caso por caso; no se propone, está vetado en seguridad y en `claude -p` nunca `--model fable` ni `best`.** Con el índice de v4.3.2 no es la mejor compra: Opus 5.5 `high` (53,6) supera a Fable `max` (53) y `xhigh` (56,0) la supera con holgura, a menos de la mitad de tarifa (§2). El informe da el tope del 50 % del semanal en Max como vigente `[OFICIAL, vía informe]`; el contraste no lo verifica, así que se trata como dato del informe y no como confirmado. La escalada sigue la regla de la tabla de §5.
 
 ---
 
 *Documento de referencia. **Se refresca por tanda periódica, no por goteo.** Origen: el informe de investigación del 2026-10-04 y su contraste del mismo día contra seis páginas oficiales de la API, que son las claves siguientes. `PE` = `https://platform.claude.com/docs/es/build-with-claude/prompt-engineering/` (con `prompting-claude-opus-5-5`, `prompting-claude-sonnet-5-5`, `prompting-claude-fable-5-1` y `claude-prompting-best-practices`); `OV` = `https://platform.claude.com/docs/es/models/overview`; `CH` = `https://platform.claude.com/docs/es/about-claude/models/choosing-a-model`. Mediciones propias del 2026-10-04: el esfuerzo del perfil (§1) y el comportamiento de los subagentes (§5, §6.1). Lo demás de Claude Code llega por informe y no se ha leído en su fuente primaria. Caduca el **2026-12-31**, a la vez que [[modelo_por_tarea]], a propósito: cuando toque repasar, se repasa todo junto.*
 
 *v1.0 (2026-09-02) — primera versión. Catálogo con Fable 5.1 y Mythos 5.1, curvas de esfuerzo de Opus 5 y Fable 5.1, caché por modelo y por esfuerzo, higiene de `/clear` y `/compact` y tabla de situaciones.*
+
+*v2.2 (2026-10-22) — T06 medido: Haiku 5.5 en `ejecutora-mecanica` con `effort: high` `[MEDIDO 2026-10-22]`; fila de Haiku 5.5 con sus datos de pd-dev marcados sin contrastar (§1); mecánica en Haiku `high`, fila de `claude -p` en Sonnet `high` y Fable solo a petición (§5, §7).*
 
 *v2.1 (2026-10-14) — M9 medido: los agentes integrados lanzados sin `model` no fallan tras la retirada de Haiku 4.5 (`Explore` hereda, `claude-code-guide` va en Haiku 5.5) (§6.1); Haiku 5.5 ya en servicio y fuera la caducidad del 2026-10-15 (§1.1).*
 

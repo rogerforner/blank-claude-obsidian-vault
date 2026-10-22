@@ -37,4 +37,4 @@ Lo mínimo para leer un árbol y trabajar: listar, leer, buscar, contar y `git` 
 
 ## Modelo y esfuerzo
 
-`sonnet` / `medium` como punto de partida, **no como dogma**: la elección de modelo es un **criterio por tarea** y se puede subir en el lanzamiento con `--model` y `--effort` cuando el trabajo lo pida — una tanda de análisis que tiene que **refutar premisas** no es lo mismo que una que transcribe. → [[modelo_por_tarea]]
+`sonnet` / `high` (implementación en `-p`) como punto de partida, **no como dogma**: la elección de modelo es un **criterio por tarea** y se puede subir en el lanzamiento con `--model` y `--effort` cuando el trabajo lo pida — una tanda de análisis que tiene que **refutar premisas** no es lo mismo que una que transcribe. → [[modelo_por_tarea]]

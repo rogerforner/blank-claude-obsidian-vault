@@ -80,7 +80,7 @@ Resumen de la tabla de [modelos y esfuerzo](../general/comun/modelos-y-esfuerzo.
 | Escribir doctrina o método | Opus 5.5 | `high` | Gana el conocimiento y la redacción, no más razonamiento |
 | Planificar una tanda no trivial (refutar premisas) | subagente `planificador` | Opus; el esfuerzo es el de la sesión | Detectar errores pide capacidad. Sin `effort:` en su definición hereda el de la sesión |
 | Ejecutar un plan revisado | subagente `ejecutora` | Sonnet 5.5, `medium` | El contrato ya fija el resultado; subir esfuerzo solo añade tokens |
-| Mecánica: cambios literales, copiar, mover | subagente `ejecutora-mecanica` | Sonnet 5.5, `low` | Patrón obvio: subir esfuerzo no mejora y puede empeorar |
+| Mecánica: cambios literales, copiar, mover | subagente `ejecutora-mecanica` | Haiku 5.5, `high` | Medido el 2026-10-22; nunca para análisis, programar ni decidir |
 | Consultor de solo lectura | Sonnet 5.5 | `medium` | Leer y contestar, pidiéndole que consulte el fichero aunque esté seguro |
 | Brief para el chat web | el capaz | `xhigh` | Allí no hay perfil: se elige a mano. `max` tampoco ahí |
 
@@ -101,7 +101,7 @@ Desde el **2026-08-12** el modelo y el esfuerzo van escritos en el `settings.jso
 | Consultor | `plantilla-settings-consultor.json` |
 | Subagente `planificador` | `.claude/agents/planificador.md`: modelo Opus fijado en su definición; hereda el perfil de la sesión que lo lanza |
 | Subagente `ejecutora` | `.claude/agents/ejecutora.md`: Sonnet 5.5 en `medium` fijado en su definición; hereda el perfil de la sesión |
-| Subagente `ejecutora-mecanica` | `.claude/agents/ejecutora-mecanica.md`: Sonnet 5.5 en `low` fijado en su definición; hereda el perfil de la sesión |
+| Subagente `ejecutora-mecanica` | `.claude/agents/ejecutora-mecanica.md`: Haiku 5.5 en `high` fijado en su definición; hereda el perfil de la sesión |
 | `claude -p` (otra raíz, otro perfil o plan B) | el perfil siempre, con `--settings inicializador/plantilla-settings-ejecutora.json` (o `-codigo` si toca código); es un proceso aparte con contexto limpio, pero hereda el entorno del llamante (por eso ninguna clave de API en él) y, sin `--settings`, el perfil de su carpeta |
 
 > **La columna del perfil arregló algo que estaba roto en silencio: no tener perfil no significa correr sin permisos, significa correr con los del de al lado.** Hasta el 2026-08-27 no existía perfil de ejecutora no-código, así que una tanda lanzada desde la raíz heredaba el del **coordinador general**: modelo caro, canal entre sesiones abierto y sin denegación sobre `general/`. Los subagentes heredan lo mismo: por eso el perfil de la sesión que los lanza importa, y por eso su modelo y su esfuerzo se fijan en la definición y no en el prompt.

@@ -1,9 +1,9 @@
 ---
 name: ejecutora-mecanica
-description: Ejecuta una sola tanda mecánica de un plan que el coordinador ya ha revisado, con cambios literales que no piden criterio como sustituir un texto que la tanda da hecho, copiar, mover o renombrar ficheros. Es la ejecutora con esfuerzo bajo. Si la tanda pide redactar, elegir entre opciones o interpretar, usa ejecutora; para planificar está el subagente planificador.
-model: sonnet
+description: Ejecuta una sola tanda mecánica de un plan que el coordinador ya ha revisado, con cambios literales que no piden criterio como sustituir un texto que la tanda da hecho, copiar, mover o renombrar ficheros. Es la ejecutora en Haiku para lo literal. Si la tanda pide redactar, elegir entre opciones o interpretar, usa ejecutora; para planificar está el subagente planificador.
+model: haiku
 tools: Read, Grep, Glob, Bash, Edit, Write
-effort: low
+effort: high
 maxTurns: 60
 ---
 

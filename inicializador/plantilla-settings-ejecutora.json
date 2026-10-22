@@ -43,7 +43,7 @@
     ]
   },
   "model": "sonnet",
-  "effortLevel": "medium",
+  "effortLevel": "high",
   "outputStyle": "Concise",
   "crossSessionInbound": "refuse",
   "isolatePeerMachines": true,
