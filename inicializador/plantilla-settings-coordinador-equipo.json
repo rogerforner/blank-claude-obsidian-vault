@@ -1,0 +1,87 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "additionalDirectories": [
+      "../../general",
+      "../../_meta/memoria"
+    ],
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:code.claude.com)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(pwd:*)",
+      "Bash(find:*)",
+      "Bash(wc:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(grep:*)",
+      "Bash(file:*)",
+      "Bash(stat:*)",
+      "Bash(git:*)",
+      "PowerShell(git:*)",
+      "Bash(node:*)",
+      "Bash(playwright-cli:*)",
+      "PowerShell(node:*)"
+    ],
+    "deny": [
+      "Edit(//**/general/**)",
+      "Edit(//**/_meta/**)",
+      "Edit(//**/inicializador/**)",
+      "Bash(git push:*)",
+      "Bash(git remote:*)",
+      "PowerShell(git push:*)",
+      "PowerShell(git remote:*)",
+      "Bash(git config --global:*)",
+      "PowerShell(git config --global:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "PowerShell(Invoke-WebRequest:*)",
+      "PowerShell(Invoke-RestMethod:*)",
+      "Bash(agy:*)",
+      "Bash(antigravity:*)",
+      "Bash(sudo:*)",
+      "Bash(su:*)",
+      "Bash(rm -rf:*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.config/gh/**)",
+      "Read(//**/id_rsa)",
+      "Read(//**/id_ed25519)",
+      "Bash(security find-generic-password:*)",
+      "Bash(security find-internet-password:*)",
+      "Bash(security dump-keychain:*)",
+      "Bash(security export:*)",
+      "Read(~/Library/Keychains/**)",
+      "mcp__ha-mcp",
+      "mcp__proxmox"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/../../general/comun/hooks/limpieza-coordinacion.mjs\""
+          }
+        ]
+      }
+    ]
+  },
+  "model": "opus",
+  "effortLevel": "high",
+  "outputStyle": "Concise",
+  "crossSessionInbound": "accept",
+  "isolatePeerMachines": true,
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "env": {
+    "CLAUDE_CODE_DISABLE_FAST_MODE": "1",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
+  }
+}

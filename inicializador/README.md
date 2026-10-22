@@ -21,6 +21,8 @@ Un **asunto** es cualquier cosa que se lleva de principio a fin con papeles y de
 - **[plantilla-brief-deep-research.md](plantilla-brief-deep-research.md)** — brief de **investigación a fondo** (se ejecuta en el chat web) con restricciones duras + enfoque "cómo SÍ" ([[vigilancia_tecnologica_bajo_demanda]]).
 - **[plantilla-settings-coordinador.json](plantilla-settings-coordinador.json)** — el `.claude/settings.json` del coordinador de un asunto (perfil de **autonomía con verificación**; catálogo `general/` en solo lectura). Detalle y salvedades en [plantilla-settings-coordinador.NOTAS.md](plantilla-settings-coordinador.NOTAS.md).
 - **[plantilla-contenedor-asunto/](plantilla-contenedor-asunto/)** — árbol a copiar a `<espacio>/<asunto>/`.
+- **[plantilla-equipo/](plantilla-equipo/)** — los tres `docs/` de un asunto que es un equipo (análisis, problemas conocidos, registro de cambios), a copiar además del contenedor ([[coordinador_de_equipo]]).
+- **[plantilla-settings-coordinador-equipo.json](plantilla-settings-coordinador-equipo.json)** — el `.claude/settings.json` del coordinador de un equipo: el del coordinador más `mcp__ha-mcp` y `mcp__proxmox` denegados enteros. Notas en [plantilla-settings-coordinador-equipo.NOTAS.md](plantilla-settings-coordinador-equipo.NOTAS.md).
 
 *(La plantilla del README de un repositorio de código y la alineación de sus reglas no viven aquí: se fueron al pack `codigo/` → `general/comun/packs/codigo/README-repo-codigo.md`. Solo hacen falta si el asunto incluye software propio.)*
 
