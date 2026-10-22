@@ -2,14 +2,14 @@
 name: herdr
 description: Manual de Herdr, la interfaz de sesiones de los coordinadores: instalacion con Homebrew, integracion con Claude Code, comprobacion y actualizacion.
 type: manual
-version: 1.2
+version: 1.3
 ---
 
 # Herdr
 
 ## Para qué sirve y quién la usa
 
-Herdr es la interfaz de terminal donde viven las sesiones del vault: un espacio de trabajo por espacio del vault y una pestaña por rol. La usa el director y, a través de su API, cada coordinador para su propio relevo. Por qué esa forma y cómo se usa está en [[orquestacion_sesiones_por_herramienta]] y en [[ciclo_de_tandas]].
+Herdr es la interfaz de terminal donde viven las sesiones del vault: un espacio de trabajo por espacio del vault y una pestaña por coordinador, que lo identifica y no se mueve ni se duplica. La usa el director y, a través de su API, cada coordinador para su propio relevo y el general para arrancar coordinadores. Por qué esa forma y cómo se usa está en [[orquestacion_sesiones_por_herramienta]] y en [[ciclo_de_tandas]].
 
 ## Requisitos
 

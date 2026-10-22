@@ -88,7 +88,7 @@ Limpio = adelante. **Un hallazgo = te detienes** y lo sacas *antes* del primer c
 
 ## 6. Lanzar el coordinador propio (= checklist-arranque paso 7)
 
-- El director lanza la sesión con cwd en `{{ESPACIO}}/{{SLUG}}/`. El coordinador lee charter + doctrinas + el reconocimiento de `coordinacion/referencia/` y arranca por **fijar la cronología y los plazos** y **comprobar que el material se puede trabajar** (que los escaneos son legibles y completos, que las cifras cuadran con los justificantes). Lo que no pueda comprobar por comando lo entrega como **comprobación en campo** con procedimiento escrito ([[verificacion_e2e_por_agente]]). Material ilegible o plazo sin fecha = **hallazgo** prioritario.
+- La sesión se lanza con cwd en `{{ESPACIO}}/{{SLUG}}/`: la abre el coordinador general en una pestaña de Herdr (o, sin Herdr, el director), una sola por coordinador. El coordinador lee charter + doctrinas + el reconocimiento de `coordinacion/referencia/` y arranca por **fijar la cronología y los plazos** y **comprobar que el material se puede trabajar** (que los escaneos son legibles y completos, que las cifras cuadran con los justificantes). Lo que no pueda comprobar por comando lo entrega como **comprobación en campo** con procedimiento escrito ([[verificacion_e2e_por_agente]]). Material ilegible o plazo sin fecha = **hallazgo** prioritario.
 
 ## Mejora continua
 

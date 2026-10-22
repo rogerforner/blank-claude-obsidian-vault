@@ -16,7 +16,7 @@ La sintaxis de lanzamiento no está aquí: vive en la tabla "Ejecución" del `CL
   herdr tab create --workspace <id del espacio de trabajo> --cwd "<vault>/<espacio>/<asunto>" --label <asunto>
   ```
 
-  Lo que fija el rol es la carpeta, no el nombre de la pestaña. Con Herdr hay relevo autónomo entre sesiones.
+  Lo que fija el rol es la carpeta, no el nombre de la pestaña. Con Herdr hay relevo autónomo entre sesiones. **Cada coordinador tiene una sola pestaña, que lo identifica y no se mueve ni se duplica**; el coordinador general, que lleva el vault, **arranca los coordinadores** de los asuntos en su pestaña (`herdr agent start <nombre> --kind claude --pane <panel> -- --dangerously-skip-permissions`) y les pasa su prompt de arranque, y **todo coordinador se releva solo en su propia pestaña**: abre la sesión nueva, la arranca y, cuando ha arrancado, cierra la vieja.
 - **Si el vault usa Claude Code Desktop:** los chats de los coordinadores de un espacio se agrupan en un grupo con el nombre del espacio `[declarado, no medido]`. No hay relevo autónomo. Las denegaciones y el hook de arranque no están comprobados en la app: compruébalos antes de contar con ellos.
 **Y tres cosas que NO hay que hacer:** no le expliques su rol ni le enumeres las reglas —todo eso lo carga de la carpeta, y un prompt largo explicándoselo **compite** con lo que ya ha leído—; **no cambies de modelo a media sesión**; y **empieza cada tarea nueva con `/clear`**.
 

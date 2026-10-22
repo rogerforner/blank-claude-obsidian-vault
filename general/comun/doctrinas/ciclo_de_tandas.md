@@ -2,7 +2,7 @@
 name: Ciclo de trabajo por tandas — planificar, ejecutar en pequeño, parar
 description: Todo coordinador trabaja igual. Lo no trivial lo planifica un subagente Opus en un plan partido en tandas pequeñas; cada tanda la ejecuta un subagente Sonnet, una tras otra, o en paralelo cada una en su worktree si son independientes; y al cerrar una tanda o un bloque el coordinador guarda el estado, cierra el DoD de su ámbito y escribe el prompt de relevo; si queda trabajo y no hay nada abierto, se releva él mismo en una sesión nueva, haya plan o no (relevo autónomo por Herdr, con un script común); si no, para y pregunta. La tabla viva está en un tablero de nombre fijo, y lo repetitivo se hace con scripts.
 type: doctrine
-version: 2.8
+version: 2.9
 index_summary: >-
   **Todo coordinador trabaja con el mismo ciclo.** Lo no trivial lo **planifica un subagente Opus** en un plan partido en **tandas pequeñas**; cada tanda la **ejecuta un subagente Sonnet**, una tras otra (o en paralelo, cada una en su worktree, si son independientes), y la comprueba el coordinador, que **commitea por pathspec**. Al cerrar una tanda o un bloque, el coordinador **guarda el estado, cierra el DoD de su ámbito y escribe el prompt de relevo**; si queda trabajo y no hay nada abierto, **se releva él mismo en una sesión nueva**, haya plan o no (relevo autónomo por Herdr, con un script común), y si no, **para y pregunta**. Así los bloques se encadenan sin acumular contexto, que es lo que degrada la precisión mucho antes de llenar la ventana. La tabla viva está en un **tablero de nombre fijo**, y lo repetitivo se hace con scripts. El estado vive en ficheros, no en la conversación.
 ---
@@ -41,7 +41,7 @@ El script `general/comun/scripts/relevo.mjs` lo corre la sesión que se va. En c
 
 **La comparación del commit es la del ámbito del coordinador,** no la de todos los ámbitos: `git log -1 --format=%h -- <ámbito>`, con `.` menos cada asunto (`':(exclude)<espacio>/<asunto>'`) para el general, que da `node general/comun/scripts/espacios.mjs --pathspec .`, y `.` para un asunto, y además que ese commit sea ancestro de HEAD. Así la sesión nueva ve el mismo estado que dejó la vieja, y el commit de otra sesión en otro ámbito no tumba el relevo. Por lo mismo, el script exige el árbol limpio en el ámbito: un cambio del propio script se commitea antes de probarlo en vivo.
 
-**Para qué no se usa nunca:** arrancar a otro coordinador o a ejecutoras, ni contestar los diálogos que una sesión nueva pueda mostrar. Solo abre la sucesora del mismo rol, y la lanza el propio coordinador, no un subagente.
+**Para qué no se usa nunca:** arrancar ejecutoras, ni contestar los diálogos que una sesión nueva pueda mostrar. El relevo abre la sucesora del mismo rol en la misma pestaña, y lo hace el propio coordinador sin esperar al director, no un subagente; un coordinador de asunto no arranca a otros coordinadores. Quien arranca coordinadores es el general (decisión del director, 2026-10-22; ver [[orquestacion_sesiones_por_herramienta]]).
 
 **Dónde se mira.** Los códigos de salida y las opciones están en `node <ruta>/general/comun/scripts/relevo.mjs --ayuda`, que es su única copia. `--comprobar` lista las precondiciones sin tocar nada y sirve para ver por qué no se podría relevar. El script calcula la raíz del vault desde su propia ruta, así que se ejecuta desde donde está en el catálogo y no copiado fuera.
 
@@ -130,3 +130,4 @@ Relacionada: [[orquestacion_sesiones_por_herramienta]], [[scripts_adhoc_tareas_r
 > **v2.3 (2026-10-12):** el estado vivo se guarda y se lee con `estado.mjs`: el paso 4 y la plantilla del relevo nombran el estado en vez de los ficheros sueltos de antes, y el plan vivo tiene su elemento `en_curso` ([[estado_vivo_por_comando]]).
 > **v2.4 (2026-10-14):** decisión del director del 2026-10-14 (E22): el relevo se hace al cerrar una tanda o un bloque, haya plan o no, con el DoD del ámbito sellado como precondición; se añade la plantilla sin plan y salen de las paradas "el plan se acabó" y "no hay tablero".
 > **v2.8 (2026-10-22):** umbrales de relevo por contexto propio (30 % / 50 %) y límite de concurrencia según el ritmo de la cuota (D4, T11); el detalle vive en [[higiene_contexto_y_tokens]].
+> **v2.9 (2026-10-22):** el relevo es de todo coordinador, sin esperar al director, y el arranque de coordinadores queda para el general (decisión del director, 2026-10-22); la pestaña de cada coordinador es una y no se mueve ni se duplica.
