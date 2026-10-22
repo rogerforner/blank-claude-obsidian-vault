@@ -2,7 +2,7 @@
 name: playwright-cli
 description: Manual de Playwright CLI, el navegador comun del usuario para los agentes: instalacion, comprobacion, actualizacion y problemas conocidos.
 type: manual
-version: 1.0
+version: 1.1
 ---
 
 # Playwright CLI
@@ -46,6 +46,12 @@ La segunda orden deja la skill en `~/.claude/skills/playwright-cli`, disponible 
 ## Problemas conocidos
 
 - **Síntoma:** la orden `open` falla por falta de navegador. **Causa:** la máquina no tiene Chrome. **Solución:** `playwright-cli install-browser`.
+
+- **Síntoma:** `open file:///...` falla con "Access to file: protocol is blocked". **Causa:** la CLI bloquea el protocolo `file:`. **Solución:** servir la página por http en 127.0.0.1 (por ejemplo `python3 -m http.server --bind 127.0.0.1`) y abrir esa URL. Medido el 2026-10-22.
+
+### Conectarse al Chrome del director
+
+Solo a petición expresa. `playwright-cli attach --cdp <ws://...>` y, al terminar, `playwright-cli detach` (nunca `close`, que cerraría su navegador). Que `http://127.0.0.1:9222` da 404 es dato de pd-dev, `[SIN MEDIR]` aquí. La ruta de `DevToolsActivePort` en macOS, de donde sale la URL `ws://`: `[POR MEDIR]`.
 
 ## Actualización
 
