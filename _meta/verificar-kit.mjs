@@ -553,6 +553,41 @@ for (const f of md.filter((x) => zonaDeEstiloEstricto(x) && !ES_REGISTRO(x))) {
   });
 }
 
+// --- 20. MCP por asunto -----------------------------------------------------
+// Un servidor MCP que un asunto no usa se apaga de dos maneras que tienen que casar: el `deny`
+// exacto `mcp__<srv>` (sin herramienta detras; las de herramienta suelta no cuentan) impide
+// usarlo y `deniedMcpServers` impide que se cargue y gaste contexto. Medido el 2026-10-22 en
+// Claude Code 2.1.308: `deniedMcpServers` se respeta desde el settings.json del proyecto; sin el,
+// el servidor vuelve a cargar con todas sus herramientas. Si solo hay uno de los dos, el asunto
+// vuelve a pagar el arranque o a ver la herramienta. Ademas: ni la raiz ni un espacio llevan
+// `.mcp.json` (se cargaria en todos sus asuntos) y el `settings.local.json` de la raiz no lleva
+// `deniedMcpServers` (es local de esta maquina y taparia lo que decide cada asunto).
+for (const a of listarAsuntos(RAIZ)) {
+  const fs = join(RAIZ, a.rel, '.claude', 'settings.json');
+  if (!existsSync(fs)) continue;
+  let cfg;
+  try { cfg = JSON.parse(readFileSync(fs, 'utf8')); } catch { continue; } // ya avisado en la regla 18
+  const deny = new Set((cfg?.permissions?.deny ?? []).map((d) => String(d).match(/^mcp__([^_].*?)$/)?.[1]).filter((s) => s && !s.includes('__')));
+  const denegados = new Set((cfg?.deniedMcpServers ?? []).map((d) => d?.serverName).filter(Boolean));
+  const sinDenied = [...deny].filter((s) => !denegados.has(s));
+  const sinDeny = [...denegados].filter((s) => !deny.has(s));
+  if (sinDenied.length) nota('MCP por asunto', fs, `tiene deny \`mcp__${sinDenied.join(', mcp__')}\` pero falta en deniedMcpServers: el servidor se cargaria`);
+  if (sinDeny.length) nota('MCP por asunto', fs, `deniedMcpServers lleva ${sinDeny.join(', ')} sin el deny \`mcp__<srv>\` equivalente`);
+}
+for (const dir of ['', ...listarEspacios(RAIZ)]) {
+  if (existsSync(join(RAIZ, dir, '.mcp.json'))) {
+    nota('MCP por asunto', join(RAIZ, dir, '.mcp.json'), 'prohibido en la raiz y en los espacios: se cargaria en todos sus asuntos; el MCP de un asunto vive en el suyo');
+  }
+}
+const localRaiz = join(RAIZ, '.claude', 'settings.local.json');
+if (existsSync(localRaiz)) {
+  try {
+    if ('deniedMcpServers' in JSON.parse(readFileSync(localRaiz, 'utf8'))) {
+      nota('MCP por asunto', localRaiz, 'lleva deniedMcpServers: el local de la raiz no puede decidir los MCP de los asuntos');
+    }
+  } catch { nota('MCP por asunto', localRaiz, 'no es JSON valido'); }
+}
+
 // --- resultado ----------------------------------------------------------
 const revisados = `${md.length} markdown y ${mjs.length + jsonInicializador.length} script/config`;
 if (!hallazgos.length) {

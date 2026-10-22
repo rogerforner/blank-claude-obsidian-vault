@@ -23,6 +23,7 @@ Lo mínimo para leer un árbol y trabajar: listar, leer, buscar, contar y `git` 
 ## Qué deniega, y por qué estas y no otras
 
 - **`git push` y `git remote`** — una ejecutora nunca publica. El histórico es local y quien lo mueve es el director.
+- **`disableClaudeAiConnectors: true`** — la sesión no pide ni conecta los conectores de claude.ai; fuera del vault no hay otro freno y cada uno añade herramientas e instrucciones al contexto ([[herramientas_comunes_de_usuario]], sección "Qué carga cada asunto: MCP, conectores y skills").
 - **`general/`, `inicializador/` y `_meta/` cerrados a escritura.** Son el método, y una ejecutora **ejecuta un contrato, no cambia las reglas con las que se la juzga**. Esta es la denegación que más importa: sin ella, una tanda que se cree coordinadora —trampa medida y documentada— podría editar la doctrina que la gobierna.
 - **Red cerrada** (`curl`, `wget` y sus equivalentes). Lo que necesite entra **por ruta de fichero** en el contrato. Si una tanda necesita de verdad salir a la red, es una decisión del director, no un detalle de configuración.
 - **El segundo proveedor de IA, por nombre de comando** (`agy`, `antigravity`), igual que en todos los perfiles: mientras el interruptor esté en `false`, la barrera es esta y no la ficha que lo declara.

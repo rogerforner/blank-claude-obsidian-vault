@@ -4,8 +4,8 @@ Variante de [`plantilla-settings-coordinador.json`](plantilla-settings-coordinad
 
 ## Qué cambia respecto al perfil de coordinador
 
-- **`mcp__ha-mcp` denegado entero.** Un equipo no es consumidor de Home Assistant: el MCP se instala a nivel de usuario y lo ven todas las sesiones, así que quien no lo consume lo lleva entero en su `deny` ([[herramientas_comunes_de_usuario]], sección "Un MCP cuyo recurso es de un asunto"). Si la causa de un problema está en Home Assistant, se pide a `casa/homeassistant` por el canal.
-- **`mcp__proxmox` denegado entero.** Lo usa solo `homelab`, su dueño; los demás asuntos lo tienen denegado y piden lo que necesiten por el canal.
+- **`mcp__ha-mcp` denegado entero, y vetado en `deniedMcpServers`.** Un equipo no es consumidor de Home Assistant: el MCP se instala a nivel de usuario y lo ven todas las sesiones, así que quien no lo consume lo lleva entero en su `deny` ([[herramientas_comunes_de_usuario]], sección "Un MCP cuyo recurso es de un asunto"). Si la causa de un problema está en Home Assistant, se pide a `casa/homeassistant` por el canal.
+- **`mcp__proxmox` denegado entero, y vetado en `deniedMcpServers`.** Los dos nombres van también en `deniedMcpServers` para que el servidor no llegue a conectarse y sus instrucciones no ocupen contexto ([[herramientas_comunes_de_usuario]], sección "Qué carga cada asunto: MCP, conectores y skills"). Lo usa solo `homelab`, su dueño; los demás asuntos lo tienen denegado y piden lo que necesiten por el canal.
 
 ## Lo que se queda igual, a propósito
 

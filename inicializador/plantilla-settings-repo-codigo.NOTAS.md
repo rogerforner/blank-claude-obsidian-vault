@@ -19,6 +19,7 @@ Si este `.json` solo añadiera `git push` a un perfil vacío, la sesión quedar�
 - **Lectura de credenciales de máquina** (`~/.ssh`, `~/.aws`, `~/.gnupg`, `~/.config/gh`, `id_rsa`, `id_ed25519`) — las llaves a cuentas reales. Especialmente sensible aquí: es la sesión que sí toca un remoto de verdad.
 - **`curl` / `wget` / `Invoke-WebRequest` / `Invoke-RestMethod`** — comandos genéricos de red, contramedida contra inyección de instrucciones (el código y los commits que esta sesión ve pueden venir de fuera).
 - **`git config --global`** — no toca configuración de usuario fuera de este repositorio.
+- **`disableClaudeAiConnectors: true`** — la sesión no pide ni conecta los conectores de claude.ai; fuera del vault no hay otro freno y cada uno añade herramientas e instrucciones al contexto ([[herramientas_comunes_de_usuario]], sección "Qué carga cada asunto: MCP, conectores y skills").
 
 **No lleva `additionalDirectories`.** Sin esa clave, la sesión no alcanza ni el contenedor del asunto ni el catálogo `general/`: su mundo es el repositorio y nada más — más cierto todavía ahora que el repositorio vive fuera del vault por completo, sin ninguna relación de rutas con él. Es aislamiento por **ausencia** de concesión, no por `deny` — coherente con el resto del vault ("los `deny` son la barrera, el `allow` no lo es", pero aquí ni siquiera hay `allow` de directorio que abrir).
 

@@ -12,6 +12,10 @@ El coordinador de un asunto de software necesita, desde su propio cwd (el conten
 
 **La única diferencia real ahora:** `Bash(docker:*)` / `Bash(podman:*)` / `Bash(kubectl:*)` (y sus equivalentes `PowerShell`). No es una herramienta concreta como antes era `pnpm`: es la **familia acotada** de mecanismos estándar para entrar a ejecutar un comando dentro de un runtime que no es el host — contenedor único, stack Compose, o clúster. Universo cerrado y pequeño (a diferencia de "qué gestor de paquetes" o "qué framework de test", que sí es abierto y no se adivina), y ya es el vocabulario que usa el propio pack ([[verificar_en_el_runtime_no_en_el_host]], `higiene_disco_podman`).
 
+## `skillOverrides`: solo las genéricas que no usa
+
+Apaga `keybindings-help`, `fewer-permission-prompts`, `schedule`, `loop` y `update-config`. Las skills de código (`code-review`, `simplify`, `security-review`, `init`, `run`) se quedan, porque este perfil sí trabaja con código. Un `"on"` en el perfil no reactiva lo que apague el `settings.local.json` de la raíz (el local gana). Detalle: [[herramientas_comunes_de_usuario]], sección "Qué carga cada asunto: MCP, conectores y skills".
+
 ## Por qué NO incluye `ssh`, a propósito
 
 Un runtime en máquina virtual también se "entra" — por SSH. **Deliberadamente no está en el `allow` por defecto.** `ssh` no es un mecanismo acotado a un runtime declarado (como `docker exec <contenedor-que-ya-existe>`): es un primitivo genérico de ejecución remota y reenvío de puertos, de la misma familia de riesgo que `curl`/`wget` — las herramientas que el vault deniega en todos los perfiles como contramedida contra exfiltración vía inyección de instrucciones. Añadir `ssh` por defecto abriría ese mismo agujero con otro nombre. **Si el asunto usa una VM y de verdad hace falta**, el coordinador de ESE asunto añade `Bash(ssh:*)` a su propio `<espacio>/<asunto>/.claude/settings.json`, sabiendo exactamente qué abre — la misma decisión, informada y por asunto, que ya pedía el perfil anterior para un stack que no fuera Node.

@@ -57,5 +57,6 @@
   },
   "env": {
     "CLAUDE_CODE_DISABLE_FAST_MODE": "1"
-  }
+  },
+  "disableClaudeAiConnectors": true
 }

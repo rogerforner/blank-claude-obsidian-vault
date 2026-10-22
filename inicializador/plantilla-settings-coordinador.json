@@ -81,5 +81,18 @@
   "env": {
     "CLAUDE_CODE_DISABLE_FAST_MODE": "1",
     "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
+  },
+  "disableClaudeAiConnectors": true,
+  "skillOverrides": {
+    "code-review": "off",
+    "simplify": "off",
+    "security-review": "off",
+    "init": "off",
+    "run": "off",
+    "keybindings-help": "off",
+    "fewer-permission-prompts": "off",
+    "schedule": "off",
+    "loop": "off",
+    "update-config": "off"
   }
 }
