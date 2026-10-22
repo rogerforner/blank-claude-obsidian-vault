@@ -2,7 +2,7 @@
 name: herdr
 description: Manual de Herdr, la interfaz de sesiones de los coordinadores: instalacion con Homebrew, integracion con Claude Code, comprobacion y actualizacion.
 type: manual
-version: 1.1
+version: 1.2
 ---
 
 # Herdr
@@ -37,6 +37,25 @@ La integración deja un hook "managed by herdr" en el `settings.json` de usuario
 ## Configuración tras instalar
 
 La integración (paso 2) y la skill (paso 3) son toda la configuración. El hook queda en el `settings.json` de usuario, nunca en los versionados.
+
+Para ver el uso de Claude y el contexto (script y ficheros en `linea-de-estado.md`), se añade a `~/.config/herdr/config.toml` este bloque, con copia previa y validación:
+
+1. `cp ~/.config/herdr/config.toml ~/.config/herdr/config.toml.bak-$(date +%Y%m%d%H%M)`
+2. Añadir al fichero:
+
+       [ui]
+       tab_bar_right = [
+         { type = "command", command = "awk '{printf \"5h %s%% · 7d %s%%\", $1, $2}' ~/.cache/claude-limits/latest", interval_seconds = 30, timeout_seconds = 2 },
+       ]
+
+       [ui.sidebar.agents.rows_by_agent]
+       claude = [ ["state_icon", "workspace", "tab"], ["agent", "$ctx"] ]
+
+   Si el fichero ya tiene `[ui]`, las claves se añaden bajo la tabla existente y no se repite la cabecera.
+3. `herdr config check`
+4. `herdr server reload-config`
+
+`tab_bar_right` muestra en la barra de pestañas los porcentajes de 5 horas y semanal (los de la cuenta por defecto, ver Problemas conocidos de `linea-de-estado.md`). `rows_by_agent` pone en la barra lateral, por cada sesión de Claude, el estado, el espacio de trabajo y la pestaña, y debajo el agente con su contexto (`$ctx`, que rellena la línea de estado).
 
 ## Comprobación
 
