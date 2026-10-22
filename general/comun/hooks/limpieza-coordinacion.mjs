@@ -20,6 +20,10 @@
 //        c) un `<base>_prompt.md` cuando existe `<base>_informe.md` o `<base>_prompt_informe.md`
 //           en la misma carpeta (el prompt de un estudio ya con informe);
 //        d) un `brief.md` cuando existe `informe.md` o algun `informe-*.md` en la misma carpeta.
+//        e) AVISO APARTE (`[BRIEF]`, solo contexto; NO sale en el modo lista ni pone el DoD en rojo):
+//           un `<base>_prompt.md` sin informe, o un `brief.md` sin `informe*.md`, en `estudios/`,
+//           cuyo ultimo commit tiene mas de DIAS_BRIEF_SIN_INFORME dias. En `estudios/` un brief se
+//           llama `_prompt` (o `brief.md` en la carpeta de un tema) y ningun otro sufijo.
 //      Cada fichero se lista una sola vez. Se mira SOLO bajo la raiz de la sesion: cada contenedor
 //      ve lo suyo (decision D5 del director, 2026-10-05).
 //   3. SELLA LA FECHA del sistema en el contexto (desde 2026-08-23). La sesion no vuelve a deducir
@@ -87,6 +91,10 @@ const ZONES = ['coordinacion', 'estudios', '_meta'];
 // efímero se quede vivo indefinidamente solo porque nadie escribió otro con su mismo nombre.
 const DIAS_VIVO = 14;
 const MS_VIVO = DIAS_VIVO * 24 * 60 * 60 * 1000;
+// Días que un brief de `estudios/` puede esperar sin informe antes de que el hook avise. Un brief
+// en espera puede depender del director (las investigaciones las lanza él): por eso es solo un
+// aviso por contexto y NO entra en el modo lista, que es lo que consulta el DoD para su rojo.
+const DIAS_BRIEF_SIN_INFORME = 30;
 const SKIP_DIRS = new Set(['cerrados', 'node_modules', '.git', '.claude', 'docs', 'referencia']);
 
 function todayStr() {
@@ -121,6 +129,18 @@ function isIgnored(file) {
   } catch {
     return false;
   }
+}
+
+function trackeado(file) {
+  try { execFileSync('git', ['ls-files', '--error-unmatch', file], { cwd: ROOT, stdio: 'ignore' }); return true; } catch { return false; }
+}
+
+// Fecha (ms) del ultimo commit que toca `file`, o null si no hay commit.
+function ultimoCommitMs(file) {
+  try {
+    const t = execFileSync('git', ['log', '-1', '--format=%ct', '--', file], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    return t ? Number(t) * 1000 : null;
+  } catch { return null; }
 }
 
 function mtimeOf(file) {
@@ -221,6 +241,7 @@ function main() {
   const today = todayStr();
   const deleted = [];
   const surfaced = [];
+  const enEspera = []; // briefs de estudios/ sin informe desde hace mas de DIAS_BRIEF_SIN_INFORME (solo aviso)
 
   // --- 1. Handoffs + tmp gitignored superados → auto-borrar ---
   const handoffs = files.filter((f) => /^handoff[-_]/i.test(basename(f)));
@@ -260,6 +281,20 @@ function main() {
   for (const f of files.filter((x) => existsSync(x))) {
     const b = basename(f);
     const st = statSync(f);
+    // Brief de estudios/ sin informe y viejo: aviso aparte, antes del filtro de "hoy" (la edad es la del commit).
+    try {
+      const dirB = dirname(f);
+      if (relative(ROOT, f).split(/[\\/]/).includes('estudios') && (/_prompt\.md$/i.test(b) || /^brief\.md$/i.test(b))) {
+        const sinInforme = /^brief\.md$/i.test(b)
+          ? !hermanos(dirB).some((n) => /^informe\.md$/i.test(n) || /^informe-.*\.md$/i.test(n))
+          : !(existsSync(join(dirB, `${b.replace(/_prompt\.md$/i, '')}_informe.md`)) || existsSync(join(dirB, `${b.replace(/_prompt\.md$/i, '')}_prompt_informe.md`)));
+        if (sinInforme && trackeado(f)) {
+          const ct = ultimoCommitMs(f);
+          const dias = Math.floor((Date.now() - (ct ?? st.mtime.getTime())) / 86400000);
+          if (dias > DIAS_BRIEF_SIN_INFORME) enEspera.push([f, dias]);
+        }
+      }
+    } catch { /* este aviso nunca rompe el arranque */ }
     const isToday = st.mtime.toISOString().slice(0, 10) === today;
     if (isToday) continue;
     if (/^prompt/i.test(b) && f.includes(`${'coordinacion'}`)) {
@@ -312,6 +347,10 @@ function main() {
   if (surfaced.length) {
     lines.push(`[AVISO] Higiene de coordinación: ${surfaced.length} fichero(s) trackeado(s) probablemente obsoleto(s). Revísalos y quita con \`git rm\` los ya cumplidos (git conserva el histórico); CONSERVA los que sigan en vuelo. Doctrina: convencion_organizacion_carpeta_trabajo.`);
     for (const [f, why] of surfaced) lines.push(`  - ${rel(f)}  (${why})`);
+  }
+  if (enEspera.length) {
+    lines.push(`[BRIEF] ${enEspera.length} brief(s) de estudios/ sin informe desde hace mas de ${DIAS_BRIEF_SIN_INFORME} dias: lanzalo o retiralo (git rm). Solo aviso: no pone el DoD en rojo, porque puede estar esperando al director. Doctrina: convencion_organizacion_carpeta_trabajo.`);
+    for (const [f, d] of enEspera) lines.push(`  - ${rel(f)}  (brief sin informe desde hace ${d} dias: lánzalo o retíralo)`);
   }
   // --- verificador del kit al arrancar (solo avisa si sale en ROJO) ---
   // Se busca subiendo desde el directorio de trabajo: la raiz del vault lo tiene en `_meta/`,

@@ -2,7 +2,7 @@
 name: Ciclo de trabajo por tandas — planificar, ejecutar en pequeño, parar
 description: Todo coordinador trabaja igual. Lo no trivial lo planifica un subagente Opus en un plan partido en tandas pequeñas; cada tanda la ejecuta un subagente Sonnet, una tras otra, o en paralelo cada una en su worktree si son independientes; y al cerrar una tanda o un bloque el coordinador guarda el estado, cierra el DoD de su ámbito y escribe el prompt de relevo; si queda trabajo y no hay nada abierto, se releva él mismo en una sesión nueva, haya plan o no (relevo autónomo por Herdr, con un script común); si no, para y pregunta. La tabla viva está en un tablero de nombre fijo, y lo repetitivo se hace con scripts.
 type: doctrine
-version: 2.10
+version: 2.11
 index_summary: >-
   **Todo coordinador trabaja con el mismo ciclo.** Lo no trivial lo **planifica un subagente Opus** en un plan partido en **tandas pequeñas**; cada tanda la **ejecuta un subagente Sonnet**, una tras otra (o en paralelo, cada una en su worktree, si son independientes), y la comprueba el coordinador, que **commitea por pathspec**. Al cerrar una tanda o un bloque, el coordinador **guarda el estado, cierra el DoD de su ámbito y escribe el prompt de relevo**; si queda trabajo y no hay nada abierto, **se releva él mismo en una sesión nueva**, haya plan o no (relevo autónomo por Herdr, con un script común), y si no, **para y pregunta**. Así los bloques se encadenan sin acumular contexto, que es lo que degrada la precisión mucho antes de llenar la ventana. La tabla viva está en un **tablero de nombre fijo**, y lo repetitivo se hace con scripts. El estado vive en ficheros, no en la conversación.
 ---
@@ -22,16 +22,16 @@ Todo coordinador —el general y el de cada asunto— trabaja con el mismo ciclo
      - el trabajo siguiente toca una puerta humana: en un plan lo declara la línea `Paradas:` del tablero; sin plan no hay `Paradas:` y la ve el coordinador, porque el script no puede;
      - no queda trabajo por hacer (con plan, el bloque siguiente no tiene filas pendientes; sin plan, la línea 2 del relevo no nombra trabajo);
      - van tres relevos seguidos sin que intervenga el director;
-     - el script devuelve un código distinto de 0;
+     - el script devuelve un código distinto de 0, salvo cuando dice que sigas en esta sesión: entonces sigues con el bloque siguiente sin relevarte;
      - quedan worktrees de tanda sin integrar (`worktree-tanda.mjs --listar` sale 4); la puerta "worktrees de tanda" del DoD ya lo exige antes de relevarse.
    - **Al parar,** remite al tablero (o enseña la tabla si el director la pide) y para; el director decide si sigue en la misma sesión o hace `/clear` y pega el relevo. Si el relevo falla, la sesión vieja sigue viva y avisa, y el director puede pegar a mano `relevo-actual.local.md` en una sesión nueva con la misma carpeta.
    - **Cuando el director interviene,** el coordinador corre `relevo.mjs --reiniciar-cuenta`: la cuenta de relevos seguidos vuelve a cero. Si se olvida, la sesión para antes de tiempo, que es el lado seguro.
-5. **Los bloques se encadenan con relevo, no en la misma sesión.** Que la ventana sea de un millón de tokens no es motivo para gastarla: cada turno relee todo lo acumulado y la precisión cae mucho antes de llenarla. El relevo es justo lo que deja encadenar bloques sin acumular contexto: cada bloque lo empieza una sesión con el contexto limpio. **Umbrales:** desde el 30 % de contexto propio se cierra el bloque en curso y se releva; desde el 50 %, en la frontera inmediata y sin abrir bloque nuevo ([[higiene_contexto_y_tokens]]).
+5. **Los bloques se encadenan con relevo, no en la misma sesión.** Que la ventana sea de un millón de tokens no es motivo para gastarla: cada turno relee todo lo acumulado y la precisión cae mucho antes de llenarla. El relevo es justo lo que deja encadenar bloques sin acumular contexto: cada bloque lo empieza una sesión con el contexto limpio. **Umbrales:** los de contexto propio y de cuota, con el suelo por debajo del cual no compensa relevarse, están en [[higiene_contexto_y_tokens]], que es su única copia; `relevo.mjs --comprobar` da las cifras de la sesión y el veredicto, y `--lanzar` los aplica.
 
 ## El relevo autónomo
 
 El script `general/comun/scripts/relevo.mjs` lo corre la sesión que se va. En cinco líneas:
-1. Comprueba todas las precondiciones y las lista juntas, entre ellas el DoD del ámbito sellado y vigente; si alguna falla, no toca nada.
+1. Comprueba todas las precondiciones y las lista juntas, entre ellas el DoD del ámbito sellado y vigente y el contexto y la cuota de la línea de estado de la sesión; si alguna falla, no toca nada.
 2. Abre un panel nuevo en la misma pestaña, con la misma carpeta, y arranca en él la sesión nueva con las mismas opciones que la vieja.
 3. La sesión nueva corre `--confirmar`, que recalcula el commit del ámbito y lo escribe en `relevo-estado.local.json`; la vieja lee ese fichero y no la pantalla de la nueva.
 4. Se le pasa el relevo: la nueva corre `--tomar`, que espera a que la vieja desaparezca, se renombra con el nombre de la vieja y sigue con `relevo-actual.local.md`.
@@ -41,7 +41,7 @@ El script `general/comun/scripts/relevo.mjs` lo corre la sesión que se va. En c
 
 **La comparación del commit es la del ámbito del coordinador,** no la de todos los ámbitos: `git log -1 --format=%h -- <ámbito>`, con `.` menos cada asunto (`':(exclude)<espacio>/<asunto>'`) para el general, que da `node general/comun/scripts/espacios.mjs --pathspec .`, y `.` para un asunto, y además que ese commit sea ancestro de HEAD. Así la sesión nueva ve el mismo estado que dejó la vieja, y el commit de otra sesión en otro ámbito no tumba el relevo. Por lo mismo, el script exige el árbol limpio en el ámbito: un cambio del propio script se commitea antes de probarlo en vivo.
 
-**Para qué no se usa nunca:** arrancar ejecutoras, ni contestar los diálogos que una sesión nueva pueda mostrar. El relevo abre la sucesora del mismo rol en la misma pestaña, y lo hace el propio coordinador sin esperar al director, no un subagente; un coordinador de asunto no arranca a otros coordinadores. Quien arranca coordinadores es el general (decisión del director, 2026-10-22; ver [[orquestacion_sesiones_por_herramienta]]).
+**Para qué no se usa nunca:** arrancar ejecutoras, ni contestar los diálogos que una sesión nueva pueda mostrar. El relevo abre la sucesora del mismo rol en la misma pestaña, y lo hace el propio coordinador sin esperar al director, no un subagente; un coordinador de asunto no arranca a otros coordinadores. Quien arranca coordinadores es el general (decisión del director, 2026-10-22; ver [[orquestacion_sesiones_por_herramienta]]). Para que un coordinador sin trabajo cargue reglas nuevas no se le pide relevarse —el script lo para porque no tiene trabajo siguiente, y es correcto—: el general reinicia su sesión en su misma pestaña con `relevo.mjs --reiniciar-coordinador <nombre>`.
 
 **Dónde se mira.** Los códigos de salida y las opciones están en `node <ruta>/general/comun/scripts/relevo.mjs --ayuda`, que es su única copia. `--comprobar` lista las precondiciones sin tocar nada y sirve para ver por qué no se podría relevar. El script calcula la raíz del vault desde su propia ruta, así que se ejecuta desde donde está en el catálogo y no copiado fuera.
 
@@ -73,7 +73,7 @@ Una tanda toca pocos ficheros relacionados, se revisa de un vistazo y su comprob
 - Los hooks de git son comunes a todos los worktrees de un clon.
 - Dentro de su worktree, una tanda puede escribir ficheros fuera del vault (por ejemplo, la plantilla), pero el arnés le bloquea `git` sobre otro árbol (medido el 2026-10-11). El `git status` y el commit de ese árbol los hace el coordinador, y dos tandas a la vez solo pueden tocar en él ficheros disjuntos.
 - Los subagentes no cambian de rama ni reescriben historia ([[no_push_por_subagentes]], del pack `codigo`).
-- Como máximo dos tandas a la vez, y una sola si el 5 h usado va por delante del tiempo transcurrido de su ventana (desde el 90 %, nada nuevo hasta el reinicio); la cuota se lee de la línea de estado, según [[higiene_contexto_y_tokens]] ([[orquestacion_sesiones_por_herramienta]]: "N sesiones consumen N veces").
+- Como máximo dos tandas a la vez, y una sola si la ventana de 5 h va por delante de su ritmo; desde su umbral, nada nuevo hasta el reinicio. Los umbrales están en [[higiene_contexto_y_tokens]] y las cifras de la sesión las da `relevo.mjs --comprobar` ([[orquestacion_sesiones_por_herramienta]]: "N sesiones consumen N veces").
 - El verificador recorre `.claude/worktrees/`, así que con un worktree vivo duplica hallazgos: se corre después de integrar y retirar.
 - `git worktree list` se compara con lo que el método da por hecho.
 - Nunca se reescribe el histórico de `main` con otra sesión viva.
@@ -136,3 +136,4 @@ Relacionada: [[orquestacion_sesiones_por_herramienta]], [[scripts_adhoc_tareas_r
 > **v2.8 (2026-10-22):** umbrales de relevo por contexto propio (30 % / 50 %) y límite de concurrencia según el ritmo de la cuota (D4, T11); el detalle vive en [[higiene_contexto_y_tokens]].
 > **v2.9 (2026-10-22):** el relevo es de todo coordinador, sin esperar al director, y el arranque de coordinadores queda para el general (decisión del director, 2026-10-22); la pestaña de cada coordinador es una y no se mueve ni se duplica.
 > **v2.10 (2026-10-22):** la celda Ficheros de la tabla de tandas es literal y `tablero.mjs --desde-plan` lo exige; `worktree-tanda.mjs` la lee desde la carpeta del coordinador; la cuarta línea del relevo da el comando del ámbito del general y del asunto (E24).
+> **v2.11 (2026-10-22):** los umbrales de contexto y cuota se remiten a [[higiene_contexto_y_tokens]], que es su única copia, y `relevo.mjs` los aplica: dice seguir en la misma sesión por debajo del suelo de contexto y no lanza la sucesora con la cuota en su umbral; el general reinicia al coordinador sin trabajo que tiene que cargar reglas nuevas (E28).

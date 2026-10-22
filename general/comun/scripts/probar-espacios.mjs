@@ -5,7 +5,7 @@
 // y el sello del DoD por ambito (S y H9) y las precondiciones de relevo.mjs --comprobar (R).
 // Sin dependencias. Salidas: 0 si todos los casos pasan, 1 si alguno falla, 2 uso.
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync, realpathSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync, realpathSync, utimesSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -147,6 +147,21 @@ function hook(v, rel) {
   return node([path.join(v, ...HOOK)], dir, { LIMPIEZA_DRY_RUN: '1', CLAUDE_PROJECT_DIR: dir }).salida;
 }
 
+// El hook en modo lista (lo que consulta el DoD): solo rutas trackeadas obsoletas, una por linea.
+function hookLista(v, rel) {
+  const dir = path.join(v, rel);
+  return node([path.join(v, ...HOOK)], dir, { LIMPIEZA_LIST_TRACKED: '1', CLAUDE_PROJECT_DIR: dir }).salida;
+}
+// Commitea `ficheros` (rutas relativas a `v`) con fecha de hace `dias` dias, y pone ese mismo mtime al fichero.
+function commitHaceDias(v, ficheros, dias) {
+  const d = new Date(Date.now() - dias * 86400000);
+  const iso = d.toISOString().slice(0, 19);
+  confirmarGit(v, 'add', ...ficheros);
+  confirmar(correr('git', ['-c', 'user.name=prueba', '-c', 'user.email=prueba@localhost', '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'brief de prueba', '--', ...ficheros], v, { GIT_AUTHOR_DATE: iso, GIT_COMMITTER_DATE: iso }), 'git commit fechado');
+  for (const f of ficheros) utimesSync(path.join(v, f), d, d);
+}
+const BRIEF_VIEJO = 'brief sin informe desde hace';
+
 // Escribe un estado.json canonico con un elemento activo de titulo `titulo` en el asunto `base`.
 function estadoActivo(raiz, base, titulo) {
   const e = EST.vacio();
@@ -190,13 +205,14 @@ function hashAmbito(v, rel) {
 }
 // Escribe el texto del relevo en el directorio de coordinacion del ambito y corre `relevo.mjs --comprobar`
 // con cwd en el ambito, sin entorno Herdr. Devuelve las lineas [OK]/[NO].
-function comprobarRelevo(v, rel, textoRelevo, { tablero } = {}) {
+function comprobarRelevo(v, rel, textoRelevo, { tablero, lineaEstado, sesion } = {}) {
   const dir = path.join(v, rel);
   escribir(dir, path.join(rel === '.' ? '_meta' : 'coordinacion', 'relevo-actual.local.md'), textoRelevo);
   const args = [path.join(v, 'general', 'comun', 'scripts', 'relevo.mjs'), '--comprobar'];
   if (tablero) args.push('--tablero', tablero);
-  const r = node(args, dir, { HERDR_ENV: '', HERDR_PANE_ID: '' });
-  return r.salida.split('\n').filter((l) => /^\[(OK|NO)\] /.test(l));
+  if (lineaEstado) args.push('--linea-estado', lineaEstado);
+  const r = node(args, dir, { HERDR_ENV: '', HERDR_PANE_ID: '', CLAUDE_CODE_SESSION_ID: sesion || '' });
+  return r.salida.split('\n').filter((l) => /^\[(OK|NO|AVISO)\] /.test(l));
 }
 // Las lineas que dependen de la maquina (entorno y nombre libre) no se evaluan.
 const dependeMaquina = (l) => /^\[(OK|NO)\] (entorno|el nombre |herdr agent list falla)/.test(l);
@@ -227,6 +243,25 @@ function tableroPrueba(v, nombre, plan, filas) {
   writeFileSync(f, `# Tablero de tandas\n\nPlan: ${plan === 'ninguno' ? 'ninguno' : '`' + plan + '`'}\nParadas: ninguna\n\n${CABECERA}\n${SEPARADOR}\n${cuerpo}\n`);
   return f;
 }
+// Fichero de linea de estado de prueba fuera del repositorio de prueba, con el formato de statusline.sh.
+// haceS: segundos desde written_at; quedan5h/quedan7d: segundos hasta resets_at. null en un porcentaje = dato ausente.
+function lineaEstadoPrueba(v, nombre, { ctx = 20, tam = 1000000, h5 = 10, quedan5h = 4 * 3600, d7 = 10, quedan7d = 5 * 86400, haceS = 5, sesion = 'sesion-prueba' } = {}) {
+  const ahora = Date.now();
+  const escrita = new Date(ahora - haceS * 1000).toISOString().slice(0, 19) + '+0000';
+  const s = Math.floor(ahora / 1000);
+  const json = {
+    session_id: sesion, written_at: escrita,
+    context_window: { used_percentage: ctx, context_window_size: tam },
+    rate_limits: {
+      five_hour: { used_percentage: h5, resets_at: h5 === null ? null : s + quedan5h },
+      seven_day: { used_percentage: d7, resets_at: d7 === null ? null : s + quedan7d },
+    },
+  };
+  const f = path.join(path.dirname(v), `linea-estado-${nombre}.json`);
+  writeFileSync(f, JSON.stringify(json, null, 2) + '\n');
+  return f;
+}
+const hhmm = (epoch) => { const d = new Date(epoch * 1000); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
 // Commitea un plan de prueba en el general.
 function planCommiteado(v) {
   escribir(v, PLAN_REL, '# Plan de prueba\n');
@@ -483,6 +518,25 @@ function casos(c, esp) {
       return R(ok, `hook en la raiz: [DoD]=${g.includes('[DoD]')} (se esperaba false); hook en esp-uno/a1: [DoD]=${s.includes('[DoD]')}, nombra ../../_meta/dod.mjs=${s.includes('../../_meta/dod.mjs')} (se esperaba true, true)`);
     }],
 
+    ['H10', () => {
+      const v = c.clon(); escribir(v, 'esp-uno/a1/estudios/x_prompt.md', '# Brief x\n');
+      commitHaceDias(v, ['esp-uno/a1/estudios/x_prompt.md'], 40);
+      const s = hook(v, 'esp-uno/a1'); const l = hookLista(v, 'esp-uno/a1');
+      return R(s.includes(BRIEF_VIEJO) && s.includes('x_prompt.md') && !l.includes('x_prompt.md'), `brief de 40 dias sin informe: avisa=${s.includes(BRIEF_VIEJO)} (se esperaba true), en modo lista=${l.includes('x_prompt.md')} (se esperaba false)`);
+    }],
+    ['H11', () => {
+      const v = c.clon(); escribir(v, 'esp-uno/a1/estudios/x_prompt.md', '# Brief x\n');
+      commitHaceDias(v, ['esp-uno/a1/estudios/x_prompt.md'], 5);
+      const s = hook(v, 'esp-uno/a1');
+      return R(!s.includes(BRIEF_VIEJO) && !s.includes('x_prompt.md'), `brief de 5 dias sin informe: avisa=${s.includes(BRIEF_VIEJO)} (se esperaba false)`);
+    }],
+    ['H12', () => {
+      const v = c.clon(); escribir(v, 'esp-uno/a1/estudios/x_prompt.md', '# Brief x\n'); escribir(v, 'esp-uno/a1/estudios/x_informe.md', '# Informe x\n');
+      commitHaceDias(v, ['esp-uno/a1/estudios/x_prompt.md', 'esp-uno/a1/estudios/x_informe.md'], 40);
+      const s = hook(v, 'esp-uno/a1'); const l = hookLista(v, 'esp-uno/a1');
+      return R(s.includes('prompt de estudio ya con informe') && !s.includes(BRIEF_VIEJO) && l.includes('x_prompt.md'), `prompt con informe: aviso de siempre=${s.includes('prompt de estudio ya con informe')} (true), aviso de brief viejo=${s.includes(BRIEF_VIEJO)} (false), en modo lista=${l.includes('x_prompt.md')} (true)`);
+    }],
+
     ['R1', () => {
       const v = c.clon();
       const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
@@ -551,6 +605,145 @@ function casos(c, esp) {
       const n = lee('r10-ninguna.md', 'Un texto que no casa con ninguna plantilla.\nNi esta linea.\n');
       const ok = p.modo === 'plan' && p.hash === 'abc1234' && s.modo === 'sinplan' && s.hash === 'abc1234' && n.existe === true && n.modo === null;
       return R(ok, `leerRelevo: plan=${JSON.stringify([p.modo, p.hash])}, sinplan=${JSON.stringify([s.modo, s.hash])}, ninguna=${JSON.stringify([n.existe, n.modo])}`);
+    }],
+
+    ['R11', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const L = comprobarRelevo(v, '.', relevoSinPlan('.', hashAmbito(v, '.')));
+      const l = L.filter((x) => x.startsWith('[AVISO] linea de estado:'));
+      return R(l.length === 1 && l[0].includes('sin HERDR_PANE_ID') && noOtras(L).length === 0, `sin fichero: lineas [AVISO] linea de estado=${JSON.stringify(l)} (una, con "sin HERDR_PANE_ID"), [NO] ajenas=${JSON.stringify(noOtras(L))}`);
+    }],
+    ['R12', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const L = comprobarRelevo(v, '.', relevoSinPlan('.', hashAmbito(v, '.')), { lineaEstado: path.join(path.dirname(v), 'no-existe.json') });
+      const l = L.filter((x) => x.startsWith('[AVISO] linea de estado:'));
+      return R(l.length === 1 && l[0].includes('no existe') && noOtras(L).length === 0, `fichero ausente: lineas [AVISO] linea de estado=${JSON.stringify(l)} (una, con "no existe"), [NO] ajenas=${JSON.stringify(noOtras(L))}`);
+    }],
+    ['R13', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const f = lineaEstadoPrueba(v, 'r13', { haceS: 20 * 60, h5: 95 });
+      const L = comprobarRelevo(v, '.', relevoSinPlan('.', hashAmbito(v, '.')), { lineaEstado: f, sesion: 'sesion-prueba' });
+      const l = L.filter((x) => x.startsWith('[AVISO] linea de estado:'));
+      const no5 = L.filter((x) => x.startsWith('[NO] 5 h'));
+      return R(l.length === 1 && l[0].includes('min') && no5.length === 0, `fichero viejo: lineas [AVISO] linea de estado=${JSON.stringify(l)} (una, con "min"), lineas [NO] 5 h=${JSON.stringify(no5)} (ninguna)`);
+    }],
+    ['R14', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const f = lineaEstadoPrueba(v, 'r14', { sesion: 'otra' });
+      const L = comprobarRelevo(v, '.', relevoSinPlan('.', hashAmbito(v, '.')), { lineaEstado: f, sesion: 'esta' });
+      const l = L.filter((x) => x.startsWith('[AVISO] linea de estado:'));
+      return R(l.length === 1 && l[0].includes('otra sesion'), `fichero de otra sesion: lineas [AVISO] linea de estado=${JSON.stringify(l)} (una, con "otra sesion")`);
+    }],
+    ['R15', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const f = lineaEstadoPrueba(v, 'r15', { h5: 92, quedan5h: 3600 });
+      const hora = hhmm(JSON.parse(readFileSync(f, 'utf8')).rate_limits.five_hour.resets_at);
+      const L = comprobarRelevo(v, '.', relevoSinPlan('.', hashAmbito(v, '.')), { lineaEstado: f, sesion: 'sesion-prueba' });
+      const l = L.filter((x) => x.startsWith('[NO] 5 h al 92 %'));
+      return R(l.length === 1 && l[0].includes('reinicio') && l[0].includes(hora), `5 h en el umbral: lineas [NO] 5 h al 92 %=${JSON.stringify(l)} (una, con "reinicio" y "${hora}")`);
+    }],
+    ['R16', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const f = lineaEstadoPrueba(v, 'r16', { h5: 60, quedan5h: 4 * 3600 });
+      const L = comprobarRelevo(v, '.', relevoSinPlan('.', hashAmbito(v, '.')), { lineaEstado: f, sesion: 'sesion-prueba' });
+      const l = L.filter((x) => x.startsWith('[AVISO] 5 h al 60 %'));
+      return R(l.length === 1 && l[0].includes('por delante') && noOtras(L).length === 0, `5 h por delante: lineas [AVISO] 5 h al 60 %=${JSON.stringify(l)} (una, con "por delante"), [NO] ajenas=${JSON.stringify(noOtras(L))}`);
+    }],
+    ['R17', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const f = lineaEstadoPrueba(v, 'r17', { d7: 93 });
+      const L = comprobarRelevo(v, '.', relevoSinPlan('.', hashAmbito(v, '.')), { lineaEstado: f, sesion: 'sesion-prueba' });
+      const l = L.filter((x) => x.startsWith('[NO] semanal al 93 %'));
+      return R(l.length === 1, `semanal en el umbral: lineas [NO] semanal al 93 %=${JSON.stringify(l)} (una)`);
+    }],
+    ['R18', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const rel = relevoSinPlan('.', hashAmbito(v, '.'));
+      const f1 = lineaEstadoPrueba(v, 'r18a', { ctx: 35, d7: 50, quedan7d: 6 * 86400 });
+      const L1 = comprobarRelevo(v, '.', rel, { lineaEstado: f1, sesion: 'sesion-prueba' });
+      const c1 = L1.filter((x) => x.startsWith('[OK] contexto 35 %') && x.includes('30 %'));
+      const s1 = L1.filter((x) => x.startsWith('[AVISO] semanal al 50 %') && x.includes('por delante'));
+      const f2 = lineaEstadoPrueba(v, 'r18b', { ctx: 55 });
+      const L2 = comprobarRelevo(v, '.', rel, { lineaEstado: f2, sesion: 'sesion-prueba' });
+      const c2 = L2.filter((x) => x.startsWith('[OK] contexto 55 %') && x.includes('50 %'));
+      return R(c1.length === 1 && s1.length === 1 && c2.length === 1, `contexto y semanal: ctx 35=${c1.length} (1), semanal por delante=${s1.length} (1), ctx 55=${c2.length} (1)`);
+    }],
+    ['R19', async () => {
+      const v = c.clon();
+      const mod = await import(pathToFileURL(path.join(v, 'general', 'comun', 'scripts', 'relevo.mjs')).href);
+      if (typeof mod.veredictoLineaEstado !== 'function') return 'relevo.mjs no exporta veredictoLineaEstado';
+      if (!mod.UMBRALES) return 'relevo.mjs no exporta UMBRALES';
+      const d = (ctx, tam = 1000000) => ({ session_id: 's', written_at: new Date().toISOString(), context_window: { used_percentage: ctx, context_window_size: tam }, rate_limits: { five_hour: { used_percentage: 1, resets_at: Math.floor(Date.now() / 1000) + 3600 }, seven_day: { used_percentage: 1, resets_at: Math.floor(Date.now() / 1000) + 5 * 86400 } } });
+      const ver = mod.veredictoLineaEstado;
+      const u = [ver(d(5)).sigue === true, ver(d(5), { recargar: true }).sigue === false, ver(d(5), { prueba: true }).sigue === false, ver(d(12)).sigue === false, ver(d(5, null)).sigue === false];
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const f = lineaEstadoPrueba(v, 'r19', { ctx: 5 });
+      const L = comprobarRelevo(v, '.', relevoSinPlan('.', hashAmbito(v, '.')), { lineaEstado: f, sesion: 'sesion-prueba' });
+      const l = L.filter((x) => x.startsWith('[OK] contexto 5 %') && x.includes('sigue en esta sesion'));
+      return R(u.every(Boolean) && l.length === 1, `suelo: unitarios=${JSON.stringify(u)} (todos true), lineas [OK] contexto 5 % con "sigue en esta sesion"=${l.length} (1)`);
+    }],
+    ['R20', async () => {
+      const v = c.clon();
+      const mod = await import(pathToFileURL(path.join(v, 'general', 'comun', 'scripts', 'relevo.mjs')).href);
+      if (!mod.UMBRALES) return 'relevo.mjs no exporta UMBRALES';
+      const U = mod.UMBRALES;
+      const doc = readFileSync(path.join(v, 'general', 'comun', 'doctrinas', 'higiene_contexto_y_tokens.md'), 'utf8');
+      const ini = doc.indexOf('## Umbrales de relevo y ritmo de cuota');
+      if (ini < 0) return 'higiene_contexto_y_tokens.md no tiene la seccion "Umbrales de relevo y ritmo de cuota"';
+      const resto = doc.slice(ini + 3); const fin = resto.indexOf('\n## ');
+      const sec = fin < 0 ? resto : resto.slice(0, fin);
+      const P = [...new Set([...sec.matchAll(/\*\*(\d+) %\*\*/g)].map((m) => Number(m[1])))].sort((x, y) => x - y);
+      const E = [...new Set([U.contextoCierre, U.contextoFrontera, U.cincoHoras, U.semanal])].sort((x, y) => x - y);
+      const suelo = !(U.sueloTokens > 0) || sec.includes(`**${U.sueloTokens.toLocaleString('de-DE')} tokens**`);
+      const fresc = sec.includes(`**${U.frescuraMin} min**`);
+      return R(JSON.stringify(P) === JSON.stringify(E) && suelo && fresc, `umbrales: doctrina ${JSON.stringify(P)} frente a script ${JSON.stringify(E)}; suelo=${suelo}; frescura=${fresc}`);
+    }],
+
+    ['R21', () => {
+      const v = c.clon();
+      const rel = path.join(v, 'general', 'comun', 'scripts', 'relevo.mjs');
+      const sinHerdr = { HERDR_ENV: '', HERDR_PANE_ID: '' };
+      const a = node([rel, '--reiniciar-coordinador'], v, sinHerdr);
+      const b = node([rel, '--reiniciar-coordinador', 'a1'], path.join(v, 'esp-uno', 'a1'), sinHerdr);
+      const d = node([rel, '--reiniciar-coordinador', 'a1', '--seco'], v, sinHerdr);
+      const e = node([rel, '--reiniciar-coordinador', 'a1', '--sobra'], v, sinHerdr);
+      const ok = a.codigo === 2 && b.codigo === 4 && b.salida.includes('solo el coordinador general') && d.codigo === 3 && e.codigo === 2 && e.salida.includes('argumento sobrante');
+      return R(ok, `reiniciar uso y ambito: sin nombre=${a.codigo} (2), desde a1=${b.codigo} (4, con "solo el coordinador general": ${b.salida.includes('solo el coordinador general')}), --seco fuera de Herdr=${d.codigo} (3), --sobra=${e.codigo} (2, con "argumento sobrante": ${e.salida.includes('argumento sobrante')})`);
+    }],
+    ['R22', async () => {
+      const v = c.clon();
+      const mod = await import(pathToFileURL(path.join(v, 'general', 'comun', 'scripts', 'relevo.mjs')).href);
+      if (typeof mod.precondicionesReinicio !== 'function') return 'relevo.mjs no exporta precondicionesReinicio';
+      const pre = mod.precondicionesReinicio;
+      const no = (L, t) => L.filter((x) => !x.ok && x.msg.includes(t)).length;
+      const a = dodSella(v, 'esp-uno/a1'); if (a.codigo !== 0) return noCierra('esp-uno/a1', a);
+      const fallos = [];
+      const L1 = pre(v, path.join(v, 'esp-uno', 'a1'));
+      if (!L1.every((x) => x.ok)) fallos.push(`sellado y limpio: no ok=${JSON.stringify(L1.filter((x) => !x.ok))}`);
+      const L2 = pre(v, v);
+      if (no(L2, 'no es la carpeta de un asunto') !== 1) fallos.push(`raiz como carpeta: ${JSON.stringify(L2)}`);
+      const w = c.clon();
+      const L3 = pre(w, path.join(w, 'esp-uno', 'a1'));
+      if (no(L3, 'DoD') !== 1) fallos.push(`sin sellar: ${JSON.stringify(L3)}`);
+      escribir(v, 'esp-uno/a1/sucio.txt', 'x\n');
+      const L4 = pre(v, path.join(v, 'esp-uno', 'a1'));
+      if (no(L4, 'arbol sucio') !== 1) fallos.push(`arbol sucio: ${JSON.stringify(L4)}`);
+      rmSync(path.join(v, 'esp-uno', 'a1', 'sucio.txt'));
+      const tab = tableroPrueba(v, 'r22', 'coordinacion/plan-tanda-x.md', [['T01', 'A', '[HECHA]'], ['T02', 'B', '[PENDIENTE]']]);
+      const L5 = pre(v, path.join(v, 'esp-uno', 'a1'), { tablero: tab });
+      if (no(L5, 'plan vivo') !== 1) fallos.push(`plan vivo: ${JSON.stringify(L5)}`);
+      escribir(v, 'esp-uno/a1/coordinacion/relevo-estado.local.json', '{"fase":"lanzado"}\n');
+      const L6 = pre(v, path.join(v, 'esp-uno', 'a1'));
+      if (no(L6, 'relevo a medias') !== 1) fallos.push(`relevo a medias (el clon ${existsSync(path.join(v, '.gitignore')) ? 'trae' : 'no trae'} .gitignore): ${JSON.stringify(L6)}`);
+      return R(fallos.length === 0, `precondicionesReinicio: ${fallos.join(' | ')}`);
     }],
 
     ['G1', () => {

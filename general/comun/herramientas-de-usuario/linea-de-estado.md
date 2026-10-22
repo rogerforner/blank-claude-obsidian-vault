@@ -2,7 +2,7 @@
 name: linea-de-estado
 description: Manual de la linea de estado de Claude Code (contexto y uso de 5 horas y semanal) y de su lectura en Herdr: script versionado, instalacion a nivel de usuario, comprobacion, ficheros que deja y problemas conocidos.
 type: manual
-version: 1.1
+version: 1.2
 ---
 
 # Línea de estado de Claude Code
@@ -54,7 +54,7 @@ Nada más: la clave `statusLine` del paso 3 es toda la configuración de Claude 
 Todos fuera del vault, bajo `~`:
 
 - `~/.cache/claude-limits/latest` (o `latest-<carpeta>`): una línea `<5h %> <7d %> <epoch de reinicio de 5h>`; se escribe solo si llega `rate_limits`. Lo lee la barra de pestañas de Herdr.
-- `~/.cache/claude-statusline/<panel>.json`: solo dentro de Herdr (`HERDR_PANE_ID`, con `:` cambiado por `_`). Contexto, `rate_limits`, `session_id` y `written_at`. Es lo que un coordinador lee con `cat` para saber su propio contexto.
+- `~/.cache/claude-statusline/<panel>.json`: solo dentro de Herdr (`HERDR_PANE_ID`, con `:` cambiado por `_`). Contexto, `rate_limits`, `session_id` y `written_at`. Lo lee `relevo.mjs` (`--comprobar` da las cifras y el veredicto) y, si hace falta, el coordinador con `cat`.
 - `~/.local/share/claude-uso/historial.jsonl`: una línea cuando cambia algún valor de la sesión (hora con zona, sesión, panel, cuenta, `cwd`, modelo, esfuerzo, contexto, 5h, 7d). El último valor por sesión está en `ultimo/<sesión>`.
 - En Herdr, el contexto de cada panel va a la barra lateral con `herdr pane report-metadata`; fuera de Herdr no se hace.
 
@@ -75,6 +75,7 @@ Desde la raíz del vault:
 
 ## Problemas conocidos
 
+- **Síntoma:** `five_hour` llega `null` en una sesión que ya ha enviado mensajes. **Causa:** la ventana de 5 h acaba de reiniciar y aún no hay uso en la nueva (medido el 2026-10-22: un panel escrito a las 16:50:01, la hora a la que reinició la ventana). **Solución:** ninguna; `relevo.mjs` lo trata como dato ausente y no aplica el umbral de 5 h.
 - **Síntoma:** la línea muestra `5h -% · 7d -%`. **Causa:** Claude Code no pasa `rate_limits` (cuenta sin suscripción, o aún no ha habido un mensaje en la sesión). **Solución:** la línea se queda con el contexto; el consumo lo mira el director con `/usage` en una sesión interactiva. Que `/usage` funcione con `claude -p` está `[POR MEDIR]`.
 - **Síntoma:** no sale contexto en la barra lateral de Herdr. **Causa:** sesión fuera de Herdr, `herdr` fuera del `PATH` de la línea de estado, o aún sin mensajes. **Solución:** abrir la sesión dentro de Herdr y comprobar `command -v herdr`.
 - **Síntoma:** la barra de pestañas muestra los límites de la cuenta por defecto en una sesión de otra cuenta. **Causa:** la barra lee solo `latest`. **Solución:** ninguna por ahora; los de la otra cuenta están en `latest-<carpeta>`.
