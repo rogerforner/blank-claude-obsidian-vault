@@ -2,7 +2,7 @@
 name: linea-de-estado
 description: Manual de la linea de estado de Claude Code (contexto y uso de 5 horas y semanal) y de su lectura en Herdr: script versionado, instalacion a nivel de usuario, comprobacion, ficheros que deja y problemas conocidos.
 type: manual
-version: 1.0
+version: 1.1
 ---
 
 # Línea de estado de Claude Code
@@ -89,6 +89,8 @@ Cuando cambia `general/comun/scripts/statusline.sh` en el vault: repetir el paso
 
 ## Medido
 
-Medido: 2026-10-22, statusline.sh 1.0 con Claude Code 2.1.308, Herdr 0.9.3 y jq 1.7.1, macOS 27.0.1, instalada por IA
+Medido: 2026-10-22, Claude Code 2.1.308, macOS 27.0.1, instalada por IA
+
+En la misma medición: Herdr 0.9.3 y jq 1.7.1 (jq-1.7.1-apple); `statusline.sh` no lleva versión propia (la 1.0 era la del manual), es idéntico al instalado en `~/.claude/statusline.sh` y `probar-statusline.sh` da S1 a S6 en `[OK]`. Lo de "instalada por IA" no se puede medir con ninguna orden.
 
 Lo que se midió al instalar, con suscripción Max: llega `rate_limits` con `five_hour` y `seven_day` (porcentaje y `resets_at`), `context_window.context_window_size` (1000000), `model.id`, `effort.level` y `workspace.current_dir`. Las seis sesiones abiertas en Herdr recogieron la `statusLine` sin reiniciar, y su contexto salió en la barra lateral. En una sesión que aún no ha enviado ningún mensaje desde la instalación, `h5` y `d7` llegan vacíos: es el primer problema conocido.

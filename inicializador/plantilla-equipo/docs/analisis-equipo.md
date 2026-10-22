@@ -1,6 +1,6 @@
 # Análisis del equipo {{ASUNTO}}
 
-> Plantilla. Cada dato con su fecha y la orden que lo dio; un dato sin orden y sin fecha no es un dato ([[verificacion_fuente_primaria]]). Nunca claves de recuperación, contraseñas ni tokens. Doctrina: [[coordinador_de_equipo]].
+> Cada dato con su fecha y la orden que lo dio; un dato sin orden y sin fecha no es un dato ([verificacion_fuente_primaria](../../../general/comun/doctrinas/verificacion_fuente_primaria.md)). Nunca claves de recuperación, contraseñas ni tokens. Doctrina: [coordinador_de_equipo](../../../general/comun/doctrinas/coordinador_de_equipo.md).
 
 | Apartado | Dato | Orden | Fecha |
 |---|---|---|---|

@@ -45,4 +45,5 @@ Para una herramienta de trabajo valen las licencias libres, GPL y AGPL incluidas
 | Herdr | [herdr.md](herdr.md) | macOS medido; Debian y Windows 11 sin manual; tres problemas por medir | macOS |
 | Bruno | [bruno.md](bruno.md) | macOS medido; Debian y Windows 11 sin manual | macOS |
 | Varias cuentas de Claude Code | [claude-code-varias-cuentas.md](claude-code-varias-cuentas.md) | macOS montado y medido; Debian y Windows 11 sin manual | macOS |
-| Línea de estado de Claude Code | [linea-de-estado.md](linea-de-estado.md) | instalada y medida en macOS (llega `rate_limits` con Max); Debian y Windows 11 sin manual | ninguno |
+| Harlequin (`hsql`) | [harlequin.md](harlequin.md) | macOS instalada y medida con SQLite; skill sin instalar; postgres y mysql sin medir; Debian y Windows 11 sin manual | macOS |
+| Línea de estado de Claude Code | [linea-de-estado.md](linea-de-estado.md) | instalada y medida en macOS (llega `rate_limits` con Max); Debian y Windows 11 sin manual | macOS |

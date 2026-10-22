@@ -2,7 +2,7 @@
 name: playwright-cli
 description: Manual de Playwright CLI, el navegador comun del usuario para los agentes: instalacion, comprobacion, actualizacion y problemas conocidos.
 type: manual
-version: 1.1
+version: 1.2
 ---
 
 # Playwright CLI
@@ -51,7 +51,7 @@ La segunda orden deja la skill en `~/.claude/skills/playwright-cli`, disponible 
 
 ### Conectarse al Chrome del director
 
-Solo a petición expresa. `playwright-cli attach --cdp <ws://...>` y, al terminar, `playwright-cli detach` (nunca `close`, que cerraría su navegador). Que `http://127.0.0.1:9222` da 404 es dato de pd-dev, `[SIN MEDIR]` aquí. La ruta de `DevToolsActivePort` en macOS, de donde sale la URL `ws://`: `[POR MEDIR]`.
+Solo a petición expresa. `playwright-cli attach --cdp <ws://...>` y, al terminar, `playwright-cli detach` (nunca `close`, que cerraría su navegador). Que `http://127.0.0.1:9222` da 404 es dato de pd-dev, `[SIN MEDIR]` aquí. La ruta de `DevToolsActivePort` en macOS, de donde sale la URL `ws://`, con la depuración encendida: `[POR MEDIR]` (no se ha encendido; solo si el director lo pide). Medido el 2026-10-22 con Chrome 156.0.8078.47 abierto sin `--remote-debugging*`: la carpeta del perfil (`~/Library/Application Support/Google/Chrome`) es `drwx------`, `ls` de ella da `Operation not permitted` aunque `test -e` responde, y `DevToolsActivePort` no existe (depuración apagada). La shell de Claude Code no puede listar ni leer el perfil de Chrome, así que `attach --cdp` no puede sacar la URL leyendo ese fichero aunque se encienda la depuración: tendría que dársela el director, o `[POR MEDIR]` otra vía.
 
 ## Actualización
 
