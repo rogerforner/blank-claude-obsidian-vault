@@ -2,7 +2,7 @@
 name: claude-code-varias-cuentas
 description: Manual de varias cuentas de Claude Code en una misma maquina: un directorio de configuracion por cuenta adicional, que se enlaza, el alias, el login, la comprobacion y su uso con Herdr y claude -p.
 type: manual
-version: 1.0
+version: 1.1
 ---
 
 # Varias cuentas de Claude Code en una máquina
@@ -55,7 +55,7 @@ Los permisos y los hooks viven en el `settings.json` de usuario, que las cuentas
 
 - **Síntoma:** la cuenta por defecto pierde su sesión. **Causa:** *(dato de terceros, no medido aquí)* la variable cambia la entrada del llavero donde se guarda la credencial. **Solución:** la cuenta por defecto no define nunca la variable.
 - **Síntoma:** `/model` cambia en las dos cuentas. **Causa:** *(dato de terceros)* el `settings.json` está compartido. **Solución:** [SIN MEDIR] aceptarlo, o no compartir ese fichero.
-- **Herdr:** la variable se pasa con `--env CLAUDE_CONFIG_DIR=...` en `herdr workspace create`, `tab create` y `pane split`. El script de relevo (`relevo.mjs`) la propaga solo cuando la sesión la tiene.
+- **Herdr:** la variable se pasa con `--env CLAUDE_CONFIG_DIR=...` en `herdr workspace create`, `tab create` y `pane split`. Tras reiniciar el servidor de Herdr la variable se pierde (medido, ver el manual de Herdr): esas pestañas se reabren con su `--env`. El script de relevo (`relevo.mjs`) la propaga solo cuando la sesión la tiene.
 - **`claude -p`** hereda la variable del padre; lanzada desde un script, se pasa explícita.
 
 ## Actualización

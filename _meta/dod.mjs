@@ -22,6 +22,8 @@
 //   node _meta/dod.mjs              → corre las puertas; si todas pasan, SELLA
 //   node _meta/dod.mjs --sin-sello  → corre las puertas y no escribe el sello (ensayo)
 //   node _meta/dod.mjs --estado     → solo dice si el sello vigente cuadra con el arbol de ahora
+//   node _meta/dod.mjs --ayuda      → imprime este uso y sale 0
+// Cualquier otra opcion sale 2 sin correr nada ni tocar el sello.
 //
 // EL SELLO es POR AMBITO (`_meta/dod-sello.local.json` el general; `<espacio>/<asunto>/coordinacion/
 // dod-sello.local.json` un asunto; locales y gitignored). Guarda una HUELLA DEL CONTENIDO de los
@@ -45,6 +47,16 @@ import { ambitosConEstado, leer as leerEstado, vista as vistaEstado, ACTIVAS } f
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const ARGS = new Set(process.argv.slice(2));
+
+const USO = `Uso:
+  node _meta/dod.mjs              corre las puertas; si todas pasan, sella
+  node _meta/dod.mjs --sin-sello  corre las puertas y no escribe el sello (ensayo)
+  node _meta/dod.mjs --estado     dice si el sello vigente cuadra con el arbol de ahora
+  node _meta/dod.mjs --ayuda      imprime este uso
+Salidas: 0 cerrado, 1 no cerrado, 2 uso.`;
+if (ARGS.has('--ayuda')) { console.log(USO); process.exit(0); }
+const DESCONOCIDAS = [...ARGS].filter((a) => !['--sin-sello', '--estado', '--ayuda'].includes(a));
+if (DESCONOCIDAS.length) { console.error(`opcion desconocida: ${DESCONOCIDAS.join(' ')}\n${USO}`); process.exit(2); }
 
 const puertas = [];   // {nombre, ok, detalle}
 const anota = (nombre, ok, detalle) => puertas.push({ nombre, ok, detalle });

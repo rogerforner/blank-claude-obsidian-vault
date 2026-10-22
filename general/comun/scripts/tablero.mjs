@@ -16,6 +16,8 @@ const AYUDA = `Uso:
   tablero.mjs --estado <Id> <PENDIENTE|EN-CURSO|HECHA|BLOQUEADA> [motivo] [--tablero <ruta>]
   tablero.mjs --desde-plan <plan> [--tablero <ruta>]
   tablero.mjs --ayuda
+--desde-plan exige la celda Ficheros literal (rutas entre acentos graves separadas por comas, o \`ninguno\`;
+sin comodines ni prosa) y sale 4 sin escribir nada si no.
 Salidas: 0 bien, 1 error interno, 2 uso, 4 tablero invalido o Id inexistente.`;
 
 class Salida extends Error { constructor(codigo, msg) { super(msg); this.codigo = codigo; } }
@@ -56,6 +58,20 @@ function problemas(texto) {
   return p;
 }
 
+// Motivo por el que la celda Ficheros no es literal, o null si vale (ciclo_de_tandas).
+function motivoCelda(celda) {
+  if (celda === 'ninguno') return null;
+  if (!/^`[^`]*`(\s*,\s*`[^`]*`)*$/.test(celda)) return 'la celda no es `ninguno` ni rutas entre acentos graves separadas por comas';
+  for (const m of celda.matchAll(/`([^`]*)`/g)) {
+    const r = m[1];
+    if (!r.trim()) return 'ruta vacia';
+    if (/[*?\[\]{}]/.test(r)) return `comodin en la ruta ${r}`;
+    if (r.startsWith('/')) return `ruta absoluta ${r}`;
+    if (r.split('/').includes('..')) return `segmento .. en la ruta ${r}`;
+  }
+  return null;
+}
+
 function raizVault() {
   let d = path.dirname(fileURLToPath(import.meta.url));
   for (;;) {
@@ -86,7 +102,14 @@ function opcion(args, nombre) {
   return v;
 }
 
+function sobrantes(args) {
+  const x = args.find((a) => a.startsWith('--'));
+  if (x) throw new Salida(2, `argumento sobrante: ${x}`);
+}
+
 function comprobar(args) {
+  if (args.length > 1) throw new Salida(2, `argumento sobrante: ${args[1]}`);
+  sobrantes(args);
   const ruta = args[0] || rutaPorDefecto();
   if (!existsSync(ruta)) throw new Salida(4, `no existe ${ruta}`);
   const p = problemas(readFileSync(ruta, 'utf8'));
@@ -96,6 +119,8 @@ function comprobar(args) {
 function estado(args) {
   const tab = opcion(args, '--tablero') || rutaPorDefecto();
   const [id, est, ...resto] = args;
+  if (est !== 'BLOQUEADA' && resto.length) throw new Salida(2, `argumento sobrante: ${resto[0]}`);
+  sobrantes(args);
   if (!id || !est) throw new Salida(2, 'uso: --estado <Id> <ESTADO> [motivo]');
   let nuevo;
   if (est === 'BLOQUEADA') {
@@ -118,6 +143,8 @@ function estado(args) {
 function desdePlan(args) {
   const tab = opcion(args, '--tablero') || rutaPorDefecto();
   const planRuta = args[0];
+  if (args.length > 1) throw new Salida(2, `argumento sobrante: ${args[1]}`);
+  sobrantes(args);
   if (!planRuta) throw new Salida(2, 'uso: --desde-plan <plan>');
   if (!existsSync(planRuta)) throw new Salida(4, `no existe ${planRuta}`);
   const lineas = readFileSync(planRuta, 'utf8').split('\n');
@@ -126,6 +153,14 @@ function desdePlan(args) {
   let fin = ini + 2;
   while (fin < lineas.length && lineas[fin].startsWith('|')) fin++;
   const tabla = lineas.slice(ini, fin);
+  const malas = [];
+  tabla.forEach((l) => {
+    if (!esFila(l)) return;
+    const c = celdas(l);
+    const motivo = c.length === 7 ? motivoCelda(c[3]) : `la fila tiene ${c.length} celdas, no 7`;
+    if (motivo) malas.push(`linea ${ini + tabla.indexOf(l) + 1} (${c[0]}): ${motivo}: ${c[3]}`);
+  });
+  if (malas.length) throw new Salida(4, [...malas, 'La regla esta en ciclo_de_tandas, "Plantilla de la tabla de tandas".'].join('\n'));
   let pIdx = -1;
   for (let i = fin; i < lineas.length && i < fin + 6; i++) if (lineas[i].startsWith('Paradas:')) { pIdx = i; break; }
   if (pIdx < 0) pIdx = lineas.findIndex((l, i) => i > fin && l.startsWith('Paradas:'));

@@ -180,10 +180,9 @@ El modelo es de **sesiones independientes**, cada una abierta desde la carpeta q
 
 ### Interfaz de sesiones
 
-El método no depende de cómo veas las sesiones; hay dos vías:
+Las sesiones se ven y se manejan en Herdr:
 
-- **Herdr**: un espacio de trabajo por espacio del vault (y el general en el suyo) y una pestaña por coordinador, con **relevo autónomo** entre sesiones.
-- **Claude Code Desktop**: los chats de los coordinadores de un espacio se agrupan en un grupo con el nombre del espacio `[declarado, no medido aquí]`. No hay relevo autónomo. Las denegaciones y el hook de arranque no están comprobados en la app: compruébalos antes de contar con ellos.
+- **Herdr**: un espacio de trabajo por vault, con el general y los coordinadores de todos sus espacios, y una pestaña por coordinador, con **relevo autónomo** entre sesiones.
 
 ---
 

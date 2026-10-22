@@ -243,6 +243,22 @@ function doctrinaCambiada(v) {
 
 function casos(c, esp) {
   const R = (cond, motivo) => (cond ? null : motivo);
+  // Plan de prueba dentro del clon, con una fila por cada cuarta celda de `celdas`.
+  const planLiteral = (asu, celdas) => {
+    const filas = celdas.map((f, i) => `| T0${i + 1} | A | Objetivo ${i + 1} | ${f} | ejecutora | - | [PENDIENTE] |`);
+    const f = path.join(asu, 'coordinacion', 'plan-tanda-prueba-literal.md');
+    writeFileSync(f, ['# Plan de prueba', '', CABECERA, SEPARADOR, ...filas, '', 'Paradas: ninguna', ''].join('\n'));
+    return f;
+  };
+  // Una celda no literal: sale 4, la salida nombra la fila y ni el plan ni el tablero cambian.
+  const celdaPlan = (celda, fila) => {
+    const v = c.clon(); const asu = path.join(v, 'esp-uno', 'a1'); const plan = planLiteral(asu, [celda]);
+    const tab = path.join(asu, 'coordinacion', 'tablero-tandas.md');
+    const p0 = readFileSync(plan, 'utf8'); const t0 = readFileSync(tab, 'utf8');
+    const r = node([path.join(v, 'general', 'comun', 'scripts', 'tablero.mjs'), '--desde-plan', 'coordinacion/plan-tanda-prueba-literal.md'], asu);
+    const intacto = readFileSync(plan, 'utf8') === p0 && readFileSync(tab, 'utf8') === t0;
+    return R(r.codigo === 4 && r.salida.includes(fila) && intacto, `sale ${r.codigo} (4), nombra ${fila}=${r.salida.includes(fila)}, intacto=${intacto}: ${r.salida.trim()}`);
+  };
   return [
     ['M1', () => { const l = esp.listarEspacios(c.v1()); return R(JSON.stringify(l) === '["esp-dos","esp-uno"]', `espacios: ${JSON.stringify(l)}`); }],
     ['M2', () => { const a = esp.ambitoDe(c.v1(), path.join(c.v1(), 'esp-uno', 'a1')); return R(a.tipo === 'asunto' && a.exacto === true && a.prefijo === 'esp-uno/a1/', JSON.stringify(a)); }],
@@ -327,9 +343,39 @@ function casos(c, esp) {
       const r = dod(v, 'esp-dos/b1').salida;
       return R(enRojo(r, 'techos') && (puertaDod(r, 'techos') || '').includes('vista del estado'), 'el DoD desde esp-dos/b1 no marca techos en rojo con una vista del estado de mas de 16384 B');
     }],
+    // D8 y D9: el DoD rechaza una opcion que no conoce (sale 2, sin tocar el sello) y --ayuda imprime el uso (sale 0).
+    ['D8', () => {
+      const v = c.clon(); const sello = path.join(v, '_meta', 'dod-sello.local.json');
+      const antes = existsSync(sello) ? readFileSync(sello, 'utf8') : null;
+      const r = node([path.join(v, '_meta', 'dod.mjs'), '--opcion-que-no-existe'], v);
+      const despues = existsSync(sello) ? readFileSync(sello, 'utf8') : null;
+      return R(r.codigo === 2 && r.salida.includes('Uso:') && antes === despues, `sale ${r.codigo} (se esperaba 2), Uso: ${r.salida.includes('Uso:')}, sello intacto=${antes === despues}`);
+    }],
+    ['D9', () => {
+      const v = c.clon(); const sello = path.join(v, '_meta', 'dod-sello.local.json');
+      const antes = existsSync(sello) ? readFileSync(sello, 'utf8') : null;
+      const r = node([path.join(v, '_meta', 'dod.mjs'), '--ayuda'], v);
+      const despues = existsSync(sello) ? readFileSync(sello, 'utf8') : null;
+      return R(r.codigo === 0 && r.salida.includes('Uso:') && antes === despues, `sale ${r.codigo} (se esperaba 0), Uso: ${r.salida.includes('Uso:')}, sello intacto=${antes === despues}`);
+    }],
 
     ['T1', () => { const r = node([path.join(c.v1(), 'general', 'comun', 'scripts', 'tablero.mjs'), '--comprobar'], path.join(c.v1(), 'esp-uno', 'a1')); return R(r.codigo === 0, `sale ${r.codigo}: ${r.salida.trim()}`); }],
     ['T2', () => { const r = node([path.join(c.v1(), 'general', 'comun', 'scripts', 'tablero.mjs'), '--comprobar'], path.join(c.v1(), 'esp-uno')); return R(r.codigo === 2, `sale ${r.codigo}, se esperaba 2`); }],
+
+    // T3 a T5: --desde-plan exige la celda Ficheros literal y rechaza argumentos sobrantes, sin escribir nada.
+    ['T3', () => celdaPlan('`docs/*.md`', 'T01')],
+    ['T4', () => celdaPlan('los seis ficheros de T04', 'T01')],
+    ['T5', () => {
+      const v = c.clon(); const asu = path.join(v, 'esp-uno', 'a1'); const plan = planLiteral(asu, ['`docs/a.md`, `docs/b/`', 'ninguno']);
+      const tab = path.join(asu, 'coordinacion', 'tablero-tandas.md'); const script = path.join(v, 'general', 'comun', 'scripts', 'tablero.mjs');
+      const p0 = readFileSync(plan, 'utf8'); const t0 = readFileSync(tab, 'utf8');
+      const r1 = node([script, '--desde-plan', 'coordinacion/plan-tanda-prueba-literal.md', '--tablro', 'x'], asu);
+      const intacto = readFileSync(plan, 'utf8') === p0 && readFileSync(tab, 'utf8') === t0;
+      const r2 = node([script, '--desde-plan', 'coordinacion/plan-tanda-prueba-literal.md'], asu);
+      const t = readFileSync(tab, 'utf8'); const pl = readFileSync(plan, 'utf8');
+      const ok = r1.codigo === 2 && intacto && r2.codigo === 0 && t.includes('| T01 |') && t.includes('| T02 |') && pl.includes('La tabla de tandas vive en el tablero');
+      return R(ok, `opcion mala sale ${r1.codigo} (2), intacto=${intacto}; literales sale ${r2.codigo} (0): ${r2.salida.trim()}`);
+    }],
 
     ['V1', () => {
       const r2 = node([path.join(c.v2(), '_meta', 'verificar-kit.mjs')], c.v2()).salida;

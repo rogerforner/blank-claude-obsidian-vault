@@ -13,12 +13,13 @@ const TABLERO_JS = path.join(path.dirname(AQUI), 'tablero.mjs');
 
 const AYUDA = `Uso:
   worktree-tanda.mjs --integrar <Id> --worktree <ruta> [--mensaje "<texto>"] [--tablero <ruta>]
-      Se corre desde el arbol principal. Comprueba que el worktree solo cambio los ficheros
-      de la fila <Id> del tablero (cuarta celda, rutas entre acentos graves que no empiezan
-      por ~ ni por /), trae su rama con cherry-pick --no-commit, pasa la fila a HECHA,
+      Se corre desde la carpeta del coordinador en el arbol principal (la raiz o la del asunto).
+      Comprueba que el worktree solo cambio los ficheros de la fila <Id> del tablero (cuarta
+      celda: rutas literales entre acentos graves, relativas a esa carpeta; las que empiezan
+      por ~ o por / no se comparan), trae su rama con cherry-pick --no-commit, pasa la fila a HECHA,
       commitea por pathspec ("<Id> <mensaje>") y retira el worktree y su rama.
   worktree-tanda.mjs --listar     worktrees distintos del principal: 0 si no hay, 4 si hay
-  worktree-tanda.mjs --prueba     prueba en un repositorio temporal, tres casos
+  worktree-tanda.mjs --prueba     prueba en un repositorio temporal, cinco casos
   worktree-tanda.mjs --ayuda
 Salidas: 0 bien, 1 error interno, 2 uso, 4 precondicion sin tocar nada.`;
 
@@ -61,16 +62,23 @@ function integrar(args) {
   const wt = opcion(args, '--worktree');
   const mensaje = opcion(args, '--mensaje') || 'tanda integrada';
   let tab = opcion(args, '--tablero');
+  if (args.length) throw new Salida(2, `argumento sobrante: ${args.join(' ')}`);
   if (!id || !wt) throw new Salida(2, 'uso: --integrar <Id> --worktree <ruta> [--mensaje "<texto>"] [--tablero <ruta>]');
   const top = git(process.cwd(), ['rev-parse', '--show-toplevel']).out;
+  const cwd = process.cwd();
+  let pref = path.relative(realpathSync(top), realpathSync(cwd)).split(path.sep).join('/');
+  if (pref) pref += '/';
   if (!existsSync(wt)) throw new Salida(4, `no existe el worktree ${wt}`);
   const wtTop = git(wt, ['rev-parse', '--show-toplevel']).out;
   if (realpathSync(wtTop) === realpathSync(top)) throw new Salida(4, 'el worktree es el arbol principal');
-  if (!tab) tab = existsSync(path.join(top, '_meta', 'tablero-tandas.md')) ? '_meta/tablero-tandas.md' : 'coordinacion/tablero-tandas.md';
-  const tabAbs = path.resolve(top, tab);
+  if (!tab) {
+    tab = ['_meta/tablero-tandas.md', 'coordinacion/tablero-tandas.md'].find((t) => existsSync(path.join(cwd, t)));
+    if (!tab) throw new Salida(4, `no hay tablero en ${cwd} (_meta/tablero-tandas.md ni coordinacion/tablero-tandas.md)`);
+  }
+  const tabAbs = path.resolve(cwd, tab);
   if (!existsSync(tabAbs)) throw new Salida(4, `no existe el tablero ${tab}`);
   const tabRel = path.relative(top, tabAbs).split(path.sep).join('/');
-  const ficheros = ficherosDeFila(readFileSync(tabAbs, 'utf8'), id);
+  const ficheros = ficherosDeFila(readFileSync(tabAbs, 'utf8'), id).map((r) => pref + r);
   const rama = git(wt, ['rev-parse', '--abbrev-ref', 'HEAD']).out;
   if (!rama || rama === 'HEAD') throw new Salida(4, 'el worktree no esta en una rama');
 
@@ -79,7 +87,7 @@ function integrar(args) {
   const base = git(top, ['merge-base', 'HEAD', rama]).out;
   const commiteados = git(wt, ['diff', '--name-only', base, rama]).out.split('\n').filter(Boolean);
   const sobran = [...new Set([...sucios, ...commiteados])].filter((f) => !dentro(f, ficheros));
-  if (sobran.length) throw new Salida(4, `cambios fuera de la tanda ${id}:\n${sobran.join('\n')}`);
+  if (sobran.length) throw new Salida(4, `cambios fuera de la tanda ${id}:\n${sobran.join('\n')}\nla celda Ficheros de la fila ${id} tiene que listar esas rutas literales, desde la carpeta desde la que se corre (ciclo_de_tandas)`);
 
   // c (antes de tocar nada). el principal no tiene cambios en esos ficheros ni en el tablero
   const ocupados = porcelain(top, ['--', ...ficheros, tabRel]);
@@ -111,7 +119,8 @@ function integrar(args) {
   console.log(`${id} integrada: ${ficheros.join(', ')}`);
 }
 
-function listar() {
+function listar(args) {
+  if (args.length > 1) throw new Salida(2, `argumento sobrante: ${args.slice(1).join(' ')}`);
   const top = git(process.cwd(), ['rev-parse', '--show-toplevel']).out;
   const ls = git(top, ['worktree', 'list', '--porcelain']).out.split('\n')
     .filter((l) => l.startsWith('worktree ')).map((l) => l.slice(9));
@@ -119,7 +128,8 @@ function listar() {
   if (otros.length) throw new Salida(4, otros.join('\n'));
 }
 
-function prueba() {
+function prueba(args) {
+  if (args.length > 1) throw new Salida(2, `argumento sobrante: ${args.slice(1).join(' ')}`);
   const dir = realpathSync(mkdtempSync(path.join(os.tmpdir(), 'wt-tanda-')));
   const repo = path.join(dir, 'repo');
   let fallos = 0;
@@ -141,7 +151,14 @@ function prueba() {
       '# Tablero', '', 'Plan: `plan.md`', 'Paradas: ninguna', '',
       '| Id | Bloque | Objetivo | Ficheros | Ejecuta | Depende de | Estado |',
       '|---|---|---|---|---|---|---|',
-      fila('T01', 'a.txt'), fila('T02', 'b.txt'), fila('T03', 'c.txt'), ''].join('\n'));
+      fila('T01', 'a.txt'), fila('T02', 'b.txt'), fila('T03', 'c.txt'), fila('T05', 'e.txt'), ''].join('\n'));
+    spawnSync('mkdir', ['-p', path.join(repo, 'esp/a1/coordinacion')]);
+    escribir('esp/a1/coordinacion/tablero-tandas.md', [
+      '# Tablero', '', 'Plan: `plan.md`', 'Paradas: ninguna', '',
+      '| Id | Bloque | Objetivo | Ficheros | Ejecuta | Depende de | Estado |',
+      '|---|---|---|---|---|---|---|',
+      fila('T04', 'd.txt'), ''].join('\n'));
+    escribir('esp/a1/d.txt', 'd\n'); escribir('e.txt', 'e\n');
     escribir('a.txt', 'a\n'); escribir('b.txt', 'b\n'); escribir('c.txt', 'c\n');
     g(repo, 'add', '.'); g(repo, 'commit', '-q', '-m', 'inicial');
     const nuevoWt = (n) => {
@@ -149,7 +166,7 @@ function prueba() {
       g(repo, 'worktree', 'add', '-q', '-b', `rama-${n}`, p);
       return p;
     };
-    const wt1 = nuevoWt('1'), wt2 = nuevoWt('2'), wt3 = nuevoWt('3');
+    const wt1 = nuevoWt('1'), wt2 = nuevoWt('2'), wt3 = nuevoWt('3'), wt4 = nuevoWt('4'), wt5 = nuevoWt('5');
 
     // 1. integracion buena
     escribir('a.txt', 'a cambiado\n', wt1);
@@ -184,6 +201,26 @@ function prueba() {
       && !existsSync(path.join(repo, '.git', 'CHERRY_PICK_HEAD'))
       && g(repo, 'rev-parse', '--verify', 'rama-3').ok,
       `rc=${r.status} ${r.stderr}`);
+
+    // 4. desde un asunto
+    const tabRaiz = () => readFileSync(path.join(repo, '_meta/tablero-tandas.md'), 'utf8');
+    const tabRaiz4 = tabRaiz();
+    escribir('esp/a1/d.txt', 'd cambiado\n', wt4);
+    r = spawnSync(process.execPath, [AQUI, '--integrar', 'T04', '--worktree', wt4], { cwd: path.join(repo, 'esp/a1'), encoding: 'utf8' });
+    caso('desde un asunto: rutas de la celda relativas a su carpeta',
+      r.status === 0 && readFileSync(path.join(repo, 'esp/a1/d.txt'), 'utf8') === 'd cambiado\n'
+      && /\| T04 .*\[HECHA\] \|/.test(readFileSync(path.join(repo, 'esp/a1/coordinacion/tablero-tandas.md'), 'utf8'))
+      && tabRaiz() === tabRaiz4 && g(repo, 'status', '--porcelain').out === '',
+      `rc=${r.status} ${r.stderr}`);
+
+    // 5. opcion mal escrita
+    escribir('e.txt', 'e cambiado\n', wt5);
+    const h5 = g(repo, 'rev-parse', 'HEAD').out;
+    r = run(['--integrar', 'T05', '--worktree', wt5, '--mensjae', 'x']);
+    caso('opcion mal escrita: salida 2 y nada tocado',
+      r.status === 2 && g(repo, 'rev-parse', 'HEAD').out === h5
+      && g(repo, 'status', '--porcelain').out === '' && existsSync(wt5),
+      `rc=${r.status} ${r.stderr}`);
   } catch (e) {
     console.log(`[FALLA] error en la prueba: ${e.message}`); fallos++;
   } finally {
@@ -197,8 +234,8 @@ function main() {
   const modo = args[0];
   if (modo === '--ayuda') { console.log(AYUDA); return; }
   if (modo === '--integrar') return integrar(args);
-  if (modo === '--listar') return listar();
-  if (modo === '--prueba') return prueba();
+  if (modo === '--listar') return listar(args);
+  if (modo === '--prueba') return prueba(args);
   throw new Salida(2, AYUDA);
 }
 

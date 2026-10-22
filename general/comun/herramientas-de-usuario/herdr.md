@@ -2,14 +2,14 @@
 name: herdr
 description: Manual de Herdr, la interfaz de sesiones de los coordinadores: instalacion con Homebrew, integracion con Claude Code, comprobacion y actualizacion.
 type: manual
-version: 1.3
+version: 1.6
 ---
 
 # Herdr
 
 ## Para qué sirve y quién la usa
 
-Herdr es la interfaz de terminal donde viven las sesiones del vault: un espacio de trabajo por espacio del vault y una pestaña por coordinador, que lo identifica y no se mueve ni se duplica. La usa el director y, a través de su API, cada coordinador para su propio relevo y el general para arrancar coordinadores. Por qué esa forma y cómo se usa está en [[orquestacion_sesiones_por_herramienta]] y en [[ciclo_de_tandas]].
+Herdr es la interfaz de terminal donde viven las sesiones del vault: un espacio de trabajo por vault, con los coordinadores de todos sus espacios (también los de `equipos/`), y una pestaña por coordinador, que lo identifica y no se mueve ni se duplica. La usa el director y, a través de su API, cada coordinador para su propio relevo y el general para arrancar coordinadores. Por qué esa forma y cómo se usa está en [[orquestacion_sesiones_por_herramienta]] y en [[ciclo_de_tandas]].
 
 ## Requisitos
 
@@ -70,11 +70,12 @@ Para ver el uso de Claude y el contexto (script y ficheros en `linea-de-estado.m
 
 ## Problemas conocidos
 
-Ninguno de estos está confirmado:
+Problemas conocidos y cómo se resuelven:
 
-- [POR MEDIR] **Síntoma:** `herdr update` y la instalación por Homebrew pueden pisarse. **Causa:** sin averiguar. **Solución:** sin confirmar; mientras tanto se actualiza solo con Homebrew.
-- [POR MEDIR] **Síntoma:** un `--env` dado a un espacio de trabajo puede perderse tras reiniciar el servidor de Herdr. **Causa:** sin averiguar. **Solución:** sin confirmar.
-- [POR MEDIR] **Síntoma:** dentro de Herdr, `SSH_AUTH_SOCK` apunta a un socket de Herdr y no al agente del sistema. **Causa:** sin comprobar. **Solución:** mirarlo antes de que una sesión dentro de Herdr dependa de SSH.
+- **Síntoma:** tras reiniciar el servidor de Herdr, las pestañas vuelven pero sin el `--env` con que se crearon. **Causa:** el servidor restaura la disposición y abre shells nuevas; el entorno no se guarda (medido el 2026-10-22 en una sesión aislada, `herdr --session <prueba> server`: la variable se ve antes del reinicio y falta después, tanto en las pestañas restauradas como en una nueva del mismo espacio de trabajo). **Solución:** la sesión que dependa de una variable (por ejemplo `CLAUDE_CONFIG_DIR`) se vuelve a abrir con su `--env` después del reinicio.
+- **`herdr update` no se usa.** Herdr se instala y se actualiza solo con Homebrew (`brew upgrade herdr`); `herdr update` descarga el binario por su cuenta y no se ha comprobado cómo convive con el de Homebrew, así que no se prueba sobre la instalación buena.
+
+Medido y descartado (2026-10-22): dentro de Herdr, `SSH_AUTH_SOCK` vale `~/.config/herdr/herdr.sock.agent`, que es un enlace simbólico al socket del agente SSH del sistema (`launchd`); `ssh-add -l` lista las claves del llavero. No es un agente propio de Herdr: el enlace fijo es lo que deja la ruta estable entre reconexiones de la interfaz. Si una sesión no ve las claves, `ls -l "$SSH_AUTH_SOCK"` debe apuntar a `/var/run/com.apple.launchd.*/Listeners`.
 
 ## Actualización
 

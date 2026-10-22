@@ -2,7 +2,7 @@
 name: harlequin
 description: Manual de Harlequin, el cliente SQL de terminal para la persona, con su ejecutable hsql para el agente: instalacion con uv, comprobacion y actualizacion.
 type: manual
-version: 1.0
+version: 1.1
 ---
 
 # Harlequin
@@ -25,7 +25,7 @@ Harlequin es un cliente SQL de terminal. La persona lo usa con `harlequin` (inte
 
 Esa orden instala la última versión. Para fijar una versión (por ejemplo, reinstalar la medida abajo): `uv tool install 'harlequin[postgres,mysql]==2.16.2'`.
 
-Skill del agente: `hsql --skill -o ~/.claude/skills/hsql/` [SIN MEDIR]. **No está instalada** (decisión pendiente del general). Una skill en `~/.claude/skills/` la ven todas las sesiones de la máquina, también las de otros vaults, así que se decide con los generales de los otros vaults antes de instalarla.
+Skill del agente: `hsql --skill -o ~/.claude/skills/hsql/` [SIN MEDIR]. **No se instala** (general, 2026-10-22): una skill en `~/.claude/skills/` la ven todas las sesiones de la máquina, también las de otros vaults, y ningún asunto consulta hoy una base de datos. La sesión que la necesite la lee en el momento con `hsql --skill`, que la imprime sin instalar nada. Si un día se instala, se habla antes con los generales de los otros vaults.
 
 ### Debian
 
