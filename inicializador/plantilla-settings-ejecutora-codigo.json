@@ -38,7 +38,12 @@
       "Read(~/.gnupg/**)",
       "Read(~/.config/gh/**)",
       "Read(//**/id_rsa)",
-      "Read(//**/id_ed25519)"
+      "Read(//**/id_ed25519)",
+      "Bash(security find-generic-password:*)",
+      "Bash(security find-internet-password:*)",
+      "Bash(security dump-keychain:*)",
+      "Bash(security export:*)",
+      "Read(~/Library/Keychains/**)"
     ]
   },
   "model": "sonnet",

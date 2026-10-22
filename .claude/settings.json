@@ -37,7 +37,12 @@
       "Bash(antigravity:*)",
       "Bash(sudo:*)",
       "Bash(su:*)",
-      "Bash(rm -rf:*)"
+      "Bash(rm -rf:*)",
+      "Bash(security find-generic-password:*)",
+      "Bash(security find-internet-password:*)",
+      "Bash(security dump-keychain:*)",
+      "Bash(security export:*)",
+      "Read(~/Library/Keychains/**)"
     ]
   },
   "hooks": {
