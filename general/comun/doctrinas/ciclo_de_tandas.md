@@ -2,7 +2,7 @@
 name: Ciclo de trabajo por tandas — planificar, ejecutar en pequeño, parar
 description: Todo coordinador trabaja igual. Lo no trivial lo planifica un subagente Opus en un plan partido en tandas pequeñas; cada tanda la ejecuta un subagente Sonnet, una tras otra, o en paralelo cada una en su worktree si son independientes; y al cerrar una tanda o un bloque el coordinador guarda el estado, cierra el DoD de su ámbito y escribe el prompt de relevo; si queda trabajo y no hay nada abierto, se releva él mismo en una sesión nueva, haya plan o no (relevo autónomo por Herdr, con un script común); si no, para y pregunta. La tabla viva está en un tablero de nombre fijo, y lo repetitivo se hace con scripts.
 type: doctrine
-version: 2.7
+version: 2.8
 index_summary: >-
   **Todo coordinador trabaja con el mismo ciclo.** Lo no trivial lo **planifica un subagente Opus** en un plan partido en **tandas pequeñas**; cada tanda la **ejecuta un subagente Sonnet**, una tras otra (o en paralelo, cada una en su worktree, si son independientes), y la comprueba el coordinador, que **commitea por pathspec**. Al cerrar una tanda o un bloque, el coordinador **guarda el estado, cierra el DoD de su ámbito y escribe el prompt de relevo**; si queda trabajo y no hay nada abierto, **se releva él mismo en una sesión nueva**, haya plan o no (relevo autónomo por Herdr, con un script común), y si no, **para y pregunta**. Así los bloques se encadenan sin acumular contexto, que es lo que degrada la precisión mucho antes de llenar la ventana. La tabla viva está en un **tablero de nombre fijo**, y lo repetitivo se hace con scripts. El estado vive en ficheros, no en la conversación.
 ---
@@ -26,7 +26,7 @@ Todo coordinador —el general y el de cada asunto— trabaja con el mismo ciclo
      - quedan worktrees de tanda sin integrar (`worktree-tanda.mjs --listar` sale 4); la puerta "worktrees de tanda" del DoD ya lo exige antes de relevarse.
    - **Al parar,** remite al tablero (o enseña la tabla si el director la pide) y para; el director decide si sigue en la misma sesión o hace `/clear` y pega el relevo. Si el relevo falla, la sesión vieja sigue viva y avisa, y el director puede pegar a mano `relevo-actual.local.md` en una sesión nueva con la misma carpeta.
    - **Cuando el director interviene,** el coordinador corre `relevo.mjs --reiniciar-cuenta`: la cuenta de relevos seguidos vuelve a cero. Si se olvida, la sesión para antes de tiempo, que es el lado seguro.
-5. **Los bloques se encadenan con relevo, no en la misma sesión.** Que la ventana sea de un millón de tokens no es motivo para gastarla: cada turno relee todo lo acumulado y la precisión cae mucho antes de llenarla. El relevo es justo lo que deja encadenar bloques sin acumular contexto: cada bloque lo empieza una sesión con el contexto limpio.
+5. **Los bloques se encadenan con relevo, no en la misma sesión.** Que la ventana sea de un millón de tokens no es motivo para gastarla: cada turno relee todo lo acumulado y la precisión cae mucho antes de llenarla. El relevo es justo lo que deja encadenar bloques sin acumular contexto: cada bloque lo empieza una sesión con el contexto limpio. **Umbrales:** desde el 30 % de contexto propio se cierra el bloque en curso y se releva; desde el 50 %, en la frontera inmediata y sin abrir bloque nuevo ([[higiene_contexto_y_tokens]]).
 
 ## El relevo autónomo
 
@@ -73,7 +73,7 @@ Una tanda toca pocos ficheros relacionados, se revisa de un vistazo y su comprob
 - Los hooks de git son comunes a todos los worktrees de un clon.
 - Dentro de su worktree, una tanda puede escribir ficheros fuera del vault (por ejemplo, la plantilla), pero el arnés le bloquea `git` sobre otro árbol (medido el 2026-10-11). El `git status` y el commit de ese árbol los hace el coordinador, y dos tandas a la vez solo pueden tocar en él ficheros disjuntos.
 - Los subagentes no cambian de rama ni reescriben historia ([[no_push_por_subagentes]], del pack `codigo`).
-- Como máximo dos tandas a la vez hasta medir la cuota con `/usage` ([[orquestacion_sesiones_por_herramienta]]: "N sesiones consumen N veces").
+- Como máximo dos tandas a la vez, y una sola si el 5 h usado va por delante del tiempo transcurrido de su ventana (desde el 90 %, nada nuevo hasta el reinicio); la cuota se lee de la línea de estado, según [[higiene_contexto_y_tokens]] ([[orquestacion_sesiones_por_herramienta]]: "N sesiones consumen N veces").
 - El verificador recorre `.claude/worktrees/`, así que con un worktree vivo duplica hallazgos: se corre después de integrar y retirar.
 - `git worktree list` se compara con lo que el método da por hecho.
 - Nunca se reescribe el histórico de `main` con otra sesión viva.
@@ -129,3 +129,4 @@ Relacionada: [[orquestacion_sesiones_por_herramienta]], [[scripts_adhoc_tareas_r
 > **v2.2 (2026-10-11):** las tandas independientes de un plan van en paralelo, cada una en su worktree, con `worktree-tanda.mjs` para integrarlas y retirarlas (decisión del director del 2026-10-08; vía medida el 2026-10-11).
 > **v2.3 (2026-10-12):** el estado vivo se guarda y se lee con `estado.mjs`: el paso 4 y la plantilla del relevo nombran el estado en vez de los ficheros sueltos de antes, y el plan vivo tiene su elemento `en_curso` ([[estado_vivo_por_comando]]).
 > **v2.4 (2026-10-14):** decisión del director del 2026-10-14 (E22): el relevo se hace al cerrar una tanda o un bloque, haya plan o no, con el DoD del ámbito sellado como precondición; se añade la plantilla sin plan y salen de las paradas "el plan se acabó" y "no hay tablero".
+> **v2.8 (2026-10-22):** umbrales de relevo por contexto propio (30 % / 50 %) y límite de concurrencia según el ritmo de la cuota (D4, T11); el detalle vive en [[higiene_contexto_y_tokens]].

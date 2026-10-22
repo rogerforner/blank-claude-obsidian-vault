@@ -2,7 +2,7 @@
 name: Modelos y nivel de esfuerzo — catálogo, curvas y tabla de situaciones
 description: Documento de REFERENCIA (no doctrina) con los hechos de plataforma que cambian solos: qué modelos hay, qué niveles de esfuerzo admite cada uno, cuánto rinde cada nivel, qué cuesta cambiar de modelo o de esfuerzo a media sesión, y la tabla situación → modelo → esfuerzo. Lo consulta el coordinador antes de repartir trabajo y el director antes de abrir una sesión. El CRITERIO vive en [[modelo_por_tarea]]; aquí viven los DATOS y su origen.
 type: knowledge
-version: 2.2
+version: 2.3
 caduca: 2026-12-31
 ---
 
@@ -272,7 +272,7 @@ Haiku ya no está en el método, pero el argumento vale para cualquier modelo m�
 
 **Hay límites semanales propios por familia** además del compartido: *"You've hit your Opus limit"* y *"You've hit your Sonnet limit"* (`seven_day_opus` y `seven_day_sonnet` en el SDK) `[OFICIAL, vía informe; sin contrastar]`. **Su tamaño no se publica.** Si algo frena este vault, será el de la familia con más uso y no la ventana corta. Repartir trabajo hacia Sonnet alivia el límite de Opus aunque no reduzca el compartido en la misma proporción `[INFERIDO]`.
 
-**[A CONFIRMAR] El estado real de la cuota lo dirime `/usage`, y lo corre el director.** El informe afirma que la cuota ya no es la restricción activa; la última medición propia es del **2026-08-28** (semanal 11 %, ventana de 5 h 20 %, Fable 0 %), anterior a Opus 5.5, a la subida de los límites de 5 horas y al reinicio de límites. **No se propaga la cifra del informe sin comprobarla aquí.** Comparar `/usage` antes y después de un bloque de tandas con esa medición es la medida válida del consumo dentro de la suscripción.
+**[A CONFIRMAR] El estado real de la cuota lo comprueba el director con `/usage` en sesión interactiva; el día a día se lee de la línea de estado ([[higiene_contexto_y_tokens]]).** El informe afirma que la cuota ya no es la restricción activa; la última medición propia es del **2026-08-28** (semanal 11 %, ventana de 5 h 20 %, Fable 0 %), anterior a Opus 5.5, a la subida de los límites de 5 horas y al reinicio de límites. **No se propaga la cifra del informe sin comprobarla aquí.** Comparar `/usage` antes y después de un bloque de tandas con esa medición es la medida válida del consumo dentro de la suscripción.
 
 **Lo que sí es seguro:** el recargo por contexto largo ya no existe (eliminado el 2026-03-13 para los modelos vigentes). **El coste de las sesiones largas no es de tarifa: es de higiene de contexto** (§4).
 
@@ -302,3 +302,4 @@ Haiku ya no está en el método, pero el argumento vale para cualquier modelo m�
 *v2.1 (2026-10-14) — M9 medido: los agentes integrados lanzados sin `model` no fallan tras la retirada de Haiku 4.5 (`Explore` hereda, `claude-code-guide` va en Haiku 5.5) (§6.1); Haiku 5.5 ya en servicio y fuera la caducidad del 2026-10-15 (§1.1).*
 
 *v2.0 (2026-10-04) — refresco para el método 5.5. Catálogo y curvas de Opus 5.5 y Sonnet 5.5 en la escala v4.3.2 (§1, §2); la caché por esfuerzo se matiza (API invalida, Claude Code sin medir) y la regla de no cambiarlo se mantiene por diseño (§3); tabla por situación con planificador, ejecutora y ejecutora-mecanica (§5); precedencia de modelo y esfuerzo en subagentes, medida (§6.1); vetos de `/fast`, Fable en `-p` y `ultracode` (§7). Haiku sale del método.*
+*v2.3 (2026-10-22) — T11: la cuota se lee de la línea de estado; `/usage` lo comprueba el director.*
