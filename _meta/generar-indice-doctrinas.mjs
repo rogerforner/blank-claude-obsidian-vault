@@ -22,6 +22,11 @@
 //
 // El verificador lo llama en modo verificacion, asi que una ficha corregida sin su resumen
 // deja el kit en ROJO en vez de dejar una mentira suelta.
+//
+// TOPE. El `index_summary` no pasa de TOPE_RESUMEN caracteres (los del resumen ya unido con
+// espacios, como se cuenta mas abajo). Porque el indice entra en el contexto de cada sesion al
+// arrancar: cada caracter del resumen se paga en todas, y sin una puerta los resumenes vuelven
+// a crecer en silencio hasta donde estaban antes de adelgazarlos.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,6 +36,7 @@ const INDICES = [
   'general/comun/doctrinas/MEMORY-doctrinas-index.md',
   'general/comun/packs/codigo/doctrinas/MEMORY-doctrinas-index-codigo.md',
 ];
+const TOPE_RESUMEN = 400;
 const MODO = process.argv.includes('--escribir') ? 'escribir'
   : process.argv.includes('--extraer') ? 'extraer' : 'verificar';
 
@@ -95,6 +101,10 @@ for (const rel of INDICES) {
       continue;
     }
     salida.push(m[1] + resumen);
+    const largo = [...resumen].length;
+    if (largo > TOPE_RESUMEN) {
+      problemas.push(`${relFicha} :: index_summary de ${largo} caracteres, el tope es ${TOPE_RESUMEN}`);
+    }
     if (resumen !== m[4]) {
       problemas.push(`${rel} :: la entrada de ${m[3]} NO coincide con el "index_summary" de su ficha (manda la ficha)`);
     }
@@ -120,5 +130,5 @@ if (!problemas.length) {
 }
 console.log(`INDICES: ROJO — ${problemas.length} desajuste(s)\n`);
 for (const p of problemas) console.log('  ' + p);
-console.log('\n  Arreglo: corrige el "index_summary" de la ficha (es la fuente) y luego\n  `node _meta/generar-indice-doctrinas.mjs --escribir`.');
+console.log('\n  Arreglo: corrige el "index_summary" de la ficha (es la fuente; no pasa de ' + TOPE_RESUMEN + '\n  caracteres) y luego `node _meta/generar-indice-doctrinas.mjs --escribir`.');
 process.exit(1);
