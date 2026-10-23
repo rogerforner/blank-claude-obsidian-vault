@@ -2,7 +2,7 @@
 name: Documentación de onboarding sin referencias a fases ni identificadores históricos
 description: La documentación que un nuevo lector consume para entender y empezar (README del asunto, guías operativas, CLAUDE.md) es autocontenida y no menciona fases, identificadores de tanda ni narra el proceso de trabajo; los docs de tracking/histórico interno sí pueden.
 type: doctrine
-version: 1.2
+version: 1.3
 index_summary: >-
   README/CLAUDE.md/charter autocontenidos, sin identificadores históricos ni narración del proceso; el tracking interno sí puede. **Y una TERCERA clase (v1.1): los docs de DECISIÓN.** El *porqué* deja de vivir solo en el histórico de cambios —que supone que siempre habrá quien lo lea— y entra en `docs/decisiones/`, una ficha numerada por decisión. La distinción: la narrativa de **proceso** sigue fuera, la **razón** entra, con sus alternativas descartadas y **la condición que reabriría el caso**. Se escribe cuando se descarta una alternativa real, no en cada cambio. **Y una CUARTA (v1.2): los docs OPERATIVOS.** El criterio de suficiencia de `docs/` es que el director, sin ninguna IA, pueda operar, mantener y recuperar lo montado: un runbook por cosa montada, con comandos exactos, escrito para quien no estuvo en la sesión y actualizado en la misma tanda que el cambio. Lo que solo está en una conversación no está documentado; los secretos no van, solo dónde están.
 ---
@@ -70,9 +70,4 @@ Si el documento a tocar es de **onboarding**, prohibir explícitamente al agente
 
 Relacionada: [[formato_prompts_markdown_limpio]], [[estructura_contenedor_asunto]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
-
-> **v1.1 (2026-09-04): entra la tercera clase, los docs de DECISIÓN, a propuesta del director.** Las dos clases originales dejaban el *porqué* fuera de `docs/` y lo remitían al histórico de cambios; eso **supone que siempre habrá quien lea commits**, y este kit ya tiene medido lo contrario — al podar su propia bitácora comprobó que **lo que baja al histórico deja de leerse**, y por eso exige fundir la lección en una regla antes de archivarla. El mismo razonamiento aplica aquí. **No deroga nada:** la narrativa de proceso sigue prohibida; lo que entra es la razón de la decisión con sus alternativas descartadas. *(Y no inventa una práctica: **tres de los cuatro asuntos vivos ya tenían carpeta de decisiones**, cada uno por su cuenta y con nombre distinto, mientras la plantilla no la traía — así que el asunto nuevo nació sin ella. Es el patrón de [[mejora_continua_del_kit]]: se arregla en la plantilla y en la doctrina, no en el contenedor que lo sufrió.)*
-
-> **v1.2 (2026-10-04): entra la cuarta clase, los docs OPERATIVOS**, por decisión del director. No deroga nada: define qué significa "documentación al día" para lo que un asunto monta.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#docs_sin_fases]].

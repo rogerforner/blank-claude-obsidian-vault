@@ -2,7 +2,7 @@
 name: Ciclo de trabajo por tandas — planificar, ejecutar en pequeño, parar
 description: Todo coordinador trabaja igual. Lo no trivial lo planifica un subagente Opus en un plan partido en tandas pequeñas; cada tanda la ejecuta un subagente Sonnet, una tras otra, o en paralelo cada una en su worktree si son independientes; y al cerrar una tanda o un bloque el coordinador guarda el estado, cierra el DoD de su ámbito y escribe el prompt de relevo; si queda trabajo y no hay nada abierto, se releva él mismo en una sesión nueva, haya plan o no (relevo autónomo por Herdr, con un script común); si no, para y pregunta. La tabla viva está en un tablero de nombre fijo, y lo repetitivo se hace con scripts.
 type: doctrine
-version: 2.13
+version: 2.14
 index_summary: >-
   **Todo coordinador trabaja con el mismo ciclo.** Lo no trivial lo **planifica un subagente Opus** en un plan partido en **tandas pequeñas**; cada tanda la **ejecuta un subagente Sonnet**, una tras otra (o en paralelo, cada una en su worktree, si son independientes), y la comprueba el coordinador, que **commitea por pathspec**. Al cerrar una tanda o un bloque, el coordinador **guarda el estado, cierra el DoD de su ámbito y escribe el prompt de relevo**; si queda trabajo y no hay nada abierto, **se releva él mismo en una sesión nueva**, haya plan o no (relevo autónomo por Herdr, con un script común), y si no, **para y pregunta**. Así los bloques se encadenan sin acumular contexto, que es lo que degrada la precisión mucho antes de llenar la ventana. La tabla viva está en un **tablero de nombre fijo**, y lo repetitivo se hace con scripts. El estado vive en ficheros, no en la conversación.
 ---
@@ -127,15 +127,4 @@ La tercera línea tiene que decir "ninguna". Si no puede, lo que falte se escrib
 
 Relacionada: [[orquestacion_sesiones_por_herramienta]], [[scripts_adhoc_tareas_repetitivas]], [[modelo_por_tarea]], [[higiene_contexto_y_tokens]], [[definition_of_done]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v1.0 (2026-10-04):** nace con la decisión D4 del director del 2026-10-04: todo coordinador trabaja con el mismo ciclo de planificar, ejecutar en tandas pequeñas y parar al cerrar cada bloque. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado y **no se hereda** automáticamente.
-> **v2.0 (2026-10-05):** decisiones D1, D2 y D3 del director: relevo autónomo por Herdr con sus condiciones de parada, tablero de tandas y scripts.
-> **v2.1 (2026-10-10):** con el vault en espacios, el ámbito del general es `.` menos cada asunto y lo da `espacios.mjs --pathspec .`.
-> **v2.2 (2026-10-11):** las tandas independientes de un plan van en paralelo, cada una en su worktree, con `worktree-tanda.mjs` para integrarlas y retirarlas (decisión del director del 2026-10-08; vía medida el 2026-10-11).
-> **v2.3 (2026-10-12):** el estado vivo se guarda y se lee con `estado.mjs`: el paso 4 y la plantilla del relevo nombran el estado en vez de los ficheros sueltos de antes, y el plan vivo tiene su elemento `en_curso` ([[estado_vivo_por_comando]]).
-> **v2.4 (2026-10-14):** decisión del director del 2026-10-14 (E22): el relevo se hace al cerrar una tanda o un bloque, haya plan o no, con el DoD del ámbito sellado como precondición; se añade la plantilla sin plan y salen de las paradas "el plan se acabó" y "no hay tablero".
-> **v2.8 (2026-10-22):** umbrales de relevo por contexto propio (30 % / 50 %) y límite de concurrencia según el ritmo de la cuota (D4, T11); el detalle vive en [[higiene_contexto_y_tokens]].
-> **v2.9 (2026-10-22):** el relevo es de todo coordinador, sin esperar al director, y el arranque de coordinadores queda para el general (decisión del director, 2026-10-22); la pestaña de cada coordinador es una y no se mueve ni se duplica.
-> **v2.10 (2026-10-22):** la celda Ficheros de la tabla de tandas es literal y `tablero.mjs --desde-plan` lo exige; `worktree-tanda.mjs` la lee desde la carpeta del coordinador; la cuarta línea del relevo da el comando del ámbito del general y del asunto (E24).
-> **v2.13 (2026-10-23):** el cierre de una tanda en serie lo hace `worktree-tanda.mjs --foto` y `--cerrar`, que compara los cambios con la celda Ficheros y commitea por pathspec.
-> **v2.12 (2026-10-23):** el límite por abajo del tamaño de una tanda pasa del coste de arrancar un subagente (37 mil tokens, ya medido en unos 16.000) a las vueltas del coordinador por tanda (T03 del plan de consumo).
-> **v2.11 (2026-10-22):** los umbrales de contexto y cuota se remiten a [[higiene_contexto_y_tokens]], que es su única copia, y `relevo.mjs` los aplica: dice seguir en la misma sesión por debajo del suelo de contexto y no lanza la sucesora con la cuota en su umbral; el general reinicia al coordinador sin trabajo que tiene que cargar reglas nuevas (E28).
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#ciclo_de_tandas]].

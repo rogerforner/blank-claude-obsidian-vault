@@ -2,7 +2,7 @@
 name: Cuestionar las premisas de fondo antes de una investigación o una gestión costosa
 description: Antes de comprometer una investigación extensa o una gestión cara (un profesional, un peritaje, un trámite con tasa), cuestionar explícitamente las premisas implícitas —que hace falta un tercero, una herramienta nueva, una vía formal—, no solo comparar opciones dentro de una premisa dada; y pilotar la opción mínima antes de comprometer dinero o plazos.
 type: doctrine
-version: 1.0
+version: 1.1
 index_summary: >-
   Antes de una investigación o una gestión cara: cuestionar si hace falta el tercero, la herramienta o la vía formal; pilotar lo mínimo primero.
 ---
@@ -28,5 +28,4 @@ La velocidad de trabajo con Claude Code (ver [[recalibracion_tiempos]]) hace que
 
 Relacionada: [[adopcion_tooling_externo_caso_uso_concreto]], [[recalibracion_tiempos]], [[vigilancia_tecnologica_bajo_demanda]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#cuestionar_premisas_arquitectonicas_antes_deep_research]].

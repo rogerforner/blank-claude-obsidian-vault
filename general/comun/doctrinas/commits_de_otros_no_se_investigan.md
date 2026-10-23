@@ -2,7 +2,7 @@
 name: commits_de_otros_no_se_investigan
 description: En un vault trabajado por varias sesiones (varios coordinadores + el director, trabajo concurrente), los commits que una sesión no hizo son NORMALES; no se investiga su procedencia ni bloquean cerrar tareas. Verificar solo ante anomalía real (historia reescrita, commit propio perdido).
 type: convention
-version: 1.0
+version: 1.1
 index_summary: >-
   En un vault trabajado por varias sesiones, los commits que no hiciste tú son NORMALES: no investigar su origen ni bloquean cerrar tareas; el pathspec (la lista explícita de rutas del commit) protege. Verificar solo ante anomalía real (historia reescrita, commit propio perdido).
 ---
@@ -22,5 +22,4 @@ El git de este vault es **local**: no hay nada que sincronizar con fuera, así q
 
 Relacionada: [[sin_coautor_commits]], [[convencion_organizacion_carpeta_trabajo]], [[verificacion_fuente_primaria]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-23). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#commits_de_otros_no_se_investigan]].

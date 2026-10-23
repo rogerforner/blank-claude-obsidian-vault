@@ -2,7 +2,7 @@
 name: Verificación de extremo a extremo ejecutada por el agente
 description: Las comprobaciones que se pueden ejecutar con comandos (sin interacción humana) las ejecuta el agente como criterio de cierre y reporta el output literal; no se delegan al director. Lo que no se puede comprobar por comando se comprueba EN CAMPO y se documenta el procedimiento.
 type: doctrine
-version: 1.1
+version: 1.2
 index_summary: >-
   Lo comprobable por comando lo ejecuta el agente y reporta **output literal**; lo demás pasa a **comprobación en campo** con procedimiento escrito, no desaparece del criterio de cierre.
 ---
@@ -37,5 +37,4 @@ Comprobaciones en campo legítimas: medir algo físicamente (una obra, un metro 
 
 Relacionada: [[modelo_por_tarea]], [[minimizar_askuserquestion_agente_operativo]], [[verificacion_fuente_primaria]], [[scripts_adhoc_tareas_repetitivas]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v1.1 (2026-07-28):** lo no automatizable pasa a **comprobación en campo** con procedimiento escrito, en vez de quedar fuera del criterio de cierre. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#verificacion_e2e_por_agente]].

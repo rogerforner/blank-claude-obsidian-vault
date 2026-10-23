@@ -2,7 +2,7 @@
 name: Estado vivo por comando — qué queda y de quién es, en un fichero de datos
 description: El estado vivo de cada coordinador (qué queda abierto y de quién es) es un fichero de datos que se consulta y se cambia por comando; el porqué sigue en prosa. Un pendiente vive en el estado o en la prosa, nunca en los dos, y se actualiza en el mismo commit que el trabajo. El hook vuelca la vista al arrancar, el verificador comprueba los invariantes y el DoD mide la vista.
 type: doctrine
-version: 1.1
+version: 1.2
 index_summary: >-
   **El estado vivo de cada coordinador es un fichero de datos** —qué queda abierto y de quién es— que **se consulta y se cambia por comando** (`estado.mjs`); el porqué sigue en prosa, en la cola y en `docs/`. **Un pendiente vive en el estado o en la prosa, nunca en los dos**, y se actualiza **en el mismo commit que el trabajo**. Cada coordinador escribe solo el suyo y lee el de otro con `--de` antes de mandarle un handoff. El **hook vuelca la vista** al arrancar (la cola ya no se lee entera), la **regla 12 del verificador** comprueba los invariantes, la doble fuente y los pendientes en prosa, y el **DoD** mide la vista contra su techo. Un activo del director lleva `caduca`; lo que espera un disparador sin fecha va `diferido`; la `nota` es corta.
 ---
@@ -50,4 +50,4 @@ Se cierra con `--cerrar` y un `resultado` corto: el elemento cerrado se queda un
 - [[orquestacion_sesiones_por_herramienta]] — el handoff entre coordinadores.
 - [[scripts_adhoc_tareas_repetitivas]] — por qué esto es un script y no prosa.
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v1.1 (2026-10-13): fuera la sección de transición**: migrados todos los asuntos, la vía del `trabajo-en-curso.md` se retiró del hook, el verificador y el DoD; todo ámbito necesita su `estado.json`. **v1.0 (2026-10-12):** nace con la decisión del director del 2026-10-08 de llevar el estado vivo a un fichero de datos que se consulta y se cambia por comando. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado y **no se hereda** automáticamente.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#estado_vivo_por_comando]].

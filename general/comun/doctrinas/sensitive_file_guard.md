@@ -2,7 +2,7 @@
 name: Guarda de ficheros sensibles y flags de lanzamiento
 description: La config local del asunto la lee y edita la IA sin restricción; la deny-list solo bloquea las credenciales de máquina/usuario (~/.ssh, ~/.aws, …). Los datos personales SÍ viven en el vault —es su sitio—; lo que no sale NUNCA son los secretos (contraseñas, claves, tokens), y desde 2026-08-14 el material de trabajo sí puede ir a un cuaderno cerrado que no entrene con él. Las tandas que tocan masivamente .claude/ o hooks se lanzan con el flag de permisos amplios desde el inicio.
 type: convention
-version: 2.3
+version: 2.4
 index_summary: >-
   La config local del asunto es editable **sin restricción**; la lista de denegación solo bloquea credenciales de máquina (`~/.ssh`, `~/.aws`, el llavero de macOS, …). Los datos personales **sí** viven en el vault, pero **no salen de la máquina**. Tandas que tocan masivamente `.claude/`/hooks → flag al inicio. **Ámbito estricto: secretos y credenciales reales; NO ampara proteger el trabajo** ni la configuración de calidad, y el flag de permisos amplios es **lo normal** en local.
 ---
@@ -51,5 +51,4 @@ El coordinador indica en el `## Setup` del prompt si la tanda lo requiere. **Cri
 
 Relacionada: [[minimizar_askuserquestion_agente_operativo]], [[verificacion_fuente_primaria]], [[estructura_contenedor_asunto]], [[orquestacion_sesiones_por_herramienta]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v2.3 (2026-10-22):** el llavero de macOS entra en la lista de credenciales de la máquina, como capa y no como barrera. **v2.2 (2026-08-14):** la primera de las tres reglas duras se reescribe por decisión del director. Decía "nada de esto sale de la máquina" metiendo en el mismo saco una contraseña y el plano de una casa; ahora la línea intocable son los **secretos** —lo que compromete un sistema— y el **material de trabajo puede ir a un cuaderno cerrado** que no entrene con él. Las categorías especialmente sensibles de la lista las decide él caso a caso. → [[soberania_datos_local]] v1.2. **v2.1 (2026-08-01):** ámbito acotado a secretos y credenciales reales — **no ampara** proteger el trabajo ni la configuración de calidad, y el flag de permisos amplios pasa a ser **lo normal** en local (lo que protege son las deny rules, que aguantan bajo él). **v2.0 (2026-06-18):** config local editable sin restricción; la deny-list se reduce a credenciales de máquina (la v1.0 bloqueaba también la config del asunto). v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#sensitive_file_guard]].

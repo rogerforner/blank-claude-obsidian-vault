@@ -2,7 +2,7 @@
 name: Recalibración de estimaciones de tiempo
 description: Toda estimación de tiempo que el coordinador presente al director debe recalibrarse para "Claude Code + modelo de razonamiento de gama alta como ejecutor", no para una persona trabajando a mano; las estimaciones externas están radicalmente infladas para este contexto. Los plazos que no dependen de nosotros no se recalibran.
 type: doctrine
-version: 1.0
+version: 1.1
 index_summary: >-
   Lo nuestro se recalibra 5-25× respecto al trabajo a mano; los plazos ajenos (organismos, citas, obras, decisiones del director) **no** se recalibran.
 ---
@@ -32,5 +32,4 @@ Un asunto puede tardar cuatro meses aunque el trabajo de redacción sean dos hor
 
 Relacionada: [[modelo_por_tarea]], [[cuestionar_premisas_arquitectonicas_antes_deep_research]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#recalibracion_tiempos]].

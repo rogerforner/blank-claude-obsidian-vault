@@ -2,7 +2,7 @@
 name: Coordinador de equipo — un experto técnico dedicado por máquina
 description: Un equipo del director (un MacBook, por ejemplo) es un asunto del espacio `equipos/`, con su coordinador, que es el experto técnico dedicado en el sistema operativo y el hardware de esa máquina y en todo lo asociado. Fija qué es suyo y qué sigue siendo del general, la frontera con los asuntos de red y servidores, la primera sesión (análisis con fecha y orden), los registros que no se borran, el sudo, las herramientas de usuario, los equipos de otras personas y la seguridad.
 type: doctrine
-version: 1.0
+version: 1.1
 index_summary: >-
   **Un equipo (máquina) del director es un asunto del espacio `equipos/`, con su coordinador**, que es su **experto técnico dedicado** en el sistema operativo, el hardware y lo asociado (problemas, mejoras, dudas, instalar y mantener), para que los demás coordinadores no carguen con la máquina. **Primera sesión: análisis en `docs/analisis-equipo.md`**, cada dato con su fecha y su orden, antes de cambiar nada. **Cada cambio en `docs/registro-de-cambios.md`** (referencia, fecha, qué, quién aprobó, vuelta atrás, evidencia) y cada problema en `docs/problemas-conocidos.md`; los registros no se borran. **Sudo: sigue denegado**; el coordinador prepara la orden, el director la lanza en su terminal y el coordinador verifica. Las herramientas de usuario las instala el coordinador de equipo y el general funde el manual en el catálogo. Nunca claves de recuperación, contraseñas ni tokens en el vault.
 ---
@@ -61,4 +61,4 @@ Los datos del equipo no son sensibles en sí, pero **nunca** entran en el vault 
 
 Relacionada: [[estructura_contenedor_asunto]], [[orquestacion_sesiones_por_herramienta]], [[definition_of_done]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v1.0 (2026-10-22):** nace con la decisión del director de tener un coordinador dedicado por equipo, empezando por el MacBook (plan de adopción de pd-dev, tanda T12). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#coordinador_de_equipo]].

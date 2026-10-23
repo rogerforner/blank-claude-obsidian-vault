@@ -2,7 +2,7 @@
 name: Scripts ad-hoc para tareas repetitivas
 description: Cuando una tarea es mecánica, determinista y verificable, preferir que la IA genere un script ejecutable y se ejecute, en lugar de procesar ítem por ítem cargando contexto. Menos tokens, output determinista, reutilizable y auditable. Vale también para los pasos del propio método que se repiten entre sesiones (el relevo, el tablero), que viven como scripts comunes en general/comun/scripts/.
 type: doctrine
-version: 2.0
+version: 2.1
 index_summary: >-
   Tarea mecánica + determinista + verificable → generar y ejecutar script, no procesar ítem por ítem. Nunca en el sitio sobre un original. Los pasos del método que se repiten entre sesiones o tienen que salir idénticos también van con script, común en `general/comun/scripts/`.
 ---
@@ -45,5 +45,4 @@ Lo repetitivo y determinista del propio método (el relevo, el tablero, el DoD, 
 
 Relacionada: [[modelo_por_tarea]], [[verificacion_e2e_por_agente]], [[adopcion_tooling_externo_caso_uso_concreto]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v2.0 (2026-10-05): sección "Pasos del método que se repiten: script común" y bucket `general/comun/scripts/`. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#scripts_adhoc_tareas_repetitivas]].

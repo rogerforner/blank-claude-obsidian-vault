@@ -2,7 +2,7 @@
 name: Sesión consultor paralelo (read-only)
 description: Una sesión Claude Code paralela read-only resuelve dudas factuales del director sin consumir el contexto del coordinador; no decide ni redacta prompts, solo consulta y cita fuentes.
 type: convention
-version: 1.1
+version: 1.2
 index_summary: >-
   Sesión paralela read-only para dudas factuales sin gastar contexto del coordinador; cita fuente y no decide.
 ---
@@ -35,5 +35,4 @@ Mantener la memoria/doctrinas **actualizadas con disciplina**: registrar prontam
 
 Relacionada: [[modelo_por_tarea]], [[paralelismo_subagent_opus_principal]], [[orquestacion_sesiones_por_herramienta]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v1.1 (2026-08-12):** el modelo y el esfuerzo del consultor **dejan de escribirse aquí** y pasan a la tabla de [[modelo_por_tarea]], que es su fuente única; su perfil de settings ya los trae fijados. Antes esta ficha decía "barato, esfuerzo bajo" y la tabla decía otra cosa: dos sitios con el mismo dato derivan siempre. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#sesion_consultor_paralelo]].

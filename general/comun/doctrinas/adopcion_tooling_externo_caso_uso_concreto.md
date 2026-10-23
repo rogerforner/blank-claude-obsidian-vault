@@ -2,7 +2,7 @@
 name: Adopción de tooling externo requiere caso de uso concreto
 description: Antes de adoptar cualquier herramienta externa nueva, exigir un caso de uso concreto YA presente (no especulativo) y validar cinco criterios; aplica también a estructuras internas preventivas. Verificar disponibilidad y condiciones de uso de los recursos externos al inicio de cada tanda.
 type: doctrine
-version: 1.1
+version: 1.2
 index_summary: >-
   Caso de uso concreto YA + 5 criterios + piloto; aplica a estructuras internas preventivas; verificar disponibilidad y condiciones de uso de los recursos externos al inicio. **"Es barato" NO es un caso de uso** —sin dolor concreto, umbral escrito y a esperar—; **una verificación que no bloquea es una opinión con formato de informe**, así que antes de comprar una garantía mira si detiene algo; y **describir el método de memoria en el encargo hace que la investigación proponga construir lo que ya existe**.
 ---
@@ -44,5 +44,4 @@ Dos trampas de adopción que aparecieron el mismo día (2026-08-27) evaluando un
 
 **Y la trampa del que encarga, que es la más cara porque no se ve:** si el encargo describe el método **de memoria** en vez de leerlo, **la investigación propondrá construir lo que ya existe** — y volverá una recomendación madura y bien argumentada para una pieza que llevas meses usando. Pasó con dos de tres propuestas de un informe. **El informe no se equivocó: el encargo no se lo había contado.**
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v1.1 (2026-08-27): dos trampas de adopción vistas evaluando una familia entera de herramientas, y una tercera que es del que encarga.** *(a)* **"Es barato" no es un caso de uso**: una convención que no cuesta nada instalar sigue sin tener un trabajo que hoy duela, y así es como un kit se llena de piezas que nadie usa — sin dolor concreto, **umbral escrito y a esperar**. *(b)* **Antes de comprar una garantía, mira si detiene algo**: tres herramientas cuya bandera era verificar el cumplimiento resultaron ser un modelo emitiendo un informe consultivo; lo único determinista validaba la **estructura** del documento, no su cumplimiento. **Una verificación que no bloquea es una opinión con formato de informe.** *(c)* Y la del encargo: **describir el método de memoria hace que la investigación proponga construir lo que ya existe** — pasó con dos de tres propuestas, y el informe no se equivocó, el encargo no se lo había contado. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#adopcion_tooling_externo_caso_uso_concreto]].

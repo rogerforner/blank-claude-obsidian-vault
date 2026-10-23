@@ -2,7 +2,7 @@
 name: Paralelismo subagente read-only + agente principal
 description: Paralelizar un subagente read-only en background con trabajo independiente del agente principal ahorra wall-clock sin interferencias, con reconciliación de hallazgos antes del checkpoint.
 type: doctrine
-version: 1.2
+version: 1.3
 index_summary: >-
   Subagente read-only en background paralelo al principal ahorra wall-clock; reconciliar y citar fuente antes del checkpoint.
 ---
@@ -34,5 +34,4 @@ Ejemplo: mientras el principal redacta el escrito, un subagente read-only barre 
 
 Relacionada: [[modelo_por_tarea]], [[higiene_contexto_y_tokens]], [[orquestacion_sesiones_por_herramienta]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v1.2 (2026-10-11): las tandas que escriben ya no van siempre en serie: van en serie sobre el mismo árbol, o a la vez cada una en su worktree si son independientes ([[ciclo_de_tandas]]); el subagente de solo lectura no cambia. v1.1 (2026-10-04): aclarado que la doctrina cubre solo al subagente de solo lectura en paralelo y que las tandas que escriben van en serie ([[ciclo_de_tandas]]); no cambia ninguna regla. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#paralelismo_subagent_opus_principal]].

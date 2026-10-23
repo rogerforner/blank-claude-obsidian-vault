@@ -2,7 +2,7 @@
 name: Revisión periódica de la forma de trabajo
 description: Cadencia ligera de auto-revisión del trabajo humano-IA (feedback flywheel). El ritmo importa más que el rigor: una rutina mínima sostenida supera a un proceso elaborado que se abandona.
 type: convention
-version: 1.0
+version: 1.1
 index_summary: >-
   Cadencia ligera (tras-sesión / quincenal / trimestral / por-evento). El ritmo importa más que el rigor.
 ---
@@ -20,5 +20,4 @@ Una investigación amplia del panorama (Deep Research) no es mensual: se lanza e
 
 Relacionada: [[modelo_por_tarea]], [[adopcion_tooling_externo_caso_uso_concreto]], [[mejora_continua_del_kit]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#revision_periodica_forma_de_trabajo]].

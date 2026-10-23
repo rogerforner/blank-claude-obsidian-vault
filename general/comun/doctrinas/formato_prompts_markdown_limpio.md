@@ -2,7 +2,7 @@
 name: Formato markdown limpio en prompts
 description: Los prompts .md para sesiones operativas usan markdown limpio (# heading 1, solo headings, sin envoltorio ``` exterior, sin separadores ASCII, sin tiempos ni metadiscurso) para que el director los copie íntegros.
 type: convention
-version: 1.3
+version: 1.4
 index_summary: >-
   Prompts `.md`: `#` heading 1, solo headings, sin envoltorio ``` exterior, sin separadores ASCII, sin tiempos ni metadiscurso. **SIN EMOJIS con ámbito acotado (v1.2)**: se exige y se verifica en el **catálogo, las plantillas, los ficheros de reglas e identidad** (`CLAUDE.md`, `README.md`, charters, índices) y en lo que se **entrega fuera** — estados como etiquetas `[OK]`/`[PENDIENTE]`, el énfasis lo da el markdown. **En las zonas de trabajo (cola, bitácora, estudios, coordinación, informes, chat) NO se persiguen** y no se gasta un token en quitarlos. Flechas, matemáticos y dibujo de árboles **no** son emojis en ninguna parte; limpieza siempre oportunista, nunca dedicada.
 ---
@@ -71,5 +71,4 @@ Estas pautas salen de la documentación de la API y están **medidas en Opus 4.5
 
 Relacionada: [[feedback_prompt_delivery]], [[prompts_rutas_absolutas_fuera_del_working_dir]], [[minimizar_askuserquestion_agente_operativo]], [[docs_sin_fases]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v1.3 (2026-10-04):** sección nueva "Cómo se le escribe a un modelo actual", con las pautas de la documentación de la API para los modelos 5.5 (medidas en Opus 4.5/4.6), y la regla 8 pasa a "se entrega como encargo a un subagente o se pega en la sesión". El `version: 1.1` del frontmatter estaba atrasado respecto a la v1.2 de este mismo pie, y queda corregido. **v1.2 (2026-08-12):** la regla SIN EMOJIS pasa de "todo lo escrito" a un **ámbito acotado** por decisión del director — se exige y se verifica en el catálogo, las plantillas, los ficheros de reglas e identidad y lo que se entrega fuera; **en las zonas de trabajo ya no se persigue**, porque limpiarlas costaba más contexto y cuota de lo que aportaba, y un emoji en un informe de tanda ponía en rojo el kit entero. **v1.1 (2026-08-01):** añadida la regla **SIN EMOJIS** en todo lo escrito: estados como etiquetas de texto, el énfasis lo da el markdown, y flechas, matemáticos y dibujo de árboles NO son emojis. Limpieza oportunista, sin churn dedicado. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#formato_prompts_markdown_limpio]].

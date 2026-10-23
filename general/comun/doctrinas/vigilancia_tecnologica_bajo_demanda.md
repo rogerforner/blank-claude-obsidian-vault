@@ -2,7 +2,7 @@
 name: Vigilancia tecnológica bajo demanda
 description: La investigación de novedades externas (modelos, herramientas, métodos) no sigue calendario fijo: la dispara el director cuando detecta algo a evaluar. El coordinador la convierte en uno o varios briefs FOCALIZADOS de deep research (Chat Web), sintetiza y funde los hallazgos en doctrinas/decisiones. Investigar ≠ adoptar: toda adopción pasa el filtro (caso de uso, condiciones de uso, soberanía del dato, madurez + piloto).
 type: convention
-version: 1.2
+version: 1.3
 index_summary: >-
   La investigación de novedades la dispara el director cuando quiera; el coordinador la concreta en briefs focalizados de deep research (Chat Web), sintetiza y funde; investigar ≠ adoptar (filtro de caso de uso / condiciones de uso / soberanía del dato / piloto).
 ---
@@ -44,6 +44,4 @@ Estudios de **kit** en `_meta/estudios/<tema>/`; de **asunto** en `<espacio>/<as
 
 Relacionada: [[revision_periodica_forma_de_trabajo]], [[cuestionar_premisas_arquitectonicas_antes_deep_research]], [[adopcion_tooling_externo_caso_uso_concreto]], [[orquestacion_sesiones_por_herramienta]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v1.1 (2026-10-04): sección nueva sobre qué se vigila y cómo se pesa lo que llega, con lo rescatado de la síntesis de arquitectura (citas datadas, cruce de informes) y la regla de retirar los informes cumplidos tras el rescate. v1.0 (2026-06-10). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
-> **v1.2 (2026-10-10)** — rutas de contenedor a `<espacio>/<asunto>/` (vault con espacios).
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#vigilancia_tecnologica_bajo_demanda]].

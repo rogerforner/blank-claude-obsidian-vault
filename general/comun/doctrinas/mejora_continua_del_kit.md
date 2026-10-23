@@ -2,7 +2,7 @@
 name: Mejora continua del kit — retroalimentar lo aprendido en cada arranque de asunto
 description: Cada vez que se arranca un asunto nuevo aparecen correcciones de pasos y mejores formas de trabajar. El coordinador general las anota en la bitácora y las funde en los artefactos del kit (checklist, plantillas, doctrinas) para que los próximos arranques usen los pasos que mejor funcionaron, en el orden adecuado.
 type: doctrine
-version: 1.2
+version: 1.3
 index_summary: >-
   Anotar en `_meta/bitacora.md` lo aprendido en cada arranque y fundirlo en checklist/plantillas/doctrinas.
 ---
@@ -41,6 +41,4 @@ Las doctrinas instaladas en `<espacio>/<asunto>/memoria/` son **copias con su ve
 
 Relacionada: [[revision_periodica_forma_de_trabajo]], [[orquestacion_sesiones_por_herramienta]], [[verificacion_fuente_primaria]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. **v1.1 (2026-09-02): entra *se arregla el hábito, no el sitio*, que llevaba semanas usándose y no estaba escrita en ninguna parte** — lo destapó podar la bitácora comprobando, entrada por entrada, si su lección vivía ya en una regla. Con su corolario, que es el que hace la poda segura: **una entrada no se archiva hasta que su lección está fundida**, porque el histórico ya no se lee. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
-> **v1.2 (2026-10-10)** — rutas de contenedor a `<espacio>/<asunto>/` (vault con espacios).
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#mejora_continua_del_kit]].

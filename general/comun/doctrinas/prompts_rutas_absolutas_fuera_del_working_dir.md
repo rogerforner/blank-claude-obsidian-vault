@@ -2,7 +2,7 @@
 name: Rutas absolutas para referencias fuera del working dir
 description: En los prompts operativos, toda referencia a un fichero fuera del working dir de la sesión va con ruta absoluta desde la raíz de la unidad; las relativas a otro árbol fallan en silencio.
 type: convention
-version: 1.0
+version: 1.1
 index_summary: >-
   Referencias fuera del working dir → ruta absoluta; las relativas a otro árbol fallan en silencio.
 ---
@@ -18,5 +18,4 @@ Aplica a referencias a documentación, carpetas del vault, doctrinas de memoria,
 
 Relacionada: [[formato_prompts_markdown_limpio]], [[feedback_prompt_delivery]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#prompts_rutas_absolutas_fuera_del_working_dir]].

@@ -2,7 +2,7 @@
 name: Archivo documental compartido — un documento, un sitio
 description: Los documentos transversales a varios asuntos (identificativos, de un inmueble, de un bien) viven en un árbol propio del vault, al mismo nivel que el catálogo y los espacios (que contienen los asuntos). Su README lleva `tipo: archivo`. Los asuntos lo enlazan por ruta relativa y nunca lo copian; lo ven en solo lectura. Se versiona la estructura y sus índices, no los originales. Se crea con el primer asunto que lo necesite, no antes.
 type: convention
-version: 1.1
+version: 1.2
 index_summary: >-
   Los documentos transversales a varios asuntos (identificativos, de un inmueble, de un bien) viven en un **árbol propio del vault**, al mismo nivel que el catálogo y los espacios: `general/` no admite datos personales y el contenedor de un asunto no es el sitio de lo que sirve a varios. Su README lleva `tipo: archivo`. Los asuntos lo **enlazan y nunca lo copian**, y lo ven en **solo lectura**. Se versiona la estructura y sus índices, no los originales. **El nombre del árbol debe ser compuesto**: el glob del deny es independiente del nombre del vault, así que `archivo` o `expediente` dejarían en solo lectura cualquier carpeta homónima dentro de un asunto. Se crea con el primer asunto que lo necesite, no antes.
 ---
@@ -52,4 +52,4 @@ En el nombre del fichero conviene que vaya la **fecha de caducidad** cuando la h
 
 Relacionada: [[estructura_contenedor_asunto]], [[sensitive_file_guard]], [[convencion_organizacion_carpeta_trabajo]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; no se copia salvo motivo declarado. v1.0: nace de una carencia detectada al arrancar el primer asunto de un vault derivado — el kit no contemplaba dónde viven los documentos transversales, y ni el catálogo ni el contenedor aislado servían. La regla del nombre compuesto y la del anclaje de la exclusión son las dos que costaron un fallo real antes de estar escritas. **v1.1 (2026-10-10):** el árbol se describe junto a los espacios y su README lleva `tipo: archivo` (decisión del director 2026-10-09: un solo vault con espacios).
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#archivo_documental_compartido]].

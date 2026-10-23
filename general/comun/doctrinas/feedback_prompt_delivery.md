@@ -2,7 +2,7 @@
 name: Entrega de prompts en .md y respuestas vía buffer "Otros"
 description: Los prompts para sesiones operativas se entregan en archivos .md en el working dir activo, no inline en el chat; las respuestas a AskUserQuestion del agente se escriben completas en un buffer sobreescribible que el director pega en "Otros".
 type: convention
-version: 1.0
+version: 1.1
 index_summary: >-
   Prompts en archivo `.md` (no inline); respuestas a AskUserQuestion completas en buffer sobreescribible que el director pega en "Otros".
 ---
@@ -28,5 +28,4 @@ El buffer sigue las mismas convenciones de [[formato_prompts_markdown_limpio]] (
 
 Relacionada: [[formato_prompts_markdown_limpio]], [[prompts_rutas_absolutas_fuera_del_working_dir]], [[convencion_organizacion_carpeta_trabajo]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#feedback_prompt_delivery]].

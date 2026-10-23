@@ -2,7 +2,7 @@
 name: Sin Co-Authored-By en commits
 description: Los commits no llevan footer Co-Authored-By ni referencias a modelos IA; se automatiza con el setting attribution.commit vacío. No retroactivo. Grep de verificación refinado para evitar falsos positivos.
 type: convention
-version: 1.0
+version: 1.1
 index_summary: >-
   Commits sin footer de atribución a IA; `attribution.commit` vacío; grep refinado de verificación. Git local: el histórico es del director.
 ---
@@ -28,5 +28,4 @@ git log -<N> --format=%B | grep -iE "co-authored-by:|generated with claude code|
 
 Relacionada: [[commits_de_otros_no_se_investigan]], [[convencion_organizacion_carpeta_trabajo]], [[modelo_por_tarea]].
 
-> Pieza de catálogo `general/comun/doctrinas/`. v1.0 (2026-06-05). Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda** automáticamente.
-> Adaptada al enfoque neutro de la plantilla (sin referencias al dominio del software) — 2026-07-29.
+> Pieza de catálogo `general/comun/doctrinas/`. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado (`memoria/` es para lo propio del asunto) y **no se hereda**. Historial de versiones: [[historial-doctrinas#sin_coautor_commits]].
