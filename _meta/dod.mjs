@@ -4,7 +4,7 @@
 // QUE ES: la puerta que se cruza al CERRAR una tanda o una sesion. El verificador dice si el kit
 // esta bien ESCRITO; esto dice si el trabajo esta bien TERMINADO, que no es lo mismo: un vault
 // puede estar en verde y aun asi dejar un prompt cumplido sin borrar, una doctrina cambiada sin
-// su changelog, una cola por encima de su techo o el arbol a medio commitear. Cada una de esas
+// su historial, una cola por encima de su techo o el arbol a medio commitear. Cada una de esas
 // cosas la paga la sesion siguiente, que es exactamente lo que este kit existe para evitar.
 //
 // EL PRINCIPIO, y no es negociable: que nadie -- persona o IA -- pueda afirmar que algo esta
@@ -269,7 +269,7 @@ function puertaTechos() {
 // ahi donde la documentacion se queda atras -- no en el arbol en reposo.
 //
 // (a) Una doctrina que cambia en su CUERPO tiene que subir `version`. Es la regla de fuente unica
-//     hecha puerta: sin ella, la ficha y su changelog cuentan historias distintas y releyendo no
+//     hecha puerta: sin ella, la ficha y su historial cuentan historias distintas y releyendo no
 //     se nota, porque las dos son plausibles por separado.
 //     SE EVALUA LA VENTANA COMO CONJUNTO, no commit a commit, y la diferencia importa: si cambias
 //     una doctrina y subes su version tres commits despues, la deuda esta SALDADA y la puerta no
@@ -291,12 +291,12 @@ function puertaDoctrinasVersionadas(commits) {
       if (basename(f).startsWith('MEMORY-')) continue;          // el indice es derivado
       const diff = git(['show', '--format=', '--unified=0', c, '--', f]);
       const lineas = diff.split('\n').filter((l) => /^[+-]/.test(l) && !/^([+-][+-][+-])/.test(l));
-      // Cambios que NO exigen subir version: el propio frontmatter derivado y las lineas de changelog.
+      // Cambios que NO exigen subir version: el propio frontmatter derivado y el pie fijo (el historial vive fuera de la ficha).
       const sustantivo = lineas.some((l) => {
         const cuerpo = l.slice(1).trim();
         if (!cuerpo) return false;
         if (/^version:|^index_summary:|^description:/.test(cuerpo)) return false;
-        if (cuerpo.startsWith('> **v') || cuerpo.startsWith('> Pieza de catálogo')) return false;
+        if (cuerpo.startsWith('> Pieza de catálogo')) return false;
         return true;
       });
       const acumulado = porFichero.get(f) || { sustantivo: false, subeVersion: false, donde: [] };

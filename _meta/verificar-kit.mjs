@@ -165,7 +165,7 @@ for (const dir of [...new Set(md.filter(esDoctrina).map(dirname))]) {
 // Por eso: cuando una politica cambia, su redaccion vieja entra AQUI y pasa a ser un error duro.
 // Ambito: la misma zona que el estilo estricto (catalogo, plantillas y ficheros de reglas), que es
 // donde vive el metodo que viaja a otros vaults.
-// DOS EXCEPCIONES, y las dos son necesarias: un changelog CITA la redaccion vieja a proposito
+// DOS EXCEPCIONES, y las dos son necesarias: el historial de doctrinas y los changelog del pack CITAN la redaccion vieja a proposito
 // ("antes decia X"), asi que se ignoran las lineas de cita (`>`) y lo que va entrecomillado.
 const RETIRADAS = [
   { frase: 'se instala por copia', desde: '2026-08-01',
@@ -186,7 +186,7 @@ const sinCitas = (l) => l.replace(/"[^"\n]*"/g, '').replace(/[«“][^»”\n]*[
 const sinEnfasis = (l) => l.replace(/[*_`]/g, '');
 for (const f of md.filter(zonaDeEstiloEstricto)) {
   readFileSync(f, 'utf8').split('\n').forEach((linea, i) => {
-    // La excepcion es SOLO para el pie y el changelog, que son REGISTRO: alli una redaccion
+    // La excepcion es SOLO para el pie, el historial de doctrinas y los changelog del pack, que son REGISTRO: alli una redaccion
     // retirada es historia y no se reescribe. Antes saltaba cualquier linea que empezara por `>`
     // -- toda cita en bloque -- y por ahi se colo durante semanas la cabecera del indice del
     // catalogo, que es una cita en bloque AFIRMANDO politica vigente: decia "se instala por copia"
@@ -312,20 +312,20 @@ for (const x of ambitosConEstado(RAIZ)) {
 // copio a mano en cuatro sitios y solo se actualizo en uno. Es el mismo fallo que la regla 11
 // persigue en el indice de doctrinas: un dato derivable escrito a mano deriva en silencio, y
 // releyendo no se nota porque cada frase es plausible por separado.
-// AMBITO: lo que es METODO. El registro -- historico, bitacora, informes y los changelog de las
-// doctrinas -- NO se reescribe: alli "ocho reglas" era cierto cuando se escribio. Tambien quedan
+// AMBITO: lo que es METODO. El registro -- historico, bitacora, informes, el historial de doctrinas y los changelog del
+// pack -- NO se reescribe: alli "ocho reglas" era cierto cuando se escribio. Tambien quedan
 // fuera los handoffs, que son efimeros y se borran solos.
 const REGLAS_REALES = new Set([...readFileSync(fileURLToPath(import.meta.url), 'utf8')
   .matchAll(/^\/\/ --- (\d+)\./gm)].map((m) => Number(m[1]))).size;
 const PALABRAS = { cinco: 5, seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10, once: 11,
   doce: 12, trece: 13, catorce: 14, quince: 15, dieciseis: 16, diecisiete: 17, dieciocho: 18 };
 // AMBITO: lo que es METODO. Queda fuera el REGISTRO -- lo que relata, cita o describe un estado
-// pasado: historico, bitacora, informes, sintesis, handoffs, extracciones y los changelog. Alli
+// pasado: historico, bitacora, informes, sintesis, handoffs, extracciones, el historial de doctrinas y los changelog del pack. Alli
 // "ocho reglas" era cierto cuando se escribio, y una frase como "nacio de que diez reglas decian
 // lo mismo" es historia correcta, no una cuenta desactualizada. Se anadio `extraccion-` el
 // 2026-08-27, cuando una extraccion del propio metodo salto por eso. NO es relajar el criterio:
 // es que esa pieza pertenece a una categoria que la regla ya excluia y el patron no nombraba.
-const ES_REGISTRO = (f) => /historico-kit\.md$|bitacora\.md$|brief-.*\.md$|handoff-.*\.md$|sintesis-.*\.md$|extraccion-.*\.md$|informe-.*\.md$/.test(f);
+const ES_REGISTRO = (f) => /historico-kit\.md$|bitacora\.md$|brief-.*\.md$|handoff-.*\.md$|sintesis-.*\.md$|extraccion-.*\.md$|informe-.*\.md$|historial-doctrinas\.md$/.test(f);
 const CUENTA = /\*{0,2}(\d{1,2}|[A-Za-zÁÉÍÓÚáéíóúñ]+)\*{0,2}\s+regla/gi;
 for (const f of md.filter((x) => !ES_REGISTRO(x))) {
   const lineas = readFileSync(f, 'utf8').split('\n');
@@ -540,7 +540,7 @@ for (const a of listarAsuntos(RAIZ)) {
 // --- 19. residuo de la estructura vieja ------------------------------------
 // Tras pasar de `asun`+`tos/<asunto>/` a `<espacio>/<asunto>/`, el metodo (zona de estilo estricto,
 // sin registro) no vuelve a nombrar la carpeta vieja: ni en prosa ni entre acentos graves (no se
-// quitan los literales). Exentas: los changelogs y pies de registro (`> **v`, `> Adaptada`,
+// quitan los literales). Exentas: el historial de doctrinas, los changelog del pack y los pies de registro (`> **v`, `> Adaptada`,
 // `> Pieza`) y las carpetas `coordinacion/referencia/` y `estudios/`. El patron va partido para
 // que este fichero no se cace a si mismo.
 const RESIDUO = new RegExp('\\basun' + 'tos/');
@@ -586,6 +586,45 @@ if (existsSync(localRaiz)) {
       nota('MCP por asunto', localRaiz, 'lleva deniedMcpServers: el local de la raiz no puede decidir los MCP de los asuntos');
     }
   } catch { nota('MCP por asunto', localRaiz, 'no es JSON valido'); }
+}
+
+// --- 21. el historial de versiones de las doctrinas del core --------------
+// El changelog de una doctrina vive en general/comun/historial-doctrinas.md (seccion `## <nombre>`),
+// no en la ficha: asi la ficha, que se carga al leerla, no crece con cada version. La ficha solo
+// lleva `version` y un pie fijo. Exige: (a) seccion por ficha, (b) que nombre la version vigente,
+// (c) que la ficha no recupere lineas de changelog, (d) que ninguna seccion apunte a una ficha
+// inexistente.
+const HIST = join(RAIZ, 'general', 'comun', 'historial-doctrinas.md');
+if (!existsSync(HIST)) {
+  nota('historial de doctrinas', HIST, 'no existe');
+} else {
+  const secciones = new Map();
+  let actual = null;
+  for (const linea of readFileSync(HIST, 'utf8').split('\n')) {
+    const h = linea.match(/^## (.+?)\s*$/);
+    if (h) { actual = h[1]; secciones.set(actual, ''); continue; }
+    if (actual !== null) secciones.set(actual, secciones.get(actual) + linea + '\n');
+  }
+  const fichas = new Set();
+  for (const f of md.filter(esCore)) {
+    const nombre = basename(f, '.md');
+    fichas.add(nombre);
+    const txt = readFileSync(f, 'utf8');
+    if (!secciones.has(nombre)) {
+      nota('historial de doctrinas', f, `falta la seccion \`## ${nombre}\` en general/comun/historial-doctrinas.md`);
+    } else {
+      const v = txt.match(/^version:\s*["']?(\d+\.\d+)["']?\s*$/m)?.[1];
+      if (!v) nota('historial de doctrinas', f, 'sin `version` en el frontmatter');
+      else if (!new RegExp('v' + v.replace('.', '\\.') + '(?!\\d)').test(secciones.get(nombre)))
+        nota('historial de doctrinas', f, `version ${v} sin entrada v${v} en la seccion del historial`);
+    }
+    txt.split('\n').forEach((linea, i) => {
+      if (/^> (\*\*)?v\d+\.\d+ \(/.test(linea) || /v\d+\.\d+\*{0,2} \(20\d\d-/.test(linea))
+        nota('historial de doctrinas', f, `linea ${i + 1}: changelog dentro de la ficha; va a general/comun/historial-doctrinas.md`);
+    });
+  }
+  for (const nombre of secciones.keys())
+    if (!fichas.has(nombre)) nota('historial de doctrinas', HIST, `la seccion \`## ${nombre}\` no corresponde a ninguna doctrina del core`);
 }
 
 // --- resultado ----------------------------------------------------------
