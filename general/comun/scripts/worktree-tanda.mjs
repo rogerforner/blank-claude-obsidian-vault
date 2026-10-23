@@ -28,7 +28,7 @@ const AYUDA = `Uso:
       commitea por pathspec ("<Id> <mensaje>") las rutas y el tablero. No corre la comprobacion
       de la tanda: esa la corre el coordinador antes.
   worktree-tanda.mjs --listar     worktrees distintos del principal: 0 si no hay, 4 si hay
-  worktree-tanda.mjs --prueba     prueba en un repositorio temporal, siete casos
+  worktree-tanda.mjs --prueba     prueba en un repositorio temporal, ocho casos
   worktree-tanda.mjs --ayuda
 Salidas: 0 bien, 1 error interno, 2 uso, 4 precondicion sin tocar nada.`;
 
@@ -64,6 +64,13 @@ const dentro = (f, lista) => lista.some((r) => f === r || f.startsWith(r.endsWit
 function porcelain(cwd, extra = []) {
   const o = git(cwd, ['status', '--porcelain', '--untracked-files=all', ...extra], { crudo: true }).out;
   return o ? o.split('\n').filter(Boolean).map((l) => l.slice(3).replace(/^.* -> /, '').replace(/^"|"$/g, '')) : [];
+}
+
+// rutas que git add acepta: existen en disco o siguen en el index. Un borrado ya preparado
+// (git rm) no casa con nada y haria fallar el git add; el commit por pathspec ya lo incluye.
+function aniadibles(cwd, rutas) {
+  const top = git(cwd, ['rev-parse', '--show-toplevel']).out;
+  return rutas.filter((r) => existsSync(path.join(top, r)) || git(top, ['ls-files', '--', r]).out);
 }
 
 function integrar(args) {
@@ -103,7 +110,8 @@ function integrar(args) {
   if (ocupados.length) throw new Salida(4, `el principal tiene cambios sin commitear en:\n${ocupados.join('\n')}`);
 
   if (sucios.length) {
-    git(wt, ['add', '--', ...sucios]);
+    const aWt = aniadibles(wt, sucios);
+    if (aWt.length) git(wt, ['add', '-A', '--', ...aWt]);
     git(wt, ['commit', '-m', `${id} ${mensaje}`, '--', ...sucios]);
   }
   if (!git(top, ['rev-list', `${base}..${rama}`]).out) throw new Salida(4, 'la rama del worktree no trae cambios');
@@ -119,9 +127,12 @@ function integrar(args) {
     throw new Salida(4, `conflicto al traer ${rama}; abortado, el worktree sigue intacto\n${cp.err}`);
   }
 
+  // primero el git add de los ficheros (si falla, el tablero sigue intacto); luego la fila y el tablero
+  const aTop = aniadibles(top, ficheros);
+  if (aTop.length) git(top, ['add', '-A', '--', ...aTop]);
   const t = spawnSync(process.execPath, [TABLERO_JS, '--estado', id, 'HECHA', '--tablero', tabAbs], { cwd: top, encoding: 'utf8' });
   if (t.status !== 0) throw new Salida(1, `tablero.mjs --estado fallo: ${(t.stderr || '').trim()}`);
-  git(top, ['add', '--', ...ficheros, tabRel]);
+  git(top, ['add', '--', tabRel]);
   git(top, ['commit', '-m', `${id} ${mensaje}`, '--', ...ficheros, tabRel]);
   git(top, ['worktree', 'remove', '--force', wt]);
   git(top, ['branch', '-D', rama]);
@@ -173,9 +184,12 @@ function cerrar(args) {
   if (sobran.length) throw new Salida(4, `cambios fuera de la tanda ${id}:\n${sobran.join('\n')}\nla celda Ficheros de la fila ${id} tiene que listar esas rutas literales, desde la carpeta desde la que se corre (ciclo_de_tandas)`);
   if (!cambiados.length) throw new Salida(4, `la tanda ${id} no cambio ningun fichero desde la foto`);
 
+  // primero el git add de los ficheros (si falla, el tablero sigue intacto); luego la fila y el tablero
+  const aCam = aniadibles(top, cambiados);
+  if (aCam.length) git(top, ['add', '-A', '--', ...aCam]);
   const t = spawnSync(process.execPath, [TABLERO_JS, '--estado', id, 'HECHA', '--tablero', tabAbs], { cwd: top, encoding: 'utf8' });
   if (t.status !== 0) throw new Salida(1, `tablero.mjs --estado fallo: ${(t.stderr || '').trim()}`);
-  git(top, ['add', '--', ...cambiados, tabRel]);
+  git(top, ['add', '--', tabRel]);
   git(top, ['commit', '-q', '-m', `${id} ${mensaje}`, '--', ...cambiados, tabRel]);
   console.log(`${id} cerrada: ${cambiados.join(', ')}`);
 }
@@ -213,7 +227,7 @@ function prueba(args) {
       '| Id | Bloque | Objetivo | Ficheros | Ejecuta | Depende de | Estado |',
       '|---|---|---|---|---|---|---|',
       fila('T01', 'a.txt'), fila('T02', 'b.txt'), fila('T03', 'c.txt'), fila('T05', 'e.txt'),
-      fila('T06', 'f.txt'), fila('T07', 'g.txt'), ''].join('\n'));
+      fila('T06', 'f.txt'), fila('T07', 'g.txt'), fila('T08', 'h.txt'), ''].join('\n'));
     spawnSync('mkdir', ['-p', path.join(repo, 'esp/a1/coordinacion')]);
     escribir('esp/a1/coordinacion/tablero-tandas.md', [
       '# Tablero', '', 'Plan: `plan.md`', 'Paradas: ninguna', '',
@@ -222,7 +236,7 @@ function prueba(args) {
       fila('T04', 'd.txt'), ''].join('\n'));
     escribir('esp/a1/d.txt', 'd\n'); escribir('e.txt', 'e\n');
     escribir('a.txt', 'a\n'); escribir('b.txt', 'b\n'); escribir('c.txt', 'c\n');
-    escribir('f.txt', 'f\n'); escribir('g.txt', 'g\n'); escribir('o.txt', 'o\n');
+    escribir('f.txt', 'f\n'); escribir('g.txt', 'g\n'); escribir('h.txt', 'h\n'); escribir('o.txt', 'o\n');
     g(repo, 'add', '.'); g(repo, 'commit', '-q', '-m', 'inicial');
     const nuevoWt = (n) => {
       const p = path.join(dir, `wt-${n}`);
@@ -310,6 +324,17 @@ function prueba(args) {
     caso('cierre con un fichero de mas: salida 4, sin commit y tablero intacto',
       r.status === 4 && g(repo, 'rev-parse', 'HEAD').out === h7 && tabRaiz() === tab7
       && /intruso2\.txt/.test(r.stderr) && g(repo, 'status', '--porcelain').out.includes('g.txt'),
+      `rc=${r.status} ${r.stderr}`);
+
+    // 8. cierre en serie de una tanda que borra con git rm (borrado ya preparado en el index)
+    g(repo, 'checkout', '-q', '--', 'g.txt'); g(repo, 'clean', '-fdq', '--', 'intruso2.txt');
+    r = run(['--foto', foto]);
+    g(repo, 'rm', '-q', 'h.txt');
+    r = run(['--cerrar', 'T08', '--foto', foto, '--mensaje', 'borrado']);
+    caso('cierre en serie con borrado hecho con git rm: commit con el borrado y fila en HECHA',
+      r.status === 0 && g(repo, 'log', '-1', '--format=%s').out === 'T08 borrado'
+      && g(repo, 'show', '--name-status', '--format=', 'HEAD').out.split('\n').sort().join(',') === 'D\th.txt,M\t_meta/tablero-tandas.md'
+      && /\| T08 .*\[HECHA\] \|/.test(tabRaiz()) && !existsSync(path.join(repo, 'h.txt')),
       `rc=${r.status} ${r.stderr}`);
   } catch (e) {
     console.log(`[FALLA] error en la prueba: ${e.message}`); fallos++;
