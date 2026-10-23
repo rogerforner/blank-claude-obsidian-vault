@@ -4,7 +4,7 @@
 >
 > **Esta plantilla se versiona; los handoffs que generes con ella, NO.** El fichero generado va a `<espacio>/<asunto>/coordinacion/handoff-coordinador-<fecha>.md` y es **local y gitignored** (`**/coordinacion/handoff-*.md` en el `.gitignore` raíz del vault; el del coordinador general lo cubre `/_meta/handoff-*.md`): sirve solo hasta que arranca la siguiente sesión y no aporta nada al histórico. Un handoff superado se **borra** — y el hook `SessionStart` de limpieza lo borra solo. La plantilla se salva del patrón porque su nombre **no** empieza por `handoff-` ([[convencion_organizacion_carpeta_trabajo]]).
 
-> **Antes de escribir el handoff, cierra tu DoD** (`node _meta/dod.mjs`). Un handoff redactado sobre un árbol a medio commitear, con efímeros sin retirar o una doctrina cambiada sin su changelog, le traslada el problema a la sesión siguiente **disfrazado de estado**. → [[definition_of_done]]
+> **Antes de escribir el handoff, cierra tu DoD** (`node _meta/dod.mjs`). Un handoff redactado sobre un árbol a medio commitear, con efímeros sin retirar o una doctrina cambiada sin su entrada en el historial, le traslada el problema a la sesión siguiente **disfrazado de estado**. → [[definition_of_done]]
 
 > **Antes de escribir un handoff PARA OTRO coordinador, mira su estado con `estado.mjs --de <espacio>/<asunto>`.** Si el destinatario ya tiene abierto lo que ibas a encargarle, el handoff cambia — o no se manda. Sale de un caso real que reportó el coordinador de `climatizacion`, y es la razón de esta comprobación.
 

@@ -9,7 +9,7 @@
 - **Lo más nuevo arriba**: quien lee la bitácora busca lo reciente.
 - **Anótalo el mismo día.** Un aprendizaje de hace dos semanas se recuerda como "algo de las fechas no cuadraba", y eso no sirve para arreglar nada.
 - **Y fúndelo.** El paso 2 de la doctrina es el que cuenta: si el aprendizaje no llega al checklist, a la plantilla o a la doctrina, el próximo arranque repite el mismo error con la bitácora escrita al lado.
-- Si el cambio afecta a una doctrina, **sube su `version`**, anota el changelog en su footer y **actualiza el índice en el mismo commit** ([[verificacion_fuente_primaria]]).
+- Si el cambio afecta a una doctrina, **sube su `version`**, anota la entrada en su sección de `general/comun/historial-doctrinas.md` (la ficha solo lleva `version` y el pie) y **actualiza el índice en el mismo commit** ([[verificacion_fuente_primaria]]).
 
 ## Qué NO va aquí
 

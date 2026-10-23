@@ -79,9 +79,9 @@ Ese ciclo es explícito y tiene sitio propio en la estructura:
 1. **Pasa algo** — una sesión se pierde, una **tanda** (un encargo de trabajo con contrato escrito, explicado en la sección 7) devuelve trabajo vacío, una cifra viaja mal de un documento a otro.
 2. **Se anota en la bitácora** (`_meta/bitacora.md`) con lo que costó.
 3. **Se funde donde cambia el comportamiento**: la doctrina, el checklist o la plantilla que corresponda. La bitácora sola no cambia nada — anotar sin fundir es una forma cómoda de no arreglar el problema.
-4. **La doctrina sube de `version`** y se anota su changelog en el pie, con fecha y motivo.
+4. **La doctrina sube de `version`** y se anota la entrada en su sección de `general/comun/historial-doctrinas.md`, con fecha y motivo, en el mismo commit.
 
-Por eso las doctrinas del catálogo llevan un pie con su historial de versiones, y por eso muchas frases del kit vienen con una cifra al lado. Un par de ejemplos que verás citados dentro:
+Por eso las doctrinas del catálogo llevan su `version` y el historial de cambios vive en un fichero común (`general/comun/historial-doctrinas.md`), y por eso muchas frases del kit vienen con una cifra al lado. Un par de ejemplos que verás citados dentro:
 
 - Una ejecutora lanzada como sesión aparte cargó el fichero de reglas del coordinador, se creyó coordinadora, decidió que su trabajo era voluminoso e **intentó delegarlo en otra sesión**. No hizo nada de lo encargado y **devolvió éxito**. Coste: 1,11 USD y una pasada en vacío. De ahí salió el bloque de **anulación de rol** que hoy encabeza todo contrato de tanda. Un subagente hereda lo mismo —las reglas de la sesión que lo lanza—, así que su definición le dice qué es y qué no hace.
 - Una lista de herramientas permitidas resultó ser **aditiva**: una sesión lanzada sin permiso de shell ejecutó shell igualmente. De ahí salió la regla de que **lo que quieras impedir se expresa como denegación explícita**, nunca como ausencia de permiso.

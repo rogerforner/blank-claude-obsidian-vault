@@ -42,5 +42,5 @@ Confundirlos tiene un coste concreto: un coordinador de asunto que edita el cat�
 
 1. Lo que se aprende **se anota en la bitácora** el mismo día, con el cambio que se aplicó.
 2. Lo que hay que hacer **entra en la cola** con su bloque; lo que hay que decidir, en decisiones abiertas con una recomendación.
-3. Un cambio de doctrina **sube su `version`**, anota su changelog en el footer de la propia doctrina y **actualiza su entrada en el índice en el mismo commit** — índice y ficha son una sola fuente ([[verificacion_fuente_primaria]]).
+3. Un cambio de doctrina **sube su `version`**, anota la entrada en su sección de `general/comun/historial-doctrinas.md` (la ficha solo lleva `version` y el pie), todo en el mismo commit, y **actualiza su entrada en el índice en el mismo commit** — índice y ficha son una sola fuente ([[verificacion_fuente_primaria]]).
 4. La cadencia de repaso es ligera y está escrita: [[revision_periodica_forma_de_trabajo]]. El ritmo importa más que el rigor.
