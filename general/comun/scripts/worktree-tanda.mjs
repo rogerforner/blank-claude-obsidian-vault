@@ -18,8 +18,17 @@ const AYUDA = `Uso:
       celda: rutas literales entre acentos graves, relativas a esa carpeta; las que empiezan
       por ~ o por / no se comparan), trae su rama con cherry-pick --no-commit, pasa la fila a HECHA,
       commitea por pathspec ("<Id> <mensaje>") y retira el worktree y su rama.
+  worktree-tanda.mjs --foto <fichero>
+      Guarda 'git status --porcelain' antes de lanzar una tanda en serie. El fichero va fuera del
+      arbol o en uno ignorado; la ruta se pasa por argumento.
+  worktree-tanda.mjs --cerrar <Id> --foto <fichero> --mensaje "<texto>" [--tablero <ruta>]
+      Cierra una tanda en serie. Calcula los caminos que cambiaron desde la foto (lo que ya estaba
+      en ella, de otras sesiones, no cuenta ni se commitea), sale 4 sin tocar nada si alguno no esta
+      en la fila <Id> o si no cambio ninguno; si cuadra, pasa la fila a HECHA, hace git add y
+      commitea por pathspec ("<Id> <mensaje>") las rutas y el tablero. No corre la comprobacion
+      de la tanda: esa la corre el coordinador antes.
   worktree-tanda.mjs --listar     worktrees distintos del principal: 0 si no hay, 4 si hay
-  worktree-tanda.mjs --prueba     prueba en un repositorio temporal, cinco casos
+  worktree-tanda.mjs --prueba     prueba en un repositorio temporal, siete casos
   worktree-tanda.mjs --ayuda
 Salidas: 0 bien, 1 error interno, 2 uso, 4 precondicion sin tocar nada.`;
 
@@ -119,6 +128,58 @@ function integrar(args) {
   console.log(`${id} integrada: ${ficheros.join(', ')}`);
 }
 
+function lineasPorcelain(cwd) {
+  const o = git(cwd, ['status', '--porcelain', '--untracked-files=all'], { crudo: true }).out;
+  return o ? o.split('\n').filter(Boolean) : [];
+}
+const rutaDeLinea = (l) => l.slice(3).replace(/^.* -> /, '').replace(/^"|"$/g, '');
+
+function foto(args) {
+  const f = opcion(args, '--foto');
+  if (args.length) throw new Salida(2, `argumento sobrante: ${args.join(' ')}`);
+  if (!f) throw new Salida(2, 'uso: --foto <fichero>');
+  const top = git(process.cwd(), ['rev-parse', '--show-toplevel']).out;
+  writeFileSync(f, lineasPorcelain(top).join('\n') + '\n');
+  console.log(`foto guardada en ${f}`);
+}
+
+function cerrar(args) {
+  const id = opcion(args, '--cerrar');
+  const f = opcion(args, '--foto');
+  const mensaje = opcion(args, '--mensaje');
+  let tab = opcion(args, '--tablero');
+  if (args.length) throw new Salida(2, `argumento sobrante: ${args.join(' ')}`);
+  if (!id || !f || !mensaje) throw new Salida(2, 'uso: --cerrar <Id> --foto <fichero> --mensaje "<texto>" [--tablero <ruta>]');
+  const top = git(process.cwd(), ['rev-parse', '--show-toplevel']).out;
+  const cwd = process.cwd();
+  let pref = path.relative(realpathSync(top), realpathSync(cwd)).split(path.sep).join('/');
+  if (pref) pref += '/';
+  if (!existsSync(f)) throw new Salida(4, `no existe la foto ${f}`);
+  if (!tab) {
+    tab = ['_meta/tablero-tandas.md', 'coordinacion/tablero-tandas.md'].find((t) => existsSync(path.join(cwd, t)));
+    if (!tab) throw new Salida(4, `no hay tablero en ${cwd} (_meta/tablero-tandas.md ni coordinacion/tablero-tandas.md)`);
+  }
+  const tabAbs = path.resolve(cwd, tab);
+  if (!existsSync(tabAbs)) throw new Salida(4, `no existe el tablero ${tab}`);
+  const tabRel = path.relative(realpathSync(top), realpathSync(tabAbs)).split(path.sep).join('/');
+  const ficheros = ficherosDeFila(readFileSync(tabAbs, 'utf8'), id).map((r) => pref + r);
+
+  // cambiado desde la foto: linea nueva o con otro estado (el mismo camino con la misma marca no cuenta)
+  const antes = new Set(readFileSync(f, 'utf8').split('\n').filter(Boolean));
+  const fotoRel = (() => { try { return path.relative(realpathSync(top), realpathSync(f)).split(path.sep).join('/'); } catch { return null; } })();
+  const cambiados = [...new Set(lineasPorcelain(top).filter((l) => !antes.has(l)).map(rutaDeLinea))]
+    .filter((c) => c !== tabRel && c !== fotoRel);
+  const sobran = cambiados.filter((c) => !dentro(c, ficheros));
+  if (sobran.length) throw new Salida(4, `cambios fuera de la tanda ${id}:\n${sobran.join('\n')}\nla celda Ficheros de la fila ${id} tiene que listar esas rutas literales, desde la carpeta desde la que se corre (ciclo_de_tandas)`);
+  if (!cambiados.length) throw new Salida(4, `la tanda ${id} no cambio ningun fichero desde la foto`);
+
+  const t = spawnSync(process.execPath, [TABLERO_JS, '--estado', id, 'HECHA', '--tablero', tabAbs], { cwd: top, encoding: 'utf8' });
+  if (t.status !== 0) throw new Salida(1, `tablero.mjs --estado fallo: ${(t.stderr || '').trim()}`);
+  git(top, ['add', '--', ...cambiados, tabRel]);
+  git(top, ['commit', '-q', '-m', `${id} ${mensaje}`, '--', ...cambiados, tabRel]);
+  console.log(`${id} cerrada: ${cambiados.join(', ')}`);
+}
+
 function listar(args) {
   if (args.length > 1) throw new Salida(2, `argumento sobrante: ${args.slice(1).join(' ')}`);
   const top = git(process.cwd(), ['rev-parse', '--show-toplevel']).out;
@@ -151,7 +212,8 @@ function prueba(args) {
       '# Tablero', '', 'Plan: `plan.md`', 'Paradas: ninguna', '',
       '| Id | Bloque | Objetivo | Ficheros | Ejecuta | Depende de | Estado |',
       '|---|---|---|---|---|---|---|',
-      fila('T01', 'a.txt'), fila('T02', 'b.txt'), fila('T03', 'c.txt'), fila('T05', 'e.txt'), ''].join('\n'));
+      fila('T01', 'a.txt'), fila('T02', 'b.txt'), fila('T03', 'c.txt'), fila('T05', 'e.txt'),
+      fila('T06', 'f.txt'), fila('T07', 'g.txt'), ''].join('\n'));
     spawnSync('mkdir', ['-p', path.join(repo, 'esp/a1/coordinacion')]);
     escribir('esp/a1/coordinacion/tablero-tandas.md', [
       '# Tablero', '', 'Plan: `plan.md`', 'Paradas: ninguna', '',
@@ -160,6 +222,7 @@ function prueba(args) {
       fila('T04', 'd.txt'), ''].join('\n'));
     escribir('esp/a1/d.txt', 'd\n'); escribir('e.txt', 'e\n');
     escribir('a.txt', 'a\n'); escribir('b.txt', 'b\n'); escribir('c.txt', 'c\n');
+    escribir('f.txt', 'f\n'); escribir('g.txt', 'g\n'); escribir('o.txt', 'o\n');
     g(repo, 'add', '.'); g(repo, 'commit', '-q', '-m', 'inicial');
     const nuevoWt = (n) => {
       const p = path.join(dir, `wt-${n}`);
@@ -221,6 +284,33 @@ function prueba(args) {
       r.status === 2 && g(repo, 'rev-parse', 'HEAD').out === h5
       && g(repo, 'status', '--porcelain').out === '' && existsSync(wt5),
       `rc=${r.status} ${r.stderr}`);
+
+    // 6. cierre en serie bueno: solo lo de la tanda, y lo de otra sesion (ya en la foto) se queda sin commitear
+    const foto = path.join(dir, 'foto.txt');
+    escribir('o.txt', 'o de otra sesion\n');
+    r = run(['--foto', foto]);
+    const rFoto = r.status;
+    escribir('f.txt', 'f cambiado\n');
+    const h6 = g(repo, 'rev-parse', 'HEAD').out;
+    r = run(['--cerrar', 'T06', '--foto', foto, '--mensaje', 'cierre']);
+    caso('cierre en serie bueno: commit solo con la tanda y el tablero',
+      rFoto === 0 && r.status === 0 && g(repo, 'rev-parse', 'HEAD').out !== h6
+      && g(repo, 'log', '-1', '--format=%s').out === 'T06 cierre'
+      && g(repo, 'show', '--name-only', '--format=', 'HEAD').out.split('\n').sort().join(',') === '_meta/tablero-tandas.md,f.txt'
+      && /\| T06 .*\[HECHA\] \|/.test(tabRaiz())
+      && g(repo, 'status', '--porcelain').out === 'M o.txt',
+      `rc=${r.status} ${r.stderr}`);
+
+    // 7. cierre con un fichero de mas: salida 4, sin commit y sin tocar nada
+    r = run(['--foto', foto]);
+    escribir('g.txt', 'g cambiado\n'); escribir('intruso2.txt', 'x\n');
+    const h7 = g(repo, 'rev-parse', 'HEAD').out;
+    const tab7 = tabRaiz();
+    r = run(['--cerrar', 'T07', '--foto', foto, '--mensaje', 'cierre']);
+    caso('cierre con un fichero de mas: salida 4, sin commit y tablero intacto',
+      r.status === 4 && g(repo, 'rev-parse', 'HEAD').out === h7 && tabRaiz() === tab7
+      && /intruso2\.txt/.test(r.stderr) && g(repo, 'status', '--porcelain').out.includes('g.txt'),
+      `rc=${r.status} ${r.stderr}`);
   } catch (e) {
     console.log(`[FALLA] error en la prueba: ${e.message}`); fallos++;
   } finally {
@@ -234,6 +324,8 @@ function main() {
   const modo = args[0];
   if (modo === '--ayuda') { console.log(AYUDA); return; }
   if (modo === '--integrar') return integrar(args);
+  if (modo === '--foto') return foto(args);
+  if (modo === '--cerrar') return cerrar(args);
   if (modo === '--listar') return listar(args);
   if (modo === '--prueba') return prueba(args);
   throw new Salida(2, AYUDA);
