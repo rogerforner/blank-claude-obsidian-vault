@@ -2,7 +2,7 @@
 name: Orquestación de sesiones por herramienta — el coordinador divide, no lo ejecuta todo
 description: El coordinador coordina: planifica, reparte en tandas pequeñas y verifica. El trabajo no trivial pasa por un plan que el coordinador lee y corrige antes de ejecutar, y cada tanda la hace un subagente ejecutora con informe acotado y parada por bloque (ciclo de tandas). claude -p queda para otra raíz u otro perfil, y entonces el cwd con el que se lanza la hija es parte del contrato (decide reglas, hooks y raíz de búsqueda). Asigna cada pieza a la mejor herramienta (Claude Code CLI, Desktop, cowork, chat) y no ejecuta el trabajo voluminoso en su propia sesión, para no agotar su contexto.
 type: doctrine
-version: 1.35
+version: 1.36
 index_summary: >-
   El coordinador coordina, no ejecuta: planifica, reparte en tandas pequeñas a subagentes ejecutora y verifica, para no agotar su contexto. `claude -p` solo para otra raíz u otro perfil, y entonces el cwd y el perfil se declaran al lanzar. Los coordinadores se hablan por el canal; las ejecutoras no. Si parece faltar otro coordinador, es síntoma: revisa si eran dos asuntos.
 ---
@@ -158,6 +158,8 @@ Esto vale para las ejecutoras lanzadas con `claude -p`; un subagente no tiene to
 | Coordinadores (general y de asunto) | **`accept`** | El canal es para **coordinar**, y es lo que ellos hacen |
 | Ejecutoras y consultor | **`refuse`** | Se rigen por un **contrato cerrado**: si aceptan mensajes a mitad, su encargo deja de ser el que se les dio y el resultado ya no es verificable contra la especificación. *(Los perfiles del pack opcional siguen el mismo criterio: todo lo que no coordina, rechaza.)* |
 | Todos | `isolatePeerMachines: true` | Un mensaje **no sale de la máquina sin aprobación**. Entre sesiones locales viaja por un socket sin pasar por servidores de nadie → [[soberania_datos_local]] |
+
+**Toda sesión lanzada con `claude -p` se nombra con `--name`:** sin él, el sistema deriva el nombre de la carpeta y varias tandas del mismo asunto son indistinguibles en el listado. Nombrarla no la abre a mensajes, y con `refuse` tampoco llega el aviso de sesión inactiva: el precio de que la tanda sea verificable es ir a buscar su resultado al disco.
 
 **`accept` y no "retenido", y el motivo no es comodidad.** El modo retenido abre un diálogo de aprobación por cada mensaje: **deja a la persona de cuello de botella, solo que aprobando en vez de copiando**. Si lo que se quiere es que las sesiones dejen de necesitar un cartero, retener no lo consigue.
 
