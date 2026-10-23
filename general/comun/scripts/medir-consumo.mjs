@@ -17,15 +17,16 @@
 //
 // PRECIOS: dolares por millon de tokens. Son un PROXY de coste relativo entre modelos
 // ("$eq"), no una factura: el vault opera por suscripcion. Origen: general/comun/modelos-y-esfuerzo.md
-// seccion 1. Escritura de cache: 1,25 x entrada a 5 min y 2 x entrada a 1 h [INFERIDO].
-// Haiku: lectura de cache a 0,1 x entrada [INFERIDO].
+// seccion 1. Escritura de cache: 1,25 x entrada a 5 min y 2 x entrada a 1 h [OFICIAL, verificado 2026-10-23,
+// platform.claude.com/docs/en/about-claude/pricing]. Lectura de cache: 0,05 x en Opus y Sonnet 5.5, 0,1 x en Haiku 5.5,
+// 0,025 x en Fable 5.1. Haiku 5.5 multiplica por 5 todos sus precios si el prompt supera 100k tokens.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
 const PRECIOS = {
   'claude-opus-5-5':   { ent: 4,    sal: 20,  lec: 0.20 },
-  'claude-sonnet-5-5': { ent: 2,    sal: 10,  lec: 0.20 },
+  'claude-sonnet-5-5': { ent: 2,    sal: 10,  lec: 0.10 },
   'claude-haiku-5-5':  { ent: 0.10, sal: 0.50, lec: 0.01 },
   'claude-fable-5-1':  { ent: 10,   sal: 50,  lec: 0.25 },
 };
@@ -55,10 +56,13 @@ const fmtD = (n, d = 2) => n.toFixed(d).replace('.', ',');
 const diaLocal = (ts) => new Date(ts).toLocaleDateString('sv'); // AAAA-MM-DD en hora local
 
 function costes(u, modelo) {
-  const p = PRECIOS[modelo] || PRECIO_DEFECTO;
+  const base = PRECIOS[modelo] || PRECIO_DEFECTO;
   const cc = u.cache_creation || {};
   const w1 = cc.ephemeral_1h_input_tokens ?? 0;
   const w5 = cc.ephemeral_5m_input_tokens ?? Math.max(0, (u.cache_creation_input_tokens || 0) - w1);
+  const prompt = (u.input_tokens || 0) + (u.cache_creation_input_tokens ?? (w1 + w5)) + (u.cache_read_input_tokens || 0);
+  const k = modelo === 'claude-haiku-5-5' && prompt > 100000 ? 5 : 1; // Haiku 5.5: x5 por encima de 100k de prompt
+  const p = { ent: base.ent * k, sal: base.sal * k, lec: base.lec * k };
   const sinLect = ((u.input_tokens || 0) * p.ent + w5 * p.ent * 1.25 + w1 * p.ent * 2 + (u.output_tokens || 0) * p.sal) / 1e6;
   const lect = ((u.cache_read_input_tokens || 0) * p.lec) / 1e6;
   return { sinLect, total: sinLect + lect, w5, w1 };

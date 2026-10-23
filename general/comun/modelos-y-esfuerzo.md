@@ -2,7 +2,7 @@
 name: Modelos y nivel de esfuerzo — catálogo, curvas y tabla de situaciones
 description: Documento de REFERENCIA (no doctrina) con los hechos de plataforma que cambian solos: qué modelos hay, qué niveles de esfuerzo admite cada uno, cuánto rinde cada nivel, qué cuesta cambiar de modelo o de esfuerzo a media sesión, y la tabla situación → modelo → esfuerzo. Lo consulta el coordinador antes de repartir trabajo y el director antes de abrir una sesión. El CRITERIO vive en [[modelo_por_tarea]]; aquí viven los DATOS y su origen.
 type: knowledge
-version: 2.3
+version: 2.4
 caduca: 2026-12-31
 ---
 
@@ -49,7 +49,7 @@ caduca: 2026-12-31
 |---|---|---|---|---|
 | **Fable 5.1** (`claude-fable-5-1`) | 53 | $10 / $50 (lectura de caché $0,25) | 1M / 128K | low–max; `high` por defecto en la API |
 | **Opus 5.5** (`claude-opus-5-5`, 2026-09-22) | **58** (57,6) | $4 / $20 (caché $0,20) | 1M / 128K *(300K solo en la Batch API, beta: no cuenta)* | low, medium, high, xhigh, max; **API: `medium`**; **en este cliente con `effortLevel: "high"`, se aplica `high`** `[MEDIDO 2026-10-04]`; pensamiento adaptativo siempre activo |
-| **Sonnet 5.5** (`claude-sonnet-5-5`, 2026-09-28) | **56** (56,0) | $2 / $10 (caché $0,20) | 1M / 128K | low, medium, high, xhigh, max; API: `high`; **por defecto en Claude Code sin ajuste: `[POR MEDIR]`** (el informe dice `medium`, el contraste no lo confirma) |
+| **Sonnet 5.5** (`claude-sonnet-5-5`, 2026-09-28) | **56** (56,0) | $2 / $10 (caché $0,10 `[OFICIAL, verificado 2026-10-23]`) | 1M / 128K | low, medium, high, xhigh, max; API: `high`; **por defecto en Claude Code sin ajuste: `[POR MEDIR]`** (el informe dice `medium`, el contraste no lo confirma) |
 | **Haiku 5.5** (`claude-haiku-5-5`) — **solo mecánica literal, siempre `high`** | sin dato propio: Artificial Analysis 38 en `high`, 34 en `medium` (frente a 35,8 de Sonnet 5.5 `low`) `[TERCERO, vía pd-dev; sin contrastar]` | 0,10 $ / 0,50 $ `[TERCERO, vía pd-dev; sin contrastar; cifra rara frente a Haiku 4.5, no es oficial]` | 1M / 128K `[TERCERO, vía pd-dev; sin contrastar]` | low–max `[TERCERO, vía pd-dev; sin contrastar]`; en servicio `[MEDIDO 2026-10-14]`; **`effort: high` aceptado en un subagente y respondiendo `claude-haiku-5-5` `[MEDIDO 2026-10-22]`** |
 | Haiku 4.5 — **fuera del método** | sin dato en v4.3.2 | $1 / $5 | **200K** / 64K | **NINGUNO** |
 | *Opus 5 (legado)* | 51 | $5 / $25 *(del informe; el contraste no lo verifica)* | 1M / 128K | low–max; `high` por defecto en la API |
@@ -157,17 +157,17 @@ Citas de la documentación (versión de septiembre; la del modelo sigue vigente,
 **Cambiar de esfuerzo: lo que dicen las fuentes, sin mezclarlas.**
 
 - **API** `[OFICIAL, contrastado 2026-10-04]`: cambiar el `effort` de nivel superior entre peticiones invalida la caché de prompts. Solo el cambio por mensaje (beta, cabecera `mid-conversation-output-config-2026-07-01`) la conserva, y en Sonnet 5.5 no vale con `between_tools`. Es solo de la API, que aquí está prohibida.
-- **Claude Code**: el informe cita la documentación del cliente diciendo que en Opus 5.5, Sonnet 5.5 y Fable 5.1 cambiar el esfuerzo conserva la caché `[OFICIAL, vía informe; el contraste no lo cubre]`. Ninguna sesión de este vault lo ha medido: `[POR MEDIR]`. No se da por cierto ni en un sentido ni en el otro.
+- **Claude Code con suscripción** `[OFICIAL, verificado 2026-10-23, code.claude.com/docs/en/prompt-caching]`: cambiar el esfuerzo en Opus 5.5, Sonnet 5.5, Haiku 5.5 y Fable 5.1 conserva la caché; en otros modelos la invalida. Cambiar de modelo, incluidos `opusplan` y el campo `model` de las skills, no la conserva.
 
-> **DECISIÓN DEL DIRECTOR (2026-09-02), que se mantiene: el esfuerzo NO se cambia a media sesión, en ningún modelo.** Si hace falta otro esfuerzo: se pide el relevo, se hace `/clear` y se arranca de nuevo con el que toque. El informe proponía reabrirla porque la caché por esfuerzo ya no invalidaría; el contraste lo desmiente para la API y para Claude Code no hay medición, así que la regla y su motivo siguen en pie.
+> **DECISIÓN DEL DIRECTOR (2026-09-02), que se mantiene: el esfuerzo NO se cambia a media sesión, en ningún modelo.** Si hace falta otro esfuerzo: se pide el relevo, se hace `/clear` y se arranca de nuevo con el que toque. En Claude Code con suscripción y modelos 5.5 el cambio ya no cuesta caché; la regla se mantiene por el motivo de diseño de abajo, no por la caché.
 
-**El motivo es de diseño y no depende de cómo salga esa medición:** una excepción que depende de la versión del cliente, de un modelo concreto y de una beta es una regla que a veces se cumple, y las que a veces no se cumplen fallan el día que importa. Trabajar siempre igual gana a trabajar óptimamente a veces. A eso se suman dos costes que no dependen del esfuerzo: cambiar de modelo reprocesa siempre, y en Fable 5.1, Opus 5.5 y Sonnet 5.5 los bloques de pensamiento valen solo en la conversación exacta que los produjo `[OFICIAL, contraste :54]`. El gesto alternativo es barato: `/clear` no cuesta nada y el estado vive en ficheros que la sesión nueva relee.
+**El motivo es de diseño y no depende de la caché:** una excepción que depende de la versión del cliente, de un modelo concreto y de una beta es una regla que a veces se cumple, y las que a veces no se cumplen fallan el día que importa. Trabajar siempre igual gana a trabajar óptimamente a veces. A eso se suman dos costes que no dependen del esfuerzo: cambiar de modelo reprocesa siempre, y en Fable 5.1, Opus 5.5 y Sonnet 5.5 los bloques de pensamiento valen solo en la conversación exacta que los produjo `[OFICIAL, contraste :54]`. El gesto alternativo es barato: `/clear` no cuesta nada y el estado vive en ficheros que la sesión nueva relee.
 
 **Lo mismo vale para `system` y `tools`.** Cambiar el fichero de reglas (`CLAUDE.md`), los hooks o las herramientas a mitad de una tanda larga invalida caché y bloques de pensamiento `[OFICIAL, contraste :54]`: esos cambios se hacen entre tandas, no dentro de una.
 
 ### 3.2 Lo que cuesta, en números
 
-*Sesión de 150k de contexto en Opus 5.5. Aritmética directa con la lectura de caché contrastada (0,20 $/MTok) y con los múltiplos de escritura de la documentación anterior (1,25× a 5 minutos, 2× a una hora), que no se han recontrastado para la 5.5 `[INFERIDO]`.*
+*Sesión de 150k de contexto en Opus 5.5. Aritmética directa con la lectura de caché de Opus 5.5 (0,20 $/MTok) y con los múltiplos de escritura de la documentación anterior (1,25× a 5 minutos, 2× a una hora), que no se han recontrastado para la 5.5 `[INFERIDO]`.*
 
 | Qué haces | Coste de ese turno |
 |---|---|
@@ -272,6 +272,18 @@ Haiku ya no está en el método, pero el argumento vale para cualquier modelo m�
 
 **Hay límites semanales propios por familia** además del compartido: *"You've hit your Opus limit"* y *"You've hit your Sonnet limit"* (`seven_day_opus` y `seven_day_sonnet` en el SDK) `[OFICIAL, vía informe; sin contrastar]`. **Su tamaño no se publica.** Si algo frena este vault, será el de la familia con más uso y no la ventana corta. Repartir trabajo hacia Sonnet alivia el límite de Opus aunque no reduzca el compartido en la misma proporción `[INFERIDO]`.
 
+**Pesos de cada tipo de token en la cuota Max** (unidad: la entrada sin caché del mismo modelo = 1; informe de Deep Research del 2026-10-23 (E32); fuentes de la comunidad: wokey.ai/claude-usage-limits y /claude-code-cache, GitHub anthropics/claude-code #24147 y #103376, SemiAnalysis del 2026-10-05). Anthropic no publica pesos: todo lo de la tabla es `[COMUNIDAD]` salvo lo que se indica.
+
+| Tipo de token | Opus 5.5 | Sonnet 5.5 | Haiku 5.5 | Fable 5.1 |
+|---|---|---|---|---|
+| Entrada sin caché | 1 | 1 | 1 | 1 |
+| Salida | ≈4–7 | no documentado | no documentado | no documentado |
+| Lectura de caché | ≈0 | no documentado | no documentado | no documentado |
+| Escritura a 5 min | ≈1 | no documentado | no documentado | no documentado |
+| Escritura a 1 h | no documentado (≈1 si no se distingue) | no documentado | no documentado | no documentado |
+
+El conflicto sigue abierto: anthropics/claude-code #24147 (2026-09-02) afirmaba que las lecturas contaban a peso completo. Fable tiene un tope propio de hasta el 50 % del semanal, dentro del común `[OFICIAL, verificado 2026-10-23]`. El semanal de Max 20x equivale a unas 8 ventanas de 5 h `[COMUNIDAD]`. Para cerrar los huecos, calibrar con `node general/comun/scripts/medir-consumo.mjs --calibrar`.
+
 **[A CONFIRMAR] El estado real de la cuota lo comprueba el director con `/usage` en sesión interactiva; el día a día se lee de la línea de estado ([[higiene_contexto_y_tokens]]).** El informe afirma que la cuota ya no es la restricción activa; la última medición propia es del **2026-08-28** (semanal 11 %, ventana de 5 h 20 %, Fable 0 %), anterior a Opus 5.5, a la subida de los límites de 5 horas y al reinicio de límites. **No se propaga la cifra del informe sin comprobarla aquí.** Comparar `/usage` antes y después de un bloque de tandas con esa medición es la medida válida del consumo dentro de la suscripción.
 
 **Lo que sí es seguro:** el recargo por contexto largo ya no existe (eliminado el 2026-03-13 para los modelos vigentes). **El coste de las sesiones largas no es de tarifa: es de higiene de contexto** (§4).
@@ -303,3 +315,5 @@ Haiku ya no está en el método, pero el argumento vale para cualquier modelo m�
 
 *v2.0 (2026-10-04) — refresco para el método 5.5. Catálogo y curvas de Opus 5.5 y Sonnet 5.5 en la escala v4.3.2 (§1, §2); la caché por esfuerzo se matiza (API invalida, Claude Code sin medir) y la regla de no cambiarlo se mantiene por diseño (§3); tabla por situación con planificador, ejecutora y ejecutora-mecanica (§5); precedencia de modelo y esfuerzo en subagentes, medida (§6.1); vetos de `/fast`, Fable en `-p` y `ultracode` (§7). Haiku sale del método.*
 *v2.3 (2026-10-22) — T11: la cuota se lee de la línea de estado; `/usage` lo comprueba el director.*
+
+*v2.4 (2026-10-23) — E32 T07: lectura de caché de Sonnet 5.5 a $0,10, el esfuerzo conserva la caché en Claude Code con suscripción y modelos 5.5 (§3.1), y tabla de pesos de cuota Max con su etiqueta de fuente (§6.2).*
