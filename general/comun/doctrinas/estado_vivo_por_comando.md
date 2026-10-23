@@ -4,7 +4,7 @@ description: El estado vivo de cada coordinador (qué queda abierto y de quién 
 type: doctrine
 version: 1.2
 index_summary: >-
-  **El estado vivo de cada coordinador es un fichero de datos** —qué queda abierto y de quién es— que **se consulta y se cambia por comando** (`estado.mjs`); el porqué sigue en prosa, en la cola y en `docs/`. **Un pendiente vive en el estado o en la prosa, nunca en los dos**, y se actualiza **en el mismo commit que el trabajo**. Cada coordinador escribe solo el suyo y lee el de otro con `--de` antes de mandarle un handoff. El **hook vuelca la vista** al arrancar (la cola ya no se lee entera), la **regla 12 del verificador** comprueba los invariantes, la doble fuente y los pendientes en prosa, y el **DoD** mide la vista contra su techo. Un activo del director lleva `caduca`; lo que espera un disparador sin fecha va `diferido`; la `nota` es corta.
+  El estado vivo de cada coordinador, lo que queda abierto y de quién es, es un fichero de datos que se consulta y se cambia por comando (`estado.mjs`); el porqué sigue en prosa. Un pendiente vive en el estado o en la prosa, nunca en los dos, y se actualiza en el mismo commit que el trabajo. Cada coordinador escribe solo el suyo y lee el de otro con `--de`.
 ---
 
 El estado vivo de un coordinador —qué queda abierto y de quién es— es un fichero de datos que se consulta y se cambia por comando. Existe porque una cola en prosa se lee entera al arrancar, crece con cada frente y mezcla lo abierto con lo cerrado y con el porqué: lo abierto se pierde entre párrafos y el arranque cuesta cada vez más. Con un fichero de datos, el arranque paga solo la vista de lo activo, y el porqué se abre cuando hace falta.

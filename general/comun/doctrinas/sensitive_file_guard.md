@@ -4,7 +4,7 @@ description: La config local del asunto la lee y edita la IA sin restricción; l
 type: convention
 version: 2.4
 index_summary: >-
-  La config local del asunto es editable **sin restricción**; la lista de denegación solo bloquea credenciales de máquina (`~/.ssh`, `~/.aws`, el llavero de macOS, …). Los datos personales **sí** viven en el vault, pero **no salen de la máquina**. Tandas que tocan masivamente `.claude/`/hooks → flag al inicio. **Ámbito estricto: secretos y credenciales reales; NO ampara proteger el trabajo** ni la configuración de calidad, y el flag de permisos amplios es **lo normal** en local.
+  La config local del asunto se edita sin restricción; la lista de denegación solo bloquea credenciales de máquina como `~/.ssh`, `~/.aws` o el llavero. Los datos personales viven en el vault y no salen de la máquina. Las tandas que tocan masivamente `.claude/` o hooks se lanzan con el flag de permisos amplios desde el inicio. El ámbito es solo secretos y credenciales reales, no proteger el trabajo.
 ---
 
 ## Ámbito ESTRICTO: secretos y credenciales reales, nada más

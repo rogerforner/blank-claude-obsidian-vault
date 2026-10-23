@@ -4,7 +4,7 @@ description: Los prompts .md para sesiones operativas usan markdown limpio (# he
 type: convention
 version: 1.4
 index_summary: >-
-  Prompts `.md`: `#` heading 1, solo headings, sin envoltorio ``` exterior, sin separadores ASCII, sin tiempos ni metadiscurso. **SIN EMOJIS con ámbito acotado (v1.2)**: se exige y se verifica en el **catálogo, las plantillas, los ficheros de reglas e identidad** (`CLAUDE.md`, `README.md`, charters, índices) y en lo que se **entrega fuera** — estados como etiquetas `[OK]`/`[PENDIENTE]`, el énfasis lo da el markdown. **En las zonas de trabajo (cola, bitácora, estudios, coordinación, informes, chat) NO se persiguen** y no se gasta un token en quitarlos. Flechas, matemáticos y dibujo de árboles **no** son emojis en ninguna parte; limpieza siempre oportunista, nunca dedicada.
+  Los prompts `.md` llevan `#` heading 1, solo headings, sin envoltorio ``` exterior, sin separadores ASCII y sin tiempos ni metadiscurso. Sin emojis en el catálogo, las plantillas, los ficheros de reglas e identidad y lo que se entrega fuera; en las zonas de trabajo no se persiguen. Flechas, símbolos matemáticos y árboles no son emojis. La limpieza es oportunista, nunca dedicada.
 ---
 
 Los prompts `.md` que el coordinador redacta para sesiones operativas usan **markdown limpio**, para facilitar que el director los copie íntegros y que el agente los lea sin ruido.

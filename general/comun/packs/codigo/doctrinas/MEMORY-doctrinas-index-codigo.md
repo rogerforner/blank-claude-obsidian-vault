@@ -6,7 +6,7 @@
 
 ## Puertas de calidad y pruebas
 
-- [Gates de calidad locales](gates_de_calidad_locales.md) — *"las pruebas pasan"* deja de ser una afirmación asumida y pasa a ser **una puerta ejecutada** que impide cerrar la tarea en rojo. `PostToolUse` para lo rápido por edición · **el hook `Stop` corre por TURNO**, así que **verifica sello + huella** en vez de ejecutar el DoD (y comprueba `stop_hook_active`, o hay bucle infinito) · pre-commit para secretos e integridad. El `PreToolUse` **solo ve `Edit`/`Write`**: una escritura por Bash lo esquiva ⇒ los invariantes se comprueban también sobre el **estado final** en el DoD. **Mutation score, no cobertura**, y el agente **nunca edita sus criterios de aprobación**.
+- [Gates de calidad locales](gates_de_calidad_locales.md) — Que las pruebas pasen se ejecuta como una puerta que impide cerrar la tarea en rojo, no se asume. `PostToolUse` para lo rápido por edición, `Stop` que verifica sello y huella en vez de ejecutar el DoD, y pre-commit para secretos e integridad. El `PreToolUse` solo ve `Edit` y `Write`, así que los invariantes se comprueban también sobre el estado final. Mutation score, no cobertura.
 - [Estrategia de pruebas por tipo de proyecto](estrategia_de_pruebas_por_tipo_de_proyecto.md) — Qué se le exige a cada asunto según su perfil: **greenfield estricto** (todo bloqueante desde el día 1), **legacy en contención** (solo el código nuevo, baseline que solo decrece, no tocar el legacy) e **infra** (contratos declarativos y smoke reproducible). La criticidad es la variable de gobierno, y **el humano revisa la especificación, no la implementación**.
 
 ## Git del asunto: ramas, push y proveedor de hosting
@@ -25,7 +25,7 @@
 
 ## Contenedores
 
-- [Verificar en el runtime real, no en el host](verificar_en_el_runtime_no_en_el_host.md) — El filesystem que ves no es el que ejecuta: un árbol de dependencias incompleto en el host **NO** significa que la app esté rota (el contenedor las tiene todas), y su presencia tampoco prueba que el runtime las cargue. Comprueba **dentro**, no "arregles" el host; las librerías servidas desde un host externo son **ilegibles** para un agente, así que lo que afirme de ellas es suposición; "verificado en código" ≠ verificado en el runtime.
+- [Verificar en el runtime real, no en el host](verificar_en_el_runtime_no_en_el_host.md) — El filesystem que ves no es el que ejecuta la aplicación. Un árbol de dependencias incompleto en el host no prueba que la app esté rota, ni su presencia prueba que el runtime las cargue. Antes de decir que algo falta, localiza dónde se ejecuta y comprueba dentro; no arregles el host para que se parezca al runtime.
 - [Higiene de disco en stacks Podman/Compose](higiene_disco_podman.md) — Los stacks acumulan disco en silencio. **Medir antes de limpiar** (`podman system df`), **backup verificado antes de destruir**, poda quirúrgica (nunca `system prune -a --volumes` por costumbre), proteger imágenes pesadas y volúmenes con datos, rotar backups.
 
 ## Además del catálogo

@@ -4,7 +4,7 @@ description: Los documentos transversales a varios asuntos (identificativos, de 
 type: convention
 version: 1.2
 index_summary: >-
-  Los documentos transversales a varios asuntos (identificativos, de un inmueble, de un bien) viven en un **árbol propio del vault**, al mismo nivel que el catálogo y los espacios: `general/` no admite datos personales y el contenedor de un asunto no es el sitio de lo que sirve a varios. Su README lleva `tipo: archivo`. Los asuntos lo **enlazan y nunca lo copian**, y lo ven en **solo lectura**. Se versiona la estructura y sus índices, no los originales. **El nombre del árbol debe ser compuesto**: el glob del deny es independiente del nombre del vault, así que `archivo` o `expediente` dejarían en solo lectura cualquier carpeta homónima dentro de un asunto. Se crea con el primer asunto que lo necesite, no antes.
+  Los documentos que sirven a varios asuntos viven en un árbol propio del vault, al mismo nivel que el catálogo y los espacios, con `tipo: archivo` en su README. Los asuntos lo enlazan por ruta relativa y nunca lo copian; lo ven en solo lectura. Se versiona la estructura y los índices, no los originales. El nombre del árbol debe ser compuesto. Se crea con el primer asunto que lo necesite.
 ---
 
 Un vault documental acumula papeles que **no pertenecen a ningún asunto en concreto**: los identificativos de cada persona, los de un inmueble, los de un vehículo, los de una entidad. El mismo documento lo necesitan un expediente de hoy y otro de dentro de dos años.

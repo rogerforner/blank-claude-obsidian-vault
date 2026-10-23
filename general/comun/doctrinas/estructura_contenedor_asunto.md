@@ -4,7 +4,7 @@ description: Todo asunto vive en <espacio>/<asunto>/ con la MISMA estructura (sl
 type: convention
 version: 2.1
 index_summary: >-
-  Todo asunto en `<espacio>/<asunto>/` con la misma estructura (raíz de coordinación, `.claude/` con un settings por rol, docs/estudios/memoria/coordinacion). Lo recibido o entregado es intocable; el documento real gana a la nota. Instancia canónica: la plantilla del inicializador. **`memoria/` = doctrinas PROPIAS del asunto**: las del catálogo se **leen**, no se copian; un `[[wikilink]]` sin copia local resuelve al catálogo y **no es un olvido**; el valor por defecto es **no copiar**, y quien copia asume la resincronización.
+  Todo asunto vive en `<espacio>/<asunto>/` con la misma estructura: raíz de coordinación, `.claude/` con un settings por rol y las subcarpetas docs, estudios, memoria y coordinacion. Lo recibido o entregado es intocable. `memoria/` guarda solo las doctrinas propias del asunto: las del catálogo se leen, no se copian, y un wikilink sin copia local resuelve al catálogo.
 ---
 
 Cada asunto se opera desde un **contenedor uniforme** en `<espacio>/<asunto>/` (**slug = nombre corto y estable del asunto**: `reclamacion-agua-2026`, `obra-cocina`, `renta-2025`, `alquiler-local`). Mismo sitio para lo mismo en todos los asuntos → uno se orienta sin reaprender, y dentro de seis meses también. La **instancia canónica** que se copia al inicializar es `inicializador/plantilla-contenedor-asunto/` (ver [checklist de arranque](../../../inicializador/checklist-arranque.md)).

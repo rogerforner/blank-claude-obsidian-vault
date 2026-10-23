@@ -4,7 +4,7 @@ description: Antes de adoptar cualquier herramienta externa nueva, exigir un cas
 type: doctrine
 version: 1.2
 index_summary: >-
-  Caso de uso concreto YA + 5 criterios + piloto; aplica a estructuras internas preventivas; verificar disponibilidad y condiciones de uso de los recursos externos al inicio. **"Es barato" NO es un caso de uso** —sin dolor concreto, umbral escrito y a esperar—; **una verificación que no bloquea es una opinión con formato de informe**, así que antes de comprar una garantía mira si detiene algo; y **describir el método de memoria en el encargo hace que la investigación proponga construir lo que ya existe**.
+  Antes de adoptar una herramienta externa o una estructura interna preventiva, exige un caso de uso concreto ya presente, cinco criterios y un piloto. Que sea barata no es un caso de uso: sin dolor concreto se escribe el umbral y se espera. Una verificación que no bloquea nada es una opinión con formato de informe. Comprueba al inicio la disponibilidad y las condiciones de los recursos externos.
 ---
 
 Antes de instalar cualquier herramienta externa nueva, exigir un **caso de uso concreto YA presente**, no especulativo. Las adopciones preventivas "porque suena bien" terminan revertidas tras invertir tiempo en instalación y diagnóstico.
