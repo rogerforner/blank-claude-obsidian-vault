@@ -291,11 +291,35 @@ function puertaDoctrinasVersionadas(commits) {
       if (basename(f).startsWith('MEMORY-')) continue;          // el indice es derivado
       const diff = git(['show', '--format=', '--unified=0', c, '--', f]);
       const lineas = diff.split('\n').filter((l) => /^[+-]/.test(l) && !/^([+-][+-][+-])/.test(l));
-      // Cambios que NO exigen subir version: el propio frontmatter derivado y el pie fijo (el historial vive fuera de la ficha).
-      const sustantivo = lineas.some((l) => {
+      // Cambios que NO exigen subir version: el propio frontmatter derivado (`version`, la linea `description:` y el
+      // bloque `index_summary`, que es plegado: la clave y todas las lineas sangradas que le siguen) y el pie fijo
+      // (el historial vive fuera de la ficha). Se mira por NUMERO de linea, en el texto viejo y en el nuevo.
+      const derivadas = (ref) => {
+        let texto = '';
+        try { texto = git(['show', `${ref}:${f}`]); } catch { /* fichero nuevo o borrado: no hay lado */ }
+        const set = new Set(); const t = texto.split('\n');
+        if (t[0] !== '---') return set;
+        let enBloque = false;
+        for (let i = 1; i < t.length && t[i] !== '---'; i++) {
+          if (/^index_summary:/.test(t[i])) { enBloque = true; set.add(i + 1); continue; }
+          if (enBloque && (/^[ \t]/.test(t[i]) || t[i].trim() === '')) { set.add(i + 1); continue; }
+          enBloque = false;
+          if (/^description:/.test(t[i])) set.add(i + 1);
+        }
+        return set;
+      };
+      const viejas = derivadas(`${c}^`); const nuevas = derivadas(c);
+      let nOld = 0; let nNew = 0; let vistoHunk = false;
+      const sustantivo = diff.split('\n').some((l) => {
+        const h = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(l);
+        if (h) { nOld = +h[1]; nNew = +h[2]; vistoHunk = true; return false; }
+        if (!vistoHunk || !/^[+-]/.test(l)) return false;
+        const esMenos = l[0] === '-';
+        const num = esMenos ? nOld++ : nNew++;
         const cuerpo = l.slice(1).trim();
         if (!cuerpo) return false;
-        if (/^version:|^index_summary:|^description:/.test(cuerpo)) return false;
+        if ((esMenos ? viejas : nuevas).has(num)) return false;
+        if (/^version:/.test(cuerpo)) return false;
         if (cuerpo.startsWith('> Pieza de catálogo')) return false;
         return true;
       });

@@ -361,6 +361,28 @@ function casos(c, esp) {
       return R(ok, `raiz: doctrinas ${enRojo(raiz, 'doctrinas al dia')}, sincronia ${enRojo(raiz, 'sincronia con la plantilla')}; esp-uno/a1: doctrinas ${enRojo(asu, 'doctrinas al dia')}, sincronia ${enRojo(asu, 'sincronia con la plantilla')} (se esperaba true, true, false, false)`);
     }],
 
+    ['D5b', () => {
+      // El index_summary es un bloque plegado: cambiar SOLO su texto (y la description) no exige subir la version;
+      // cambiar ademas una linea del cuerpo, si.
+      const toca = (v, cuerpo) => {
+        const doc = readdirSync(path.join(v, 'general', 'comun', 'doctrinas')).find((n) => n.endsWith('.md') && !n.startsWith('MEMORY-'));
+        const f = path.join(v, 'general', 'comun', 'doctrinas', doc);
+        let t = readFileSync(f, 'utf8');
+        const t0 = t;
+        t = t.replace(/(^index_summary: >-\n)((?:[ \t]+.*\n)+)/m, (_, k, b) => k + b.replace(/\n$/, '') + ' Texto nuevo del resumen.\n');
+        t = t.replace(/^description: .*$/m, (l) => l + ' Y mas.');
+        if (cuerpo) t += '\nLinea de prueba que cambia el cuerpo sin subir la version.\n';
+        if (t === t0) return false;
+        writeFileSync(f, t);
+        confirmarGit(v, 'add', '-A'); confirmarGit(v, 'commit', '-q', '-m', 'doctrina: solo frontmatter derivado');
+        return true;
+      };
+      const v1 = c.clon(); const v2 = c.clon();
+      if (!toca(v1, false) || !toca(v2, true)) return 'la ficha de prueba no tiene un bloque index_summary: >- que cambiar';
+      const solo = dod(v1, '.').salida; const con = dod(v2, '.').salida;
+      return R(!enRojo(solo, 'doctrinas al dia') && enRojo(con, 'doctrinas al dia'), `solo bloque+description en rojo=${enRojo(solo, 'doctrinas al dia')} (se esperaba false): ${(puertaDod(solo, 'doctrinas al dia') || '').split('\n')[0]}; con cuerpo en rojo=${enRojo(con, 'doctrinas al dia')} (se esperaba true)`);
+    }],
+
     ['D6', () => {
       const v = c.clon(); estadoValido(v, 'esp-uno/a1', { porque: 'no/existe.md#x' });
       confirmarGit(v, 'add', '-A'); confirmarGit(v, 'commit', '-q', '-m', 'estado con porque roto');
