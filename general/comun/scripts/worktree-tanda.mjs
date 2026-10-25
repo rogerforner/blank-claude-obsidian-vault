@@ -28,7 +28,7 @@ const AYUDA = `Uso:
       commitea por pathspec ("<Id> <mensaje>") las rutas y el tablero. No corre la comprobacion
       de la tanda: esa la corre el coordinador antes.
   worktree-tanda.mjs --listar     worktrees distintos del principal: 0 si no hay, 4 si hay
-  worktree-tanda.mjs --prueba     prueba en un repositorio temporal, ocho casos
+  worktree-tanda.mjs --prueba     prueba en un repositorio temporal, nueve casos
   worktree-tanda.mjs --ayuda
 Salidas: 0 bien, 1 error interno, 2 uso, 4 precondicion sin tocar nada.`;
 
@@ -73,6 +73,18 @@ function aniadibles(cwd, rutas) {
   return rutas.filter((r) => existsSync(path.join(top, r)) || git(top, ['ls-files', '--', r]).out);
 }
 
+// git add de las rutas aniadibles: las que el index ya conoce van con -f (un fichero versionado
+// dentro de una carpeta ignorada, p. ej. .obsidian/, si no hace fallar el add); las no versionadas
+// van sin -f, de modo que una ruta ignorada sigue fallando y no se versiona sin querer.
+function aniadir(cwd, rutas) {
+  const ok = aniadibles(cwd, rutas);
+  const top = git(cwd, ['rev-parse', '--show-toplevel']).out;
+  const conocidas = ok.filter((r) => git(top, ['ls-files', '--', r]).out);
+  const nuevas = ok.filter((r) => !conocidas.includes(r));
+  if (conocidas.length) git(cwd, ['add', '-A', '-f', '--', ...conocidas]);
+  if (nuevas.length) git(cwd, ['add', '-A', '--', ...nuevas]);
+}
+
 function integrar(args) {
   const id = opcion(args, '--integrar');
   const wt = opcion(args, '--worktree');
@@ -110,8 +122,7 @@ function integrar(args) {
   if (ocupados.length) throw new Salida(4, `el principal tiene cambios sin commitear en:\n${ocupados.join('\n')}`);
 
   if (sucios.length) {
-    const aWt = aniadibles(wt, sucios);
-    if (aWt.length) git(wt, ['add', '-A', '--', ...aWt]);
+    aniadir(wt, sucios);
     git(wt, ['commit', '-m', `${id} ${mensaje}`, '--', ...sucios]);
   }
   if (!git(top, ['rev-list', `${base}..${rama}`]).out) throw new Salida(4, 'la rama del worktree no trae cambios');
@@ -128,8 +139,7 @@ function integrar(args) {
   }
 
   // primero el git add de los ficheros (si falla, el tablero sigue intacto); luego la fila y el tablero
-  const aTop = aniadibles(top, ficheros);
-  if (aTop.length) git(top, ['add', '-A', '--', ...aTop]);
+  aniadir(top, ficheros);
   const t = spawnSync(process.execPath, [TABLERO_JS, '--estado', id, 'HECHA', '--tablero', tabAbs], { cwd: top, encoding: 'utf8' });
   if (t.status !== 0) throw new Salida(1, `tablero.mjs --estado fallo: ${(t.stderr || '').trim()}`);
   git(top, ['add', '--', tabRel]);
@@ -185,8 +195,7 @@ function cerrar(args) {
   if (!cambiados.length) throw new Salida(4, `la tanda ${id} no cambio ningun fichero desde la foto`);
 
   // primero el git add de los ficheros (si falla, el tablero sigue intacto); luego la fila y el tablero
-  const aCam = aniadibles(top, cambiados);
-  if (aCam.length) git(top, ['add', '-A', '--', ...aCam]);
+  aniadir(top, cambiados);
   const t = spawnSync(process.execPath, [TABLERO_JS, '--estado', id, 'HECHA', '--tablero', tabAbs], { cwd: top, encoding: 'utf8' });
   if (t.status !== 0) throw new Salida(1, `tablero.mjs --estado fallo: ${(t.stderr || '').trim()}`);
   git(top, ['add', '--', tabRel]);
@@ -227,7 +236,7 @@ function prueba(args) {
       '| Id | Bloque | Objetivo | Ficheros | Ejecuta | Depende de | Estado |',
       '|---|---|---|---|---|---|---|',
       fila('T01', 'a.txt'), fila('T02', 'b.txt'), fila('T03', 'c.txt'), fila('T05', 'e.txt'),
-      fila('T06', 'f.txt'), fila('T07', 'g.txt'), fila('T08', 'h.txt'), ''].join('\n'));
+      fila('T06', 'f.txt'), fila('T07', 'g.txt'), fila('T08', 'h.txt'), fila('T09', '.cfg/a.json'), ''].join('\n'));
     spawnSync('mkdir', ['-p', path.join(repo, 'esp/a1/coordinacion')]);
     escribir('esp/a1/coordinacion/tablero-tandas.md', [
       '# Tablero', '', 'Plan: `plan.md`', 'Paradas: ninguna', '',
@@ -237,7 +246,10 @@ function prueba(args) {
     escribir('esp/a1/d.txt', 'd\n'); escribir('e.txt', 'e\n');
     escribir('a.txt', 'a\n'); escribir('b.txt', 'b\n'); escribir('c.txt', 'c\n');
     escribir('f.txt', 'f\n'); escribir('g.txt', 'g\n'); escribir('h.txt', 'h\n'); escribir('o.txt', 'o\n');
-    g(repo, 'add', '.'); g(repo, 'commit', '-q', '-m', 'inicial');
+    // fichero versionado a la fuerza dentro de una carpeta ignorada (caso 9)
+    spawnSync('mkdir', ['-p', path.join(repo, '.cfg')]);
+    escribir('.gitignore', '.cfg/\n'); escribir('.cfg/a.json', '{}\n');
+    g(repo, 'add', '.'); g(repo, 'add', '-f', '--', '.cfg/a.json'); g(repo, 'commit', '-q', '-m', 'inicial');
     const nuevoWt = (n) => {
       const p = path.join(dir, `wt-${n}`);
       g(repo, 'worktree', 'add', '-q', '-b', `rama-${n}`, p);
@@ -335,6 +347,16 @@ function prueba(args) {
       r.status === 0 && g(repo, 'log', '-1', '--format=%s').out === 'T08 borrado'
       && g(repo, 'show', '--name-status', '--format=', 'HEAD').out.split('\n').sort().join(',') === 'D\th.txt,M\t_meta/tablero-tandas.md'
       && /\| T08 .*\[HECHA\] \|/.test(tabRaiz()) && !existsSync(path.join(repo, 'h.txt')),
+      `rc=${r.status} ${r.stderr}`);
+
+    // 9. cierre en serie de un fichero versionado dentro de una carpeta ignorada
+    r = run(['--foto', foto]);
+    escribir('.cfg/a.json', '{"x":1}\n');
+    r = run(['--cerrar', 'T09', '--foto', foto, '--mensaje', 'ignorada']);
+    caso('cierre en serie con fichero versionado dentro de carpeta ignorada: commit y fila en HECHA',
+      r.status === 0 && g(repo, 'log', '-1', '--format=%s').out === 'T09 ignorada'
+      && g(repo, 'show', '--name-only', '--format=', 'HEAD').out.split('\n').sort().join(',') === '.cfg/a.json,_meta/tablero-tandas.md'
+      && /\| T09 .*\[HECHA\] \|/.test(tabRaiz()),
       `rc=${r.status} ${r.stderr}`);
   } catch (e) {
     console.log(`[FALLA] error en la prueba: ${e.message}`); fallos++;
