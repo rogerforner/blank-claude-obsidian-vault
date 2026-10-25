@@ -80,3 +80,8 @@ desktop.ini
 
 # Instantaneas de pagina que escribe Playwright CLI en la carpeta de trabajo.
 **/.playwright-cli/
+
+# Tablero kanban de Obsidian (Bases): es DERIVADO, lo regenera general/comun/scripts/kanban.mjs
+# (lo dispara estado.mjs al escribir). La fuente es el estado.json de cada ambito; se puede borrar sin perder
+# nada salvo el ajuste manual de los .base. No se versiona NUNCA: son copias de lectura de lo que ya esta en git.
+/kanban/
