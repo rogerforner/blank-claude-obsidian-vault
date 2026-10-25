@@ -292,11 +292,20 @@ function diasAtras(hoy, n) {
   return new Date(Date.UTC(a, m - 1, d - n)).toISOString().slice(0, 10);
 }
 
-function escribir(o, raiz, ambito, ruta, hoy) {
+// Regenera el tablero kanban del ambito escrito. Silencioso: ni salida ni fallo; sin kanban.mjs al lado, no hace nada.
+async function regenerar(raiz, ambito) {
+  try {
+    const k = await import('./kanban.mjs');
+    k.generar(raiz, ambito);
+  } catch { /* un fallo del generador nunca afecta a la escritura del estado */ }
+}
+
+async function escribir(o, raiz, ambito, ruta, hoy) {
   const ctx = { raiz, ambito, hoy };
   if (o.modoEscritura === 'iniciar') {
     if (existsSync(ruta)) throw new Salida(4, `${relativa(raiz, ruta)} ya existe; no se toca`);
     guardar(ruta, vacio(), null, ctx);
+    await regenerar(raiz, ambito);
     console.log(`creado ${relativa(raiz, ruta)}`);
     return;
   }
@@ -318,6 +327,7 @@ function escribir(o, raiz, ambito, ruta, hoy) {
     estado.elementos.push(e);
     estado.siguiente_id = sig + 1;
     guardar(ruta, estado, antes, ctx);
+    await regenerar(raiz, ambito);
     console.log(e.id);
     return;
   }
@@ -326,6 +336,7 @@ function escribir(o, raiz, ambito, ruta, hoy) {
     const fuera = estado.elementos.filter((e) => e.situacion === 'cerrado' && typeof e.cerrado === 'string' && e.cerrado < corte);
     estado.elementos = estado.elementos.filter((e) => !fuera.includes(e));
     guardar(ruta, estado, antes, ctx);
+    await regenerar(raiz, ambito);
     console.log(fuera.length ? fuera.map((e) => e.id).join(',') : '(nada que podar)');
     return;
   }
@@ -334,6 +345,7 @@ function escribir(o, raiz, ambito, ruta, hoy) {
   if (!e) throw new Salida(4, `${id} no existe en ${relativa(raiz, ruta)}`);
   if (o.modoEscritura === 'cerrar') { e.situacion = 'cerrado'; e.cerrado = hoy; e.resultado = o.resultado; } else poner(e);
   guardar(ruta, estado, antes, ctx);
+  await regenerar(raiz, ambito);
   console.log(`${id} actualizado`);
 }
 
@@ -341,7 +353,7 @@ function faltante(raiz, ambito, ruta) {
   return new Salida(4, `${relativa(raiz, ruta)} no existe: ese ámbito no tiene estado.json; créalo con --iniciar`);
 }
 
-function ejecutar(args) {
+async function ejecutar(args) {
   const o = parsear(args);
   if (o.ayuda) { console.log(AYUDA); return; }
   if (o.prueba) { prueba(); return; }
@@ -357,7 +369,7 @@ function ejecutar(args) {
       throw new Salida(2, 'el directorio de trabajo tiene que ser la raiz del vault o la carpeta de un asunto (o usa --de)');
     }
   }
-  if (o.modoEscritura) { escribir(o, raiz, ambito, rutaEstado(raiz, ambito), hoy); return; }
+  if (o.modoEscritura) { await escribir(o, raiz, ambito, rutaEstado(raiz, ambito), hoy); return; }
   if (o.verificar && o.todos) {
     const hall = [];
     for (const x of ambitosConEstado(raiz)) {
@@ -595,6 +607,30 @@ function prueba() {
     caso('--de con escritura sale 2 y el fichero del otro no cambia', r.code === 2 && huella(FU) === h, r.out);
     r = run('casa/dos', ['--de', 'casa/uno', '--iniciar']);
     caso('--de con --iniciar sale 2', r.code === 2 && huella(FU) === h, r.out);
+
+    // enganche con el generador del tablero kanban
+    const K = path.join(dest, 'kanban.mjs');
+    const NOTA = (id) => path.join(tmp, 'kanban', 'casa', 'dos', `${id}.md`);
+    spawnSync('git', ['init', '-q'], { cwd: tmp });
+    writeFileSync(path.join(tmp, '.gitignore'), '/kanban/\n');
+    poner(FD, estado([], 1));
+    r = run('casa/dos', ['--nuevo', '--titulo', 'Sin generador', '--dueno', 'coordinador-dos']);
+    caso('sin kanban.mjs al lado, --nuevo sigue igual: sale 0, solo el id y sin tablero', r.code === 0 && r.out === 'E1\n' && !existsSync(path.join(tmp, 'kanban')), r.out);
+    copyFileSync(path.join(aqui, 'kanban.mjs'), K);
+    r = run('casa/dos', ['--nuevo', '--titulo', 'Con generador', '--dueno', 'coordinador-dos']);
+    caso('con kanban.mjs, --nuevo imprime exactamente el id y crea la nota', r.code === 0 && r.out === 'E2\n' && existsSync(NOTA('E2')), r.out);
+    r = run('casa/dos', ['--cerrar', 'E2', '--resultado', 'hecho']);
+    caso('--cerrar imprime lo de siempre y la nota queda cerrada', r.code === 0 && r.out === 'E2 actualizado\n' && /situacion: "cerrado"/.test(readFileSync(NOTA('E2'), 'utf8')), r.out);
+    r = run('casa/dos', ['--cambiar', 'E1', '--nota', 'otra']);
+    caso('--cambiar imprime lo de siempre', r.code === 0 && r.out === 'E1 actualizado\n', r.out);
+    // un generador roto (no se puede ni importar) no cambia ni la salida ni el codigo ni la escritura
+    writeFileSync(K, 'export function generar( {{{ esto no compila\n');
+    r = run('casa/dos', ['--nuevo', '--titulo', 'Generador roto', '--dueno', 'coordinador-dos']);
+    caso('con el generador roto, --nuevo sale 0, imprime solo el id y escribe el estado', r.code === 0 && r.out === 'E3\n' && leer(FD).elementos.some((e) => e.id === 'E3'), r.out);
+    // un generador que lanza al ejecutarse tampoco
+    writeFileSync(K, "export function generar() { throw new Error('boom'); }\n");
+    r = run('casa/dos', ['--cerrar', 'E1', '--resultado', 'hecho']);
+    caso('con un generador que lanza, --cerrar sale 0, imprime lo de siempre y escribe el estado', r.code === 0 && r.out === 'E1 actualizado\n' && leer(FD).elementos.find((e) => e.id === 'E1').situacion === 'cerrado', r.out);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
@@ -603,8 +639,9 @@ function prueba() {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  try { ejecutar(process.argv.slice(2)); } catch (e) {
+  // Sin await de nivel superior: kanban.mjs importa este modulo y el ciclo se quedaria colgado.
+  ejecutar(process.argv.slice(2)).catch((e) => {
     if (e instanceof Salida) { console.error(e.message); process.exit(e.codigo); }
     console.error(e && e.message ? e.message : String(e)); process.exit(1);
-  }
+  });
 }
