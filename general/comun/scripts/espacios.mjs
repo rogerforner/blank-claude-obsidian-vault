@@ -8,7 +8,7 @@ import { readFileSync, readdirSync, existsSync, statSync, realpathSync } from 'n
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const SISTEMA = ['_meta', 'general', 'inicializador'];
+export const SISTEMA = ['_meta', 'general', 'inicializador', 'kanban'];
 export const RESERVADOS = [...SISTEMA, 'docs', 'referencia', 'cerrados', 'node_modules', 'repo', 'coordinacion', 'estudios', 'memoria'];
 
 const TIPOS = ['espacio', 'archivo', 'libre'];

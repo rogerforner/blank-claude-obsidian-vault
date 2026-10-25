@@ -23,10 +23,14 @@ const nota = (regla, fichero, detalle) =>
 // anidado dentro del contenedor. El verificador comprueba el kit, no el código de un asunto,
 // así que delimita su ámbito excluyéndolo igual que ya excluye .git/.obsidian/node_modules —
 // esto NO es ajustar el verificador para que pase: es que esas reglas nunca le aplicaron a repo/.
+// Igual con <RAIZ>/kanban (solo esa ruta, no cualquier carpeta con ese nombre): son notas
+// DERIVADAS que regenera kanban.mjs desde los estado.json, gitignored; la fuente se verifica
+// en su sitio. Que este ignorada se comprueba aparte, en la regla 17.
 const md = [];
 const mjs = []; // scripts del kit (hooks, este mismo verificador): tambien son "lo escrito"
 (function walk(p) {
   if (/[\\/](\.git|\.obsidian|node_modules|repo)$/.test(p)) return;
+  if (p === join(RAIZ, 'kanban')) return;
   for (const e of readdirSync(p)) {
     const f = join(p, e);
     if (statSync(f).isDirectory()) walk(f);
@@ -480,6 +484,15 @@ for (const e of readdirSync(RAIZ, { withFileTypes: true })) {
   if (tipoDeCarpeta(RAIZ, e.name) === null) {
     nota('estructura de espacios', join(RAIZ, e.name), 'directorio de la raiz sin marca: ni de sistema ni con `tipo: espacio|archivo|libre` en su README.md');
   }
+}
+// kanban/ es derivado: si existe, tiene que estar ignorado. Sin git (vaults de prueba) no corre.
+if (existsSync(join(RAIZ, 'kanban')) && existsSync(join(RAIZ, '.git'))) {
+  let ignorado = false;
+  try {
+    execFileSync('git', ['check-ignore', '-q', 'kanban/x.md'], { cwd: RAIZ, stdio: 'ignore' });
+    ignorado = true;
+  } catch { /* sale distinto de 0: no ignorado */ }
+  if (!ignorado) nota('estructura de espacios', join(RAIZ, 'kanban'), 'kanban/ es derivado y tiene que estar ignorado (/kanban/ en .gitignore)');
 }
 const slugsVistos = new Map();
 for (const espacio of listarEspacios(RAIZ)) {
