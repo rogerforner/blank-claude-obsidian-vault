@@ -12,7 +12,7 @@ import { raizVault, ambitoDe, listarAsuntos } from './espacios.mjs';
 const SITUACIONES = ['abierto', 'en_curso', 'bloqueado', 'diferido', 'cerrado'];
 export const ACTIVAS = ['abierto', 'en_curso', 'bloqueado'];
 const ORDEN_ACTIVAS = ['en_curso', 'bloqueado', 'abierto'];
-const CLAVES_ELEMENTO = ['id', 'titulo', 'situacion', 'dueno', 'abierto', 'caduca', 'bloqueado_por_decision', 'porque', 'nota', 'cerrado', 'resultado'];
+const CLAVES_ELEMENTO = ['id', 'titulo', 'situacion', 'dueno', 'ordenado_por', 'abierto', 'caduca', 'bloqueado_por_decision', 'porque', 'nota', 'cerrado', 'resultado'];
 const CLAVES_RAIZ = ['_lee_esto_primero', 'siguiente_id', 'elementos'];
 const LEE_PRIMERO = 'Estado vivo de este ámbito: qué queda y de quién es. Se cambia con general/comun/scripts/estado.mjs (--ayuda); la regla, en la doctrina estado_vivo_por_comando.';
 const TOPE_TITULO = 140;
@@ -23,8 +23,8 @@ const AYUDA = `Uso:
   estado.mjs --id <Id> [--de <ambito>]
   estado.mjs --verificar [--todos] [--de <ambito>]
   estado.mjs --iniciar
-  estado.mjs --nuevo --titulo "<t>" --dueno <rol> [--situacion abierto|en_curso|bloqueado|diferido] [--porque <ruta>] [--caduca AAAA-MM-DD] [--bloqueado-por-decision <n>] [--nota "<n>"]
-  estado.mjs --cambiar <Id> [--titulo] [--situacion] [--dueno] [--porque] [--caduca|--sin-caduca] [--bloqueado-por-decision|--sin-bloqueado-por-decision] [--nota|--sin-nota]
+  estado.mjs --nuevo --titulo "<t>" --dueno <rol> [--ordenado-por <rol>] [--situacion abierto|en_curso|bloqueado|diferido] [--porque <ruta>] [--caduca AAAA-MM-DD] [--bloqueado-por-decision <n>] [--nota "<n>"]
+  estado.mjs --cambiar <Id> [--titulo] [--situacion] [--dueno] [--ordenado-por|--sin-ordenado-por] [--porque] [--caduca|--sin-caduca] [--bloqueado-por-decision|--sin-bloqueado-por-decision] [--nota|--sin-nota]
   estado.mjs --cerrar <Id> --resultado "<r>"
   estado.mjs --podar [--dias N]
   estado.mjs --prueba
@@ -178,6 +178,11 @@ export function verificar(texto, { raiz, ambito, hoy = fechaLocal() } = {}) {
     const d = e.dueno;
     const dueñoOk = typeof d === 'string' && (d === 'director' || d === 'coordinador-general' || (d.startsWith('coordinador-') && slugs.includes(d.slice(12))));
     if (!dueñoOk) add(`${q}: 6: dueno ${JSON.stringify(d)} no es director, coordinador-general ni coordinador-<asunto existente>`);
+    if (e.ordenado_por !== undefined) {
+      const ob = e.ordenado_por;
+      const obOk = typeof ob === 'string' && (ob === 'director' || ob === 'coordinador-general' || (ob.startsWith('coordinador-') && slugs.includes(ob.slice(12))));
+      if (!obOk) add(`${q}: 13: ordenado_por ${JSON.stringify(ob)} no es director, coordinador-general ni coordinador-<asunto existente>`);
+    }
     for (const c of ['abierto', 'caduca', 'cerrado']) {
       if (c === 'abierto' ? !fechaValida(e[c]) : (e[c] !== undefined && !fechaValida(e[c]))) add(`${q}: 7: ${c} no es una fecha AAAA-MM-DD valida`);
     }
@@ -227,8 +232,8 @@ function ambitoNombrado(raiz, nombre) {
 function parsear(args) {
   const o = { todo: false, mio: null, id: null, de: null, verificar: false, todos: false, hoy: null, prueba: false, ayuda: false,
     iniciar: false, nuevo: false, cambiar: null, cerrar: null, podar: false, campos: {}, dias: null, resultado: null, sin: [] };
-  const CAMPOS = ['titulo', 'situacion', 'dueno', 'porque', 'caduca', 'bloqueado-por-decision', 'nota'];
-  const SIN = ['caduca', 'bloqueado-por-decision', 'nota'];
+  const CAMPOS = ['titulo', 'situacion', 'dueno', 'ordenado-por', 'porque', 'caduca', 'bloqueado-por-decision', 'nota'];
+  const SIN = ['ordenado-por', 'caduca', 'bloqueado-por-decision', 'nota'];
   const valor = (i, f) => { if (i + 1 >= args.length || args[i + 1].startsWith('--')) throw new Salida(2, `${f} pide un valor\n${AYUDA}`); return args[i + 1]; };
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
@@ -302,6 +307,7 @@ function escribir(o, raiz, ambito, ruta, hoy) {
   const c = o.campos;
   const poner = (e) => {
     for (const k of ['titulo', 'situacion', 'dueno', 'porque', 'nota', 'caduca']) if (c[k] !== undefined) e[k] = c[k];
+    if (c['ordenado-por'] !== undefined) e.ordenado_por = c['ordenado-por'];
     if (c['bloqueado-por-decision'] !== undefined) e.bloqueado_por_decision = Number(c['bloqueado-por-decision']);
     for (const x of o.sin) delete e[x.replace(/-/g, '_')];
   };
@@ -499,6 +505,24 @@ function prueba() {
     r = run('.', ['--verificar']);
     caso('12 decision resuelta con el elemento cerrado pasa', r.code === 0, r.out);
 
+    // ordenado_por
+    {
+      const sinO = estado([el('E1'), el('E2', { situacion: 'en_curso' })]);
+      const conO = estado([el('E1', { ordenado_por: 'director' }), el('E2', { situacion: 'en_curso', ordenado_por: 'coordinador-uno' })]);
+      poner(FG, sinO);
+      const v1 = run('.', []);
+      poner(FG, conO);
+      const v2 = run('.', []);
+      caso('ordenado_por: la vista es identica byte a byte con y sin el campo', v1.code === 0 && v1.out === v2.out, v1.out + '|' + v2.out);
+      r = run('.', ['--verificar']);
+      caso('ordenado_por valido pasa --verificar', r.code === 0, r.out);
+      poner(FG, sinO);
+      r = run('.', ['--verificar']);
+      caso('un elemento sin ordenado_por sigue sin hallazgos', r.code === 0, r.out);
+      rojo('13 ordenado_por', una(el('E1', { ordenado_por: 'roger' })), /13: ordenado_por/);
+      rojo('13 ordenado_por de asunto inexistente', una(el('E1', { ordenado_por: 'coordinador-tres' })), /13: ordenado_por/);
+    }
+
     // escritura
     const huella = (f) => (existsSync(f) ? createHash('sha256').update(readFileSync(f)).digest('hex') : 'ausente');
     const FD = path.join(tmp, 'casa', 'dos', 'coordinacion', 'estado.json');
@@ -514,8 +538,10 @@ function prueba() {
     caso('--iniciar repetido sale 4 y no cambia el fichero', r.code === 4 && huella(FD) === h, r.out);
     r = run('casa/dos', ['--nuevo', '--titulo', 'Primero', '--dueno', 'coordinador-dos']);
     caso('--nuevo da E1', r.code === 0 && r.out.trim() === 'E1', r.out);
-    r = run('casa/dos', ['--nuevo', '--titulo', 'Segundo', '--dueno', 'coordinador-dos', '--situacion', 'en_curso', '--porque', 'casa/dos/README.md', '--nota', 'una nota']);
+    r = run('casa/dos', ['--nuevo', '--titulo', 'Segundo', '--dueno', 'coordinador-dos', '--ordenado-por', 'director', '--situacion', 'en_curso', '--porque', 'casa/dos/README.md', '--nota', 'una nota']);
     caso('--nuevo da E2', r.code === 0 && r.out.trim() === 'E2', r.out);
+    r = run('casa/dos', ['--id', 'E2']);
+    caso('--nuevo --ordenado-por escribe el campo y --id lo muestra', /ordenado_por: director/.test(r.out), r.out);
     r = run('casa/dos', ['--verificar']);
     caso('tras --nuevo el fichero pasa --verificar (formato canonico)', r.code === 0, r.out);
     h = huella(FD);
@@ -529,6 +555,17 @@ function prueba() {
     run('casa/dos', ['--cambiar', 'E1', '--sin-nota', '--sin-caduca']);
     r = run('casa/dos', ['--id', 'E1']);
     caso('--sin-nota y --sin-caduca quitan los campos', !/nota:/.test(r.out) && !/caduca:/.test(r.out), r.out);
+    r = run('casa/dos', ['--cambiar', 'E1', '--ordenado-por', 'director']);
+    r = run('casa/dos', ['--id', 'E1']);
+    caso('--cambiar --ordenado-por escribe el campo y --id lo muestra', /ordenado_por: director/.test(r.out), r.out);
+    r = run('casa/dos', ['--verificar']);
+    caso('con ordenado_por el fichero pasa --verificar (formato canonico)', r.code === 0, r.out);
+    run('casa/dos', ['--cambiar', 'E1', '--sin-ordenado-por']);
+    r = run('casa/dos', ['--id', 'E1']);
+    caso('--sin-ordenado-por quita el campo', !/ordenado_por:/.test(r.out), r.out);
+    h = huella(FD);
+    r = run('casa/dos', ['--cambiar', 'E1', '--ordenado-por', 'roger']);
+    caso('--ordenado-por roger sale 4 y no escribe', r.code === 4 && /13:/.test(r.out) && huella(FD) === h, r.out);
     r = run('casa/dos', ['--cambiar', 'E1', '--situacion', 'cerrado']);
     caso('--cambiar no admite cerrado (sale 2)', r.code === 2, r.out);
     r = run('casa/dos', ['--cambiar', 'E9', '--nota', 'x']);
