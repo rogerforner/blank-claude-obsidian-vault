@@ -2,7 +2,7 @@
 name: Estado vivo por comando — qué queda y de quién es, en un fichero de datos
 description: El estado vivo de cada coordinador (qué queda abierto y de quién es) es un fichero de datos que se consulta y se cambia por comando; el porqué sigue en prosa. Un pendiente vive en el estado o en la prosa, nunca en los dos, y se actualiza en el mismo commit que el trabajo. El hook vuelca la vista al arrancar, el verificador comprueba los invariantes y el DoD mide la vista.
 type: doctrine
-version: 1.2
+version: 1.3
 index_summary: >-
   El estado vivo de cada coordinador, lo que queda abierto y de quién es, es un fichero de datos que se consulta y se cambia por comando (`estado.mjs`); el porqué sigue en prosa. Un pendiente vive en el estado o en la prosa, nunca en los dos, y se actualiza en el mismo commit que el trabajo. Cada coordinador escribe solo el suyo y lee el de otro con `--de`.
 ---
@@ -28,6 +28,7 @@ El script es uno, común: `general/comun/scripts/estado.mjs`, y deduce el ficher
 
 - `id`: estable, del tipo `E1`, `E2`, por fichero. El fichero guarda `siguiente_id`, así que un id no se reutiliza nunca, ni tras podar. Entre ámbitos se cita como `general#E3` o `casa/homelab#E2`.
 - `titulo` (hasta 140 caracteres), `situacion` (`abierto`, `en_curso`, `bloqueado`, `diferido`, `cerrado`), `dueno` (un rol, nunca una persona), `abierto` y `cerrado` (fechas).
+- `ordenado_por` (opcional, sin valor por defecto): quién dio la orden. Admite los mismos valores que `dueno` (`director`, `coordinador-general` o `coordinador-<asunto>`) y no sale en la vista; los elementos antiguos no lo llevan y el tablero pone "sin dato". Se fija con `--ordenado-por <rol>` y se quita con `--sin-ordenado-por`.
 - `porque`: puntero a la prosa (la entrada de la cola, un plan, un documento de `docs/`). El detalle largo va allí, no en el estado.
 - `nota` y `resultado`: hasta 300 caracteres. Una nota que se vuelve párrafo es la señal de que su contenido va en `porque`.
 - `caduca`: obligatorio en todo elemento activo (`abierto`, `en_curso`, `bloqueado`) cuyo dueño sea `director`. Vencido en un activo es hallazgo y para el kit, igual que un `[CADUCA]` en prosa; en un cerrado o un diferido no cuenta. Lo que espera un disparador sin fecha ("la primera vez que…") va `diferido`, con el disparador en la `nota`.
@@ -39,6 +40,16 @@ El script es uno, común: `general/comun/scripts/estado.mjs`, y deduce el ficher
 - **La regla 12 del verificador** da los invariantes del fichero, que todo ámbito tenga su `estado.json` (un `trabajo-en-curso.md` es hallazgo) y los pendientes en prosa, incluida la casilla en negrita (`- **[ ] …**`).
 - **El DoD** mide la vista de cada ámbito propio contra 16.384 B (aviso al 85 %) y comprueba que existe cada `porque`. El JSON no tiene techo: la `nota` va acotada y la poda quita lo cerrado.
 - Las escrituras se verifican antes de escribir y dejan el fichero en formato canónico; editarlo a mano sigue siendo posible y el formato lo delata.
+
+## El tablero en Obsidian
+
+Es una vista derivada del estado, nunca fuente: `estado.mjs` la regenera sola, sin salida, tras cada escritura. Vive en `kanban/` (raíz del vault, ignorada por git y que el verificador no recorre): una nota por elemento en `kanban/<ámbito>/E<n>.md` y un `kanban/<ámbito con guiones>.base` por ámbito (`general.base`, `casa-climatizacion.base`).
+
+- **Abrirlo:** en Obsidian, abre el `.base` del ámbito; las tarjetas se agrupan por situación.
+- **Regenerarlo a mano:** `node general/comun/scripts/kanban.mjs --todos` (o `--de <espacio>/<asunto>`). Los `.base` solo se crean si faltan; `--rehacer-bases` los reescribe.
+- **Arrastrar una tarjeta no cambia nada:** se pierde en la siguiente regeneración. El cambio se hace con `estado.mjs --cambiar`.
+- **Comprobarlo:** `node general/comun/scripts/kanban.mjs --prueba`; `git check-ignore -q kanban/x.md` debe salir 0. Si la generación falló, queda `kanban/ERROR.md` con el motivo (se borra en la siguiente buena).
+- **Arreglarlo:** borra la carpeta `kanban/` y corre `node general/comun/scripts/kanban.mjs --todos`; no se pierde nada, porque todo sale del estado.
 
 ## Cerrar y podar
 

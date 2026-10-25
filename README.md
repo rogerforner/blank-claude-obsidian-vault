@@ -495,6 +495,7 @@ Cuando vayas a montar algo así —conectar un aparato, arrancar un asunto con s
 | [`general/comun/packs/codigo/`](general/comun/packs/codigo/README.md) | Pack **opcional**, solo si un asunto incluye **software propio**. Si tu vault no toca software, ignóralo entero: el core no depende de él. |
 | [`inicializador/`](inicializador/README.md) | **Procedimiento y plantillas** para arrancar un asunto: los dos checklists, el charter, el contrato de tanda, el handoff, el consultor, los perfiles de permisos por rol y el árbol de contenedor a copiar. |
 | [`_meta/`](_meta/README.md) | **El kit tratado como un asunto más**: charter, cola, decisiones abiertas, bitácora, primeros pasos, guía de arranque de sesiones y el verificador. Aquí se gestiona la evolución del propio vault. |
+| `kanban/` | Tableros de cada coordinador para Obsidian, generados a partir del estado; no se versionan ni se editan. |
 | `<espacio>/<asunto>/` | Los asuntos, uno por carpeta dentro de su espacio (por ejemplo `casa`), todos con la misma estructura. **No existe hasta que creas el primer espacio y su primer asunto.** |
 | *(el archivo de documentos)* | Los papeles que sirven a **varios** asuntos —identificativos, de la vivienda, de un vehículo—, en un sitio y enlazados desde cada asunto en lugar de copiados (sección 5). Las sesiones lo leen pero **no escriben en él**, y **no existe hasta que el primer asunto lo necesita**: el nombre se lo pones tú al crearlo. |
 
