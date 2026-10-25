@@ -4,7 +4,7 @@
 // (ignorado por git) y se puede borrar y regenerar sin perder nada, salvo el ajuste manual de los .base.
 // En exito la CLI no imprime nada (la dispara estado.mjs y no debe costar tokens). Solo --prueba y --ayuda hablan.
 // Salidas: 0 bien, 1 error interno, 2 uso, 4 kanban/ no ignorado o estado ilegible.
-import { readFileSync, existsSync, mkdtempSync, mkdirSync, writeFileSync, copyFileSync, rmSync, realpathSync, renameSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync, mkdtempSync, mkdirSync, writeFileSync, copyFileSync, rmSync, realpathSync, renameSync, readdirSync, chmodSync, statSync, lstatSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
@@ -18,7 +18,8 @@ const AYUDA = `Uso:
   kanban.mjs --todos               todos los ambitos con estado
   kanban.mjs --rehacer-bases       ademas reescribe los .base (por defecto solo se crean si faltan)
   kanban.mjs --prueba | --ayuda
-Escribe kanban/<ambito>/E<n>.md (una nota por elemento) y kanban/<ambito con - en vez de />.base.
+Escribe kanban/tarjetas/<ambito>/E<n>.md (una nota por elemento, en solo lectura, ocultas en el explorador)
+y kanban/<ambito con - en vez de />.base (agrupado por una columna calculada, no editable).
 No imprime nada si va bien. Si kanban/ no esta en .gitignore no escribe y sale 4.
 Si algo falla al generar, escribe kanban/ERROR.md con el motivo (se borra en la siguiente generacion buena).
 Salidas: 0 bien, 1 error interno, 2 uso, 4 kanban/ no ignorado o estado ilegible.`;
@@ -35,13 +36,39 @@ function ignorado(raiz) {
 }
 
 // Escritura atomica (temporal y rename) y solo si el contenido cambia.
-function escribir(ruta, texto) {
-  if (existsSync(ruta) && readFileSync(ruta, 'utf8') === texto) return;
+// Con modo (p. ej. 0o444) deja el fichero en ese modo; el rename sustituye tambien a un fichero de solo lectura.
+function escribir(ruta, texto, modo) {
+  if (existsSync(ruta) && readFileSync(ruta, 'utf8') === texto) {
+    if (modo !== undefined && (statSync(ruta).mode & 0o777) !== modo) chmodSync(ruta, modo);
+    return;
+  }
   mkdirSync(path.dirname(ruta), { recursive: true });
   const tmp = path.join(path.dirname(ruta), `.${path.basename(ruta)}.tmp`);
   writeFileSync(tmp, texto);
+  if (modo !== undefined) chmodSync(tmp, modo);
   renameSync(tmp, ruta);
 }
+
+// Borra las carpetas del diseno viejo (kanban/<espacio>/..., kanban/general/) que contengan solo E<n>.md
+// y subcarpetas en las mismas condiciones. No toca kanban/tarjetas ni nada que no sea E<n>.md.
+function soloNotas(dir) {
+  return readdirSync(dir).every((f) => {
+    const st = lstatSync(path.join(dir, f));
+    return st.isDirectory() ? soloNotas(path.join(dir, f)) : (st.isFile() && /^E\d+\.md$/.test(f));
+  });
+}
+function migrar(dir, cima = true) {
+  for (const f of readdirSync(dir)) {
+    const p = path.join(dir, f);
+    if (!lstatSync(p).isDirectory() || (cima && f === 'tarjetas')) continue;
+    if (soloNotas(p)) rmSync(p, { recursive: true, force: true });
+    else migrar(p, false);
+  }
+}
+
+const CSS = `/* Generado por kanban.mjs: oculta las tarjetas del tablero en el explorador de archivos. */
+.nav-folder:has(> .nav-folder-title[data-path="kanban/tarjetas"]) { display: none; }
+`;
 
 function texto(v) { return JSON.stringify(String(v)); }
 
@@ -56,11 +83,15 @@ function nota(nombre, e) {
   return f.join('\n') + '\n' + (e.nota ? String(e.nota) + '\n' : '');
 }
 
+// Columna calculada: no se puede escribir, asi que arrastrar una tarjeta no tiene donde guardar nada.
+const COLUMNA = 'if(situacion == "en_curso", "1 en curso", if(situacion == "abierto", "2 abierto", if(situacion == "bloqueado", "3 bloqueado", if(situacion == "diferido", "4 diferido", "5 cerrado"))))';
+
 function base(nombre) {
   return [
-    'filters:', '  and:', `    - ${JSON.stringify(`ambito == "${nombre}"`)}`,
+    'filters:', '  and:', `    - ${JSON.stringify(`file.inFolder("kanban/tarjetas/${nombre}")`)}`, `    - ${JSON.stringify(`ambito == "${nombre}"`)}`,
+    'formulas:', `  columna: ${JSON.stringify(COLUMNA)}`,
     'views:', '  - type: kanban', `    name: ${JSON.stringify(nombre)}`,
-    '    groupBy:', '      property: situacion', '      direction: ASC',
+    '    groupBy:', '      property: formula.columna', '      direction: ASC',
     '    order:', ...['titulo', 'dueno', 'ordenado_por', 'abierto', 'caduca'].map((c) => `      - note.${c}`), '',
   ].join('\n');
 }
@@ -75,12 +106,14 @@ export function generar(raiz, ambito, { rehacerBases = false } = {}) {
   try {
     const estado = leer(rutaEstado(raiz, ambito));
     const els = Array.isArray(estado.elementos) ? estado.elementos : [];
-    const dir = path.join(raiz, 'kanban', nombre);
+    const dir = path.join(raiz, 'kanban', 'tarjetas', nombre);
+    if (existsSync(path.join(raiz, 'kanban'))) migrar(path.join(raiz, 'kanban'));
+    escribir(path.join(raiz, '.obsidian', 'snippets', 'kanban.css'), CSS);
     const vivos = new Set();
     for (const e of els) {
       if (e === null || typeof e !== 'object' || !/^E\d+$/.test(String(e.id))) throw new Error(`elemento sin id valido en ${nombre}`);
       vivos.add(`${e.id}.md`);
-      escribir(path.join(dir, `${e.id}.md`), nota(nombre, e));
+      escribir(path.join(dir, `${e.id}.md`), nota(nombre, e), 0o444);
     }
     if (existsSync(dir)) {
       for (const f of readdirSync(dir)) if (/^E\d+\.md$/.test(f) && !vivos.has(f)) rmSync(path.join(dir, f), { force: true });
@@ -171,21 +204,42 @@ function prueba() {
     poner(FU, [el('E1', { dueno: 'coordinador-uno' })]);
     let r = run('.', ['--todos']);
     caso('--todos sale 0 y no imprime nada', r.code === 0 && r.out === '' && r.err === '', r.out + r.err);
-    const n1 = leerT('kanban/general/E1.md') || '';
+    const n1 = leerT('kanban/tarjetas/general/E1.md') || '';
     caso('nota E1 del general con su frontmatter',
       n1.startsWith('---\nambito: "general"\nid: "E1"\ntitulo: "Titulo E1"\nsituacion: "abierto"\ndueno: "director"\nordenado_por: "director"\nabierto: 2026-10-01\ncaduca: 2026-12-01\nporque: "_meta/cola-pendientes.md"\n---\ndetalle de E1\n'), n1);
-    const n2 = leerT('kanban/general/E2.md') || '';
+    const n2 = leerT('kanban/tarjetas/general/E2.md') || '';
     caso('titulo con comillas y dos puntos escapado, sin ordenado_por = sin dato',
       n2.includes('titulo: "Con \\"comillas\\": y dos puntos"\n') && n2.includes('ordenado_por: "sin dato"\n') && n2.includes('cerrado: 2026-10-05\nresultado: "hecho"\n'), n2);
-    caso('nota del asunto en kanban/casa/uno/', (leerT('kanban/casa/uno/E1.md') || '').includes('ambito: "casa/uno"'), leerT('kanban/casa/uno/E1.md'));
+    caso('nota del asunto en kanban/casa/uno/', (leerT('kanban/tarjetas/casa/uno/E1.md') || '').includes('ambito: "casa/uno"'), leerT('kanban/tarjetas/casa/uno/E1.md'));
     const b = leerT('kanban/casa-uno.base') || '';
     caso('.base con kanban, filtro por ambito y groupBy situacion',
-      b.includes('type: kanban') && b.includes('ambito == \\"casa/uno\\"') && b.includes('property: situacion') && b.includes('direction: ASC') && b.includes('- note.ordenado_por'), b);
+      b.includes('type: kanban') && b.includes('ambito == \\"casa/uno\\"') && b.includes('property: formula.columna') && b.includes('direction: ASC') && b.includes('- note.ordenado_por'), b);
     caso('existe general.base', leerT('kanban/general.base') !== null);
+    caso('.base con formula de columna ordenable y filtro por carpeta',
+      b.includes('formulas:') && b.includes('1 en curso') && b.includes('5 cerrado') && b.includes('property: formula.columna') && b.includes('file.inFolder(\\"kanban/tarjetas/casa/uno\\")'), b);
+    const modo = (rel) => statSync(path.join(tmp, rel)).mode & 0o777;
+    caso('las notas quedan en solo lectura (0444)', modo('kanban/tarjetas/general/E1.md') === 0o444 && modo('kanban/tarjetas/casa/uno/E1.md') === 0o444);
+    caso('snippet CSS escrito, oculta kanban/tarjetas', (leerT('.obsidian/snippets/kanban.css') || '').includes('.nav-folder-title[data-path="kanban/tarjetas"]'));
+    // regeneracion sobre notas 0444
+    poner(FG, [el('E1', { dueno: 'director', titulo: 'Cambio sobre 0444' }), el('E2', { situacion: 'cerrado', cerrado: '2026-10-05', resultado: 'hecho' })]);
+    r = run('.', ['--de', 'general']);
+    caso('con cambio, una nota 0444 se sustituye y sigue 0444', r.code === 0 && r.out === '' && (leerT('kanban/tarjetas/general/E1.md') || '').includes('Cambio sobre 0444') && modo('kanban/tarjetas/general/E1.md') === 0o444, r.out + r.err);
+    r = run('.', ['--de', 'general']);
+    caso('sin cambio, no se reescribe', r.code === 0 && r.out === '');
+    // migracion del diseno viejo
+    w('kanban/casa/uno/E1.md', 'viejo\n'); w('kanban/general/E9.md', 'viejo\n');
+    w('kanban/equipos/mac/E1.md', 'viejo\n'); w('kanban/equipos/mac/otro.txt', 'ajeno\n');
+    w('kanban/equipos/mac/ERROR.md', 'ajeno\n');
+    r = run('.', ['--de', 'general']);
+    caso('la migracion borra el diseno viejo solo con E<n>.md', r.code === 0 && !existsSync(path.join(tmp, 'kanban/casa')) && !existsSync(path.join(tmp, 'kanban/general')), r.out + r.err);
+    caso('la migracion no toca carpetas con otros ficheros, ERROR.md ni tarjetas', leerT('kanban/equipos/mac/otro.txt') !== null && leerT('kanban/equipos/mac/E1.md') !== null && leerT('kanban/equipos/mac/ERROR.md') === 'ajeno\n' && leerT('kanban/tarjetas/casa/uno/E1.md') !== null);
+    rmSync(path.join(tmp, 'kanban/equipos'), { recursive: true, force: true });
+    poner(FG, [el('E1', { dueno: 'director' }), el('E2', { situacion: 'cerrado', cerrado: '2026-10-05', resultado: 'hecho' })]);
+    run('.', ['--de', 'general']);
     // (b) poda
     poner(FG, [el('E1', { dueno: 'director' })]);
     r = run('.', ['--de', 'general']);
-    caso('la poda borra la nota del elemento quitado y deja la otra', r.code === 0 && leerT('kanban/general/E2.md') === null && leerT('kanban/general/E1.md') !== null, r.out + r.err);
+    caso('la poda borra la nota del elemento quitado y deja la otra', r.code === 0 && leerT('kanban/tarjetas/general/E2.md') === null && leerT('kanban/tarjetas/general/E1.md') !== null, r.out + r.err);
     // (c) .base editado
     const bg = path.join(tmp, 'kanban', 'general.base');
     writeFileSync(bg, '# editado a mano\n');
@@ -196,7 +250,7 @@ function prueba() {
     // sin argumentos: ambito del cwd
     poner(FU, [el('E1', { dueno: 'coordinador-uno', titulo: 'Cambiado' })]);
     r = run('casa/uno', []);
-    caso('sin modo usa el ambito del directorio de trabajo', r.code === 0 && r.out === '' && (leerT('kanban/casa/uno/E1.md') || '').includes('titulo: "Cambiado"'), r.out + r.err);
+    caso('sin modo usa el ambito del directorio de trabajo', r.code === 0 && r.out === '' && (leerT('kanban/tarjetas/casa/uno/E1.md') || '').includes('titulo: "Cambiado"'), r.out + r.err);
     r = run('.', ['--de', 'casa/nada']);
     caso('--de con un ambito inexistente sale 2', r.code === 2, r.err);
     // (f) estado ilegible

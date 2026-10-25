@@ -610,7 +610,7 @@ function prueba() {
 
     // enganche con el generador del tablero kanban
     const K = path.join(dest, 'kanban.mjs');
-    const NOTA = (id) => path.join(tmp, 'kanban', 'casa', 'dos', `${id}.md`);
+    const NOTA = (id) => path.join(tmp, 'kanban', 'tarjetas', 'casa', 'dos', `${id}.md`);
     spawnSync('git', ['init', '-q'], { cwd: tmp });
     writeFileSync(path.join(tmp, '.gitignore'), '/kanban/\n');
     poner(FD, estado([], 1));

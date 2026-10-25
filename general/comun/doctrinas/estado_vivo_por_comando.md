@@ -2,7 +2,7 @@
 name: Estado vivo por comando — qué queda y de quién es, en un fichero de datos
 description: El estado vivo de cada coordinador (qué queda abierto y de quién es) es un fichero de datos que se consulta y se cambia por comando; el porqué sigue en prosa. Un pendiente vive en el estado o en la prosa, nunca en los dos, y se actualiza en el mismo commit que el trabajo. El hook vuelca la vista al arrancar, el verificador comprueba los invariantes y el DoD mide la vista.
 type: doctrine
-version: 1.3
+version: 1.4
 index_summary: >-
   El estado vivo de cada coordinador, lo que queda abierto y de quién es, es un fichero de datos que se consulta y se cambia por comando (`estado.mjs`); el porqué sigue en prosa. Un pendiente vive en el estado o en la prosa, nunca en los dos, y se actualiza en el mismo commit que el trabajo. Cada coordinador escribe solo el suyo y lee el de otro con `--de`.
 ---
@@ -43,11 +43,11 @@ El script es uno, común: `general/comun/scripts/estado.mjs`, y deduce el ficher
 
 ## El tablero en Obsidian
 
-Es una vista derivada del estado, nunca fuente: `estado.mjs` la regenera sola, sin salida, tras cada escritura. Vive en `kanban/` (raíz del vault, ignorada por git y que el verificador no recorre): una nota por elemento en `kanban/<ámbito>/E<n>.md` y un `kanban/<ámbito con guiones>.base` por ámbito (`general.base`, `casa-climatizacion.base`).
+Es una vista derivada del estado, nunca fuente: `estado.mjs` la regenera sola, sin salida, tras cada escritura. Vive en `kanban/` (raíz del vault, ignorada por git y que el verificador no recorre): una nota por elemento en `kanban/tarjetas/<ámbito>/E<n>.md` (en solo lectura, y la carpeta `tarjetas` oculta en el explorador por el fragmento CSS `kanban`, que `kanban.mjs` escribe en `.obsidian/snippets/`) y un `kanban/<ámbito con guiones>.base` por ámbito (`general.base`, `casa-climatizacion.base`).
 
 - **Abrirlo:** en Obsidian, abre el `.base` del ámbito; las tarjetas se agrupan por situación.
 - **Regenerarlo a mano:** `node general/comun/scripts/kanban.mjs --todos` (o `--de <espacio>/<asunto>`). Los `.base` solo se crean si faltan; `--rehacer-bases` los reescribe.
-- **Arrastrar una tarjeta no cambia nada:** se pierde en la siguiente regeneración. El cambio se hace con `estado.mjs --cambiar`.
+- **Es de solo lectura:** las columnas salen de una fórmula (`1 en curso` … `5 cerrado`), que no se puede escribir, y las notas son 0444; arrastrar una tarjeta no cambia nada. El cambio se hace con `estado.mjs --cambiar`. En `kanban/` solo se ven los `.base`; si no se oculta `tarjetas`, activa el fragmento en Ajustes → Apariencia.
 - **Comprobarlo:** `node general/comun/scripts/kanban.mjs --prueba`; `git check-ignore -q kanban/x.md` debe salir 0. Si la generación falló, queda `kanban/ERROR.md` con el motivo (se borra en la siguiente buena).
 - **Arreglarlo:** borra la carpeta `kanban/` y corre `node general/comun/scripts/kanban.mjs --todos`; no se pierde nada, porque todo sale del estado.
 

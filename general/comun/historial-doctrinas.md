@@ -86,6 +86,7 @@ La regla 21 del verificador exige que la sección de cada ficha nombre la versi�
 
 ## estado_vivo_por_comando
 
+> **v1.4 (2026-10-25):** el tablero pasa a solo lectura (columna calculada, notas 0444) y las notas viven en `kanban/tarjetas/`, ocultas; en `kanban/` solo los `.base` (E35, corrección del director).
 > **v1.3 (2026-10-25):** campo opcional `ordenado_por` y sección "El tablero en Obsidian" (vista derivada en `kanban/`, cómo abrirla, regenerarla, comprobarla y arreglarla) (E35).
 > **v1.2 (2026-10-23):** el historial de versiones sale de la ficha a este fichero (E33).
 > Pieza de catálogo `general/comun/doctrinas/`. **v1.1 (2026-10-13): fuera la sección de transición**: migrados todos los asuntos, la vía del `trabajo-en-curso.md` se retiró del hook, el verificador y el DoD; todo ámbito necesita su `estado.json`. **v1.0 (2026-10-12):** nace con la decisión del director del 2026-10-08 de llevar el estado vivo a un fichero de datos que se consulta y se cambia por comando. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado y **no se hereda** automáticamente.
