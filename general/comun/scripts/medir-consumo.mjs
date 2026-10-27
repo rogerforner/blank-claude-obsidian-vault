@@ -6,7 +6,7 @@
 // Uso:
 //   --resumen [--desde AAAA-MM-DD] [--proyectos <dir>]
 //   --calibrar [--desde AAAA-MM-DD] [--proyectos <dir>] [--historial <fichero>]
-//   --prueba      datos sinteticos en un directorio temporal, cinco casos
+//   --prueba      datos sinteticos en un directorio temporal, seis casos
 //   --ayuda
 //
 // Codigos de salida: 0 bien, 1 error interno (o prueba fallida), 2 uso, 4 sin datos.
@@ -37,7 +37,7 @@ const TIPOS = ['sesion', 'planificador', 'ejecutora', 'ejecutora-mecanica', 'pro
 const AYUDA = `medir-consumo.mjs -- consumo de sesiones y subagentes (solo recuentos)
   --resumen [--desde AAAA-MM-DD] [--proyectos <dir>]
   --calibrar [--desde AAAA-MM-DD] [--proyectos <dir>] [--historial <fichero>]
-  --prueba   cinco casos sinteticos en un directorio temporal
+  --prueba   seis casos sinteticos en un directorio temporal
   --ayuda
 Defecto: proyectos ~/.claude/projects, historial ~/.local/share/claude-uso/historial.jsonl
 Salida: 0 bien, 1 error interno, 2 uso, 4 sin datos. Maximo ${MAX_LINEAS} lineas.
@@ -81,9 +81,11 @@ function leerJsonl(f) {
 
 // ---------- lectura de transcripciones ----------
 // Devuelve [{tipo, sesion, desc, reqs:[{ts,modelo,ctx,sal,total,sinLect,lect,w5,w1,herr:[..]}]}]
+// con la propiedad .compact = [{tipo, ts, trigger, pre, post, reposo}] (compactaciones, solo recuentos).
 function escanear(dirProyectos, desde) {
   const vistos = new Set();
   const out = [];
+  out.compact = [];
   let proyectos;
   try { proyectos = fs.readdirSync(dirProyectos, { withFileTypes: true }).filter((d) => d.isDirectory()); } catch { return out; }
   const candidatos = []; // {f, tipo, sesion, desc}
@@ -113,6 +115,17 @@ function escanear(dirProyectos, desde) {
     vistos.add(clave);
     const ids = new Set();
     const reqs = [];
+    const avisos = lineas.filter((o) => o.type === 'system' && o.timestamp && /^Compacted while idle/.test(String(o.content || ''))).map((o) => Date.parse(o.timestamp));
+    for (const o of lineas) {
+      if (o.type !== 'system' || o.subtype !== 'compact_boundary' || !o.timestamp) continue;
+      if (desde && diaLocal(o.timestamp) < desde) continue;
+      const t = Date.parse(o.timestamp);
+      out.compact.push({
+        tipo: c.tipo, ts: o.timestamp, trigger: o.compactMetadata?.trigger || '?',
+        pre: o.compactMetadata?.preTokens || 0, post: o.compactMetadata?.postTokens || 0,
+        reposo: avisos.some((a) => a >= t && a - t <= 5000),
+      });
+    }
     for (const o of lineas) {
       if (o.type !== 'assistant' || !o.message?.usage) continue;
       const m = o.message;
@@ -150,6 +163,21 @@ function familia(h) {
   }
   if (h.n === 'SendMessage' || h.n === 'ListAgents') return h.n;
   return 'otras herramientas';
+}
+
+// Recuentos de compactaciones: total, en reposo, automaticas (no de reposo), manuales, origen, medianas y dias.
+function compactaciones(cs) {
+  const dias = cs.map((c) => diaLocal(c.ts)).sort();
+  return {
+    total: cs.length,
+    reposo: cs.filter((c) => c.reposo).length,
+    auto: cs.filter((c) => !c.reposo && c.trigger === 'auto').length,
+    manual: cs.filter((c) => !c.reposo && c.trigger === 'manual').length,
+    sesion: cs.filter((c) => c.tipo === 'sesion').length,
+    subagente: cs.filter((c) => c.tipo !== 'sesion').length,
+    medPre: mediana(cs.map((c) => c.pre)), medPost: mediana(cs.map((c) => c.post)),
+    primera: dias[0] || '', ultima: dias.at(-1) || '',
+  };
 }
 
 function resumen(datos, desde) {
@@ -198,6 +226,10 @@ function resumen(datos, desde) {
   }
   const rep = [...veces.values()].filter((v) => v > 1).length;
   L.push(`Tandas con Id lanzadas: ${veces.size}; repetidas en la misma sesion: ${rep}${veces.size ? ` (${fmtD((100 * rep) / veces.size, 0)} %)` : ''}`);
+  // compactaciones (solo recuentos)
+  const k = compactaciones(datos.compact || []);
+  L.push(`Compactaciones: ${fmtN(k.total)} (en reposo ${fmtN(k.reposo)}, automaticas ${fmtN(k.auto)}, manuales ${fmtN(k.manual)}) | sesion ${fmtN(k.sesion)}, subagente ${fmtN(k.subagente)}`);
+  if (k.total) L.push(`  mediana preTokens ${fmtN(k.medPre)}, postTokens ${fmtN(k.medPost)} | primera ${k.primera}, ultima ${k.ultima}`);
   return L;
 }
 
@@ -287,6 +319,31 @@ function prueba() {
     const salida = [...resumen(datos, null), ...cal.L].join('\n');
     caso(!salida.includes('SECRETO-PRUEBA'), 'un texto SECRETO-PRUEBA en el contenido de un mensaje no sale nunca en la salida');
     caso(cal.hay && cal.descartadas === 1 && cal.tramos.length === 1 && cal.tramos[0].fin.v - cal.tramos[0].ini.v === 20, '--calibrar descarta una fila que baja sin reinicio');
+    // caso 6: compactaciones (auto en reposo, auto sin reposo, manual; una de subagente)
+    const sys = (ts, subtype, extra = {}) => ({ type: 'system', subtype, timestamp: ts, ...extra });
+    const cb = (ts, trigger, pre, post) => sys(ts, 'compact_boundary', { content: 'SECRETO-PRUEBA', compactMetadata: { trigger, preTokens: pre, postTokens: post } });
+    const dC = path.join(tmp, 'proy2', 'proyC');
+    const sidC = 'cccccccc-0000-0000-0000-000000000001';
+    fs.mkdirSync(path.join(dC, sidC, 'subagents'), { recursive: true });
+    fs.writeFileSync(path.join(dC, `${sidC}.jsonl`), [
+      { type: 'user', timestamp: '2026-10-22T09:00:00.000Z', message: { role: 'user', content: 'x' } },
+      mk('msg_c1', '2026-10-22T09:00:01.000Z', 'claude-opus-5-5', 0, 100, 'x'),
+      cb('2026-10-22T10:05:00.000Z', 'auto', 200000, 10000),
+      sys('2026-10-22T10:05:02.000Z', 'informational', { content: 'Compacted while idle SECRETO-PRUEBA' }),
+      cb('2026-10-22T11:00:00.000Z', 'manual', 100000, 8000),
+      cb('2026-10-20T11:00:00.000Z', 'auto', 300000, 12000),
+    ].map((o) => JSON.stringify(o)).join('\n') + '\n');
+    fs.writeFileSync(path.join(dC, sidC, 'subagents', 'agent-c.jsonl'), [
+      mk('msg_c2', '2026-10-22T10:30:00.000Z', 'claude-sonnet-5-5', 100, 0, 'x'),
+      cb('2026-10-22T10:31:00.000Z', 'auto', 150000, 6000),
+    ].map((o) => JSON.stringify(o)).join('\n') + '\n');
+    fs.writeFileSync(path.join(dC, sidC, 'subagents', 'agent-c.meta.json'), JSON.stringify({ agentType: 'ejecutora', description: 'x' }));
+    const dc = escanear(path.join(tmp, 'proy2'), null);
+    const ca = compactaciones(dc.compact);
+    caso(ca.total === 4 && ca.reposo === 1 && ca.auto === 2 && ca.manual === 1 && ca.sesion === 3 && ca.subagente === 1, 'compactaciones: total, reposo, auto, manual y origen');
+    caso(ca.medPre === 175000 && ca.medPost === 9000 && ca.primera === '2026-10-20' && ca.ultima === '2026-10-22', 'compactaciones: medianas y fechas');
+    caso(compactaciones(escanear(path.join(tmp, 'proy2'), '2026-10-21').compact).total === 3, 'compactaciones: respeta --desde');
+    caso(![...resumen(dc, null)].join('\n').includes('SECRETO-PRUEBA'), 'compactaciones: la salida no lleva texto');
   } catch (e) {
     console.log(`[FALLO] error interno de la prueba: ${e.message}`);
     fallos++;
