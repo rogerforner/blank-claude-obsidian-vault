@@ -42,12 +42,12 @@ function escribir(raiz, rel, texto) {
   writeFileSync(f, texto);
 }
 
-function correr(cmd, args, cwd, env) {
-  const r = spawnSync(cmd, args, { cwd, env: { ...process.env, ...(env || {}) }, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, input: '' });
+function correr(cmd, args, cwd, env, entrada = '') {
+  const r = spawnSync(cmd, args, { cwd, env: { ...process.env, ...(env || {}) }, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, input: entrada });
   return { codigo: r.status === null ? 1 : r.status, salida: (r.stdout || '') + (r.stderr || '') };
 }
 
-const node = (args, cwd, env) => correr(process.execPath, args, cwd, env);
+const node = (args, cwd, env, entrada) => correr(process.execPath, args, cwd, env, entrada);
 const git = (cwd, ...args) => correr('git', ['-c', 'user.name=prueba', '-c', 'user.email=prueba@localhost', '-c', 'commit.gpgsign=false', ...args], cwd);
 // El primer commit va con fecha pasada: las puertas de documentacion del DoD miran los commits de
 // hoy, y la siembra no debe contar como trabajo de la sesion.
@@ -142,9 +142,9 @@ function ctx() {
 
 const HOOK = ['general/comun/hooks/limpieza-coordinacion.mjs'];
 
-function hook(v, rel) {
+function hook(v, rel, entrada) {
   const dir = path.join(v, rel);
-  return node([path.join(v, ...HOOK)], dir, { LIMPIEZA_DRY_RUN: '1', CLAUDE_PROJECT_DIR: dir }).salida;
+  return node([path.join(v, ...HOOK)], dir, { LIMPIEZA_DRY_RUN: '1', CLAUDE_PROJECT_DIR: dir }, entrada).salida;
 }
 
 // El hook en modo lista (lo que consulta el DoD): solo rutas trackeadas obsoletas, una por linea.
@@ -557,6 +557,13 @@ function casos(c, esp) {
       commitHaceDias(v, ['esp-uno/a1/estudios/x_prompt.md', 'esp-uno/a1/estudios/x_informe.md'], 40);
       const s = hook(v, 'esp-uno/a1'); const l = hookLista(v, 'esp-uno/a1');
       return R(s.includes('prompt de estudio ya con informe') && !s.includes(BRIEF_VIEJO) && l.includes('x_prompt.md'), `prompt con informe: aviso de siempre=${s.includes('prompt de estudio ya con informe')} (true), aviso de brief viejo=${s.includes(BRIEF_VIEJO)} (false), en modo lista=${l.includes('x_prompt.md')} (true)`);
+    }],
+    ['H13', () => {
+      const v = c.clon();
+      const c1 = hook(v, '.', '{"source":"compact"}'); const c2 = hook(v, 'esp-uno/a1', '{"source":"compact"}');
+      const st = hook(v, '.', '{"source":"startup"}'); const vacio = hook(v, '.'); const roto = hook(v, '.', 'no es json');
+      const ok = c1.startsWith('[COMPACTADA]') && c2.startsWith('[COMPACTADA]') && !st.includes('COMPACTADA') && !vacio.includes('COMPACTADA') && !roto.includes('COMPACTADA');
+      return R(ok, `source compact: [COMPACTADA] en primera linea raiz=${c1.startsWith('[COMPACTADA]')}, asunto=${c2.startsWith('[COMPACTADA]')} (true, true); con startup=${st.includes('COMPACTADA')}, sin entrada=${vacio.includes('COMPACTADA')}, con basura=${roto.includes('COMPACTADA')} (false, false, false)`);
     }],
 
     ['R1', () => {

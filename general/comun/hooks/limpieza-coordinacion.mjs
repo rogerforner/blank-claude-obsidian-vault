@@ -67,6 +67,13 @@
 //      en el entorno (ganan al login). Solo informa y no bloquea; si `claude` falla, lo dice y
 //      sigue. No corre en modo lista.
 //
+//   8. AVISA SI LA SESION SIGUE DESDE UNA COMPACTACION (`[COMPACTADA]`, primera linea de la salida).
+//      Claude Code pasa por la entrada estandar un JSON con `source`; si es `compact` (compactacion
+//      en reposo, automatica o /compact manual) la sesion sigue desde un resumen y el aviso le manda
+//      releer su charter, su estado y el relevo, con rutas relativas a su rol. Con otro `source`, sin
+//      entrada o con una entrada que no es JSON, la salida no cambia ni un byte. Solo se lee la
+//      entrada si no es un terminal, y nunca lanza.
+//
 // Nunca borra nada trackeado. Siempre termina con exit 0 (jamás rompe el arranque).
 // Modo prueba: LIMPIEZA_DRY_RUN=1 → reporta lo que borraría, sin borrar.
 //
@@ -224,7 +231,17 @@ function cuenta() {
   return out;
 }
 
+// Entrada estandar del hook (JSON de Claude Code con `source`). Solo si no es un terminal; nunca lanza.
+function origenDeLaSesion() {
+  try {
+    if (process.stdin.isTTY) return null;
+    const j = JSON.parse(readFileSync(0, 'utf8'));
+    return j && typeof j.source === 'string' ? j.source : null;
+  } catch { return null; }
+}
+
 function main() {
+  const origen = origenDeLaSesion();
   const files = [];
   for (const z of ZONES) walk(join(ROOT, z), files);
   // NO se sale aqui aunque `files` venga vacio, y esto costo encontrarlo: habia un `return` que
@@ -436,7 +453,14 @@ function main() {
   } catch { /* el estado del DoD nunca rompe el arranque */ }
 
   const cuentaLineas = cuenta();
-  const salida = [...sello, ...cuentaLineas, ...lines, ...rojo, ...curso, ...dod];
+  const compactada = [];
+  if (origen === 'compact') {
+    const amb = ambitoDeLaSesion(raiz);
+    const pre = amb.tipo === 'general' ? '_meta/' : amb.tipo === 'asunto' ? 'coordinacion/' : '';
+    const charter = amb.tipo === 'general' ? '_meta/charter-coordinador.md' : 'charter-coordinador.md';
+    compactada.push(`[COMPACTADA] Esta sesion sigue desde un resumen (compactacion, quiza en reposo). Antes de decidir nada, relee ${charter}, ${pre}estado.json y ${pre}relevo-actual.local.md si existe; lo propio del asunto puede estar en parafrasis (higiene_contexto_y_tokens).`);
+  }
+  const salida = [...compactada, ...sello, ...cuentaLineas, ...lines, ...rojo, ...curso, ...dod];
   if (salida.length) process.stdout.write(salida.join('\n') + '\n');
 }
 
