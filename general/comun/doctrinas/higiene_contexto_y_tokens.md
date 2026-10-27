@@ -2,7 +2,7 @@
 name: Higiene de contexto y tokens
 description: El cuello de botella es la ventana de uso, no el contexto. Los mayores ahorros son gratis (sin API): subagentes que resumen y con entregable ACOTADO (lo que devuelven entra íntegro), CLAUDE.md <200 líneas y estable, modelo fijo por sesión (no cambiar a media sesión = cache miss), /clear+artefacto en vez de /compact a ciegas, y medir con /context antes. Medido por rol (2026-10-23): la sesión escribe caché a 1 h, los subagentes a 5 min, y el consumo se concentra en los turnos largos del coordinador (`medir-consumo.mjs`). Dos creencias caras que NO valen: partir el CLAUDE.md en importaciones no aligera, y los servidores externos ya se cargan diferidos. "caveman" no aporta y degrada el español.
 type: convention
-version: 1.13
+version: 1.14
 index_summary: >-
   El cuello de botella es la ventana de uso, y la mayor parte del contexto no la controla el vault. Ahorros gratis: subagentes con entregable acotado, CLAUDE.md corto y estable, modelo fijo por sesión, /clear con artefacto en vez de compactar a ciegas, y medir con /context antes. La ventana se degrada antes de llenarse: relevo por umbrales de contexto propio. Sin acuses entre coordinadores.
 ---
@@ -29,7 +29,7 @@ Esto es lo que convierte la regla 3 de "buena práctica" en **mecánica conocida
 
 **Qué se hace con esto, hoy y sin instalar nada:** lo de siempre, pero ahora con el porqué. **Relevo y sesión nueva por los umbrales de la sección siguiente**, no compactación a ciegas; el estado vivo en ficheros, que es lo único que ninguna compactación puede perder; y si una sesión ha compactado, **se da por hecho que sus reglas de asunto están en paráfrasis** y se releen antes de decidir nada delicado.
 
-*(Mitigación pendiente de piloto, no adoptada: un enganche de arranque con disparador de compactación que reinyecte las reglas del asunto. Es barato y encaja con el hook que ya existe, pero **no se instala sin caso de uso medido** → [[adopcion_tooling_externo_caso_uso_concreto]].)*
+**Compactación en reposo.** Una sesión que lleva 200K o más tokens y queda parada unos 54 minutos se compacta sola antes de que expire la caché (datos y parámetros: `general/comun/modelos-y-esfuerzo.md` §4). Medido (E40): 9 veces en dos coordinadores de asunto, del 2026-10-15 al 2026-10-22, con 200.874 a 394.005 tokens antes y 9.334 a 17.157 después; ninguna desde el 2026-10-22, cuando entra el relevo por umbrales. **Decisión DD-1 = B (compactación en reposo encendida y aviso `[COMPACTADA]` al arrancar), tomada el 2026-10-27 por el coordinador general según la recomendación del plan y por mandato del director («sigue adelante y no pares hasta cerrar»); no es una decisión del director.** El hook de arranque, que corre tras compactar, avisa con `[COMPACTADA]` y manda releer el charter, el estado y el relevo. Es el piloto de la mitigación que esta sección dejaba pendiente, con caso medido; se mide con `node general/comun/scripts/medir-consumo.mjs --resumen`, que cuenta las compactaciones.
 
 ## Dónde está el contexto de verdad: la mayor parte NO la controla el vault
 
@@ -59,7 +59,7 @@ Decisión del director (D4 de la adopción de pd-dev, 2026-10-22; el suelo de co
 
 - **Contexto propio.** Desde el **30 %**, el coordinador cierra el bloque en curso y pasa el relevo a una sesión nueva; desde el **50 %**, en la frontera inmediata y sin abrir bloque nuevo. El 1M es margen, no presupuesto: cada turno reenvía el contexto entero.
 - **Suelo.** Por debajo de **100.000 tokens** de contexto propio (el porcentaje por el tamaño de la ventana), relevarse al cerrar un bloque no compra nada: una sesión nueva arranca ya con unos 57.700 en interactivo (mediana de 25 sesiones Opus) y unos 41.000 en `-p` Sonnet (2026-10-22/23, `medir-consumo.mjs`) y el deterioro empieza hacia los 100.000 (sección anterior). Ahí el coordinador sigue en la misma sesión con el bloque siguiente, y `relevo.mjs` se lo dice sin tocar nada. Si quiere relevarse igual para cargar reglas o agentes nuevos, lo pide con `--recargar`. A mitad de un bloque con plan, el relevo no está soportado: desde el 50 % dentro de un bloque, el coordinador para y avisa.
-- **Dónde se lee.** Los modelos no ven la línea de estado: el coordinador lee su contexto y su cuota con `cat ~/.cache/claude-statusline/${HERDR_PANE_ID//:/_}.json` (manual: `general/comun/herramientas-de-usuario/linea-de-estado.md`). Fuera de Herdr no hay fichero por panel: vale la última fila de su `session_id` en `~/.local/share/claude-uso/historial.jsonl`. Lo hace por él `relevo.mjs --comprobar`, que lee el fichero del panel y da las cifras y el veredicto.
+- **Dónde se lee.** Los modelos no ven la línea de estado: el coordinador lee su contexto y su cuota con `cat ~/.cache/claude-statusline/${HERDR_PANE_ID//:/_}.json` (manual: `general/comun/herramientas-de-usuario/linea-de-estado.md`). Fuera de Herdr no hay fichero por panel: vale la última fila de su `session_id` en `~/.local/share/claude-uso/historial.jsonl`. Lo hace por él `relevo.mjs --comprobar`, que lee el fichero del panel y da las cifras y el veredicto. El director comprueba el ritmo de la caché en `/usage` (tecla `w`), línea `Prompt cache (main)`, y una vez con `/skill-doctor` (ambos existen en 2.1.311 `[BINARIO]`).
 - **El dato tiene que ser de esta sesión y reciente.** El fichero del panel vale si su `session_id` es el de la sesión y se escribió hace menos de **15 min**. Si falta, no se lee, es de otra sesión o es viejo, `relevo.mjs` no aplica los umbrales: lo dice con un aviso y el relevo sigue, porque relevarse sin dato no estropea nada y parar sin dato deja al coordinador parado.
 - **Ritmo de la ventana de 5 h** (`rate_limits.five_hour`; la ventana son 5 h y acaba en `resets_at`). Si el porcentaje usado va por delante del tiempo transcurrido de la ventana, una ejecutora a la vez, sin tandas en paralelo; desde el **90 %**, nada nuevo hasta el reinicio: el relevo no lanza la sucesora y dice a qué hora reinicia.
 - **Ritmo semanal** (`rate_limits.seven_day`; la ventana son 7 días y acaba en `resets_at`). Si va por delante de su ritmo, se prioriza lo urgente y se avisa al director: el relevo sigue y la sesión nueva recibe el aviso para dárselo. Desde el **90 %**, nada nuevo: el relevo para y decide el director, porque el semanal es el límite que de verdad frena este vault y quedarse sin él a mitad de bloque deja trabajo a medias durante días (`general/comun/modelos-y-esfuerzo.md`, §6.2). La línea de estado solo guarda el semanal compartido, no el de cada familia.
@@ -75,6 +75,17 @@ Medido el 2026-10-22/23 con `medir-consumo.mjs` (101,6 $eq en 93 transcripciones
 3. **El canal:** el texto de un mensaje pesa poco; lo caro es el turno que despierta en quien lo recibe, con su contexto entero releído de caché.
 
 Conclusiones: (a) cerrar el bloque a tiempo vale más que ahorrar en la ejecutora; (b) acotar el planificador y las vueltas de fontanería rinde más que bajar el modelo, que está vetado; (c) repetir una tanda cuesta una ejecutora más el contexto del coordinador. Remedir: `node general/comun/scripts/medir-consumo.mjs --resumen`.
+
+**Mirado y no adoptado (E40, 2026-10-27).** No se vuelve a discutir sin dato nuevo:
+
+- `omitClaudeMd` en ejecutora y planificador: ahorra 7–9K por nacimiento, menos del 1 % del total, y obligaría a copiar las reglas comunes y las del asunto en 22 definiciones o en cada prompt. Se revisa solo si las ejecutoras pasan del 10 % del total en `medir-consumo.mjs --resumen` (7,0 % del 2026-10-20 al 27; el planificador, 26,6 %, lo pesa su propio contexto y no los `CLAUDE.md`, ~3 %).
+- `CLAUDE.md` raíz como mapa corto (idea de E39): diferida con el mismo umbral. Pesa 22,6 KB, unos 7K tokens, que se escriben en caché una vez por sesión o por nacimiento; recortarlo traslada la lectura a las doctrinas, que se leen igual cuando hacen falta.
+- `effort` por subagente: sin cambios; ya está fijado en las cuatro definiciones y el planificador hereda `high` (D7). Haiku en `low` contradice lo medido (la mecánica va en `high`).
+- `Explore` con `model: haiku` o desactivado: sin cambios; 2 usos en un mes, ambos de una medición propia.
+- TTL por agente (`cacheTtl`) o global: sin cambios; las tandas no reanudan subagentes y el TTL por defecto ya se decidió dejarlo (v1.12).
+- `autoCompactWindow: 200000`: no; solo baja la ventana y compactaría hacia los 190K, antes del relevo al 30 % (D1).
+- `CLAUDE_CODE_SUBAGENT_MODEL_FORCE`: no; rompería el reparto Opus/Haiku de las definiciones.
+- `crossSessionInbound: "hold"`: no; contradice la decisión del director del 2026-08-13 y devuelve al director a cuello de botella.
 
 **Investigación externa:** la lanza el director. Se escribe un brief en `estudios/` para el chat web con Deep Research; nada de `playwright-cli` ni de WebSearch en un subagente para investigar, y WebFetch solo para verificar un dato puntual en una fuente primaria.
 

@@ -2,7 +2,7 @@
 name: Ciclo de trabajo por tandas — planificar, ejecutar en pequeño, parar
 description: Todo coordinador trabaja igual. Lo no trivial lo planifica un subagente Opus en un plan partido en tandas pequeñas; cada tanda la ejecuta un subagente Sonnet, una tras otra, o en paralelo cada una en su worktree si son independientes; y al cerrar una tanda o un bloque el coordinador guarda el estado, cierra el DoD de su ámbito y escribe el prompt de relevo; si queda trabajo y no hay nada abierto, se releva él mismo en una sesión nueva, haya plan o no (relevo autónomo por Herdr, con un script común); si no, para y pregunta. La tabla viva está en un tablero de nombre fijo, y lo repetitivo se hace con scripts.
 type: doctrine
-version: 2.14
+version: 2.15
 index_summary: >-
   Todo coordinador planifica lo no trivial con un subagente Opus en tandas pequeñas, que ejecuta un subagente Sonnet una tras otra, y comprueba y commitea por pathspec. Al cerrar un bloque guarda el estado, cierra el DoD y escribe el prompt de relevo. Si queda trabajo y nada abierto, se releva en una sesión nueva; si no, para y pregunta. El estado vive en ficheros, no en la conversación.
 ---
@@ -112,6 +112,8 @@ Con plan de tandas:
     Decisiones de la sesión anterior que no estén ya escritas en el plan o en la cola: ninguna.
     Antes de lanzar nada, comprueba que el último commit de tu ámbito es <hash corto> (<`git log -1 --format=%h -- $(node general/comun/scripts/espacios.mjs --pathspec .)` | `git log -1 --format=%h -- .`>, el general o un asunto); si te ha lanzado el relevo autónomo, eso ya lo ha comprobado el script. Si el plan, el tablero y el estado versionado discrepan, gana el estado: dímelo y para. Si no, sigue con el bloque siguiente mientras se cumplan las condiciones de relevo de `ciclo_de_tandas`; cuando dejen de cumplirse, dime en tres líneas dónde estamos y para.
 
+Si todavía no se ha cerrado ningún bloque (el plan está recién cargado), la línea 2 es: `Ningún bloque cerrado todavía; plan cargado en el commit <hash corto>. Siguiente: bloque <letra> — <objetivo en una frase>.` El hash es el commit que cargó el plan en el tablero; el script exige entonces que ninguna fila del tablero esté HECHA.
+
 Sin plan de tandas (una tanda suelta, o el plan acabado con trabajo por delante):
 
     Retomas el trabajo "<nombre>" como <coordinador general | coordinador de <asunto>>, sin plan de tandas. El estado vive en ficheros, no en la conversación anterior: lee el estado (`estado.mjs`) y lo que nombre la línea siguiente.
@@ -123,7 +125,7 @@ El fichero es siempre `relevo-actual.local.md`; un handoff no lo sustituye (si e
 
 En la cuarta línea, el ámbito del general es `.` menos cada asunto, el mismo que calcula `relevo.mjs` con `espacios.mjs --pathspec .`; un `git log -- .` desde la raíz daría el último commit de cualquier asunto. Medido el 2026-10-22: desde la raíz, `-- .` dio un commit de un asunto, y el pathspec, el del general.
 
-La tercera línea tiene que decir "ninguna". Si no puede, lo que falte se escribe en el plan o en la cola antes de parar, porque lo que solo está en el relevo se pierde con él. El script lee las tres primeras líneas con expresiones fijas (con plan: el plan entre acentos graves, `Último bloque cerrado: <letra>, en el commit <hash>. Siguiente: bloque <letra> — `; sin plan: `Último cierre: <texto>, en el commit <hash>. Siguiente: <texto>`; y en las dos el final `: ninguna.`), así que la plantilla se sigue al pie de la letra.
+La tercera línea tiene que decir "ninguna". Si no puede, lo que falte se escribe en el plan o en la cola antes de parar, porque lo que solo está en el relevo se pierde con él. El script lee las tres primeras líneas con expresiones fijas (con plan: el plan entre acentos graves, `Último bloque cerrado: <letra>, en el commit <hash>. Siguiente: bloque <letra> — ` o, sin ningún bloque cerrado aún, `Ningún bloque cerrado todavía; plan cargado en el commit <hash>. Siguiente: bloque <letra> — `; sin plan: `Último cierre: <texto>, en el commit <hash>. Siguiente: <texto>`; y en las dos el final `: ninguna.`), así que la plantilla se sigue al pie de la letra.
 
 Relacionada: [[orquestacion_sesiones_por_herramienta]], [[scripts_adhoc_tareas_repetitivas]], [[modelo_por_tarea]], [[higiene_contexto_y_tokens]], [[definition_of_done]].
 

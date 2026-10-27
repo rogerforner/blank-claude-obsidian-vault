@@ -242,8 +242,10 @@ export function leerRelevo(ruta) {
   const m1 = (l[0] || '').match(/`([^`]*plan-tanda-[^`]+\.md)`/);
   if (m1) r.plan = m1[1];
   const m2 = (l[1] || '').match(/Último bloque cerrado: ([A-Z][0-9]?), en el commit ([0-9a-f]{7,40})\. Siguiente: bloque ([A-Z][0-9]?) — /);
+  const m2b = (l[1] || '').match(/^Ningún bloque cerrado todavía; plan cargado en el commit ([0-9a-f]{7,40})\. Siguiente: bloque ([A-Z][0-9]?) — /);
   const m3 = (l[1] || '').match(/^Último cierre: (.+), en el commit ([0-9a-f]{7,40})\. Siguiente: (.+)$/);
   if (r.plan && m2) { r.modo = 'plan'; r.cerrado = m2[1]; r.hash = m2[2]; r.siguiente = m2[3]; }
+  else if (r.plan && m2b) { r.modo = 'plan'; r.cerrado = null; r.hash = m2b[1]; r.siguiente = m2b[2]; }
   else if (!r.plan && m3) { r.modo = 'sinplan'; r.cerrado = m3[1]; r.hash = m3[2]; r.siguienteTexto = m3[3].trim(); }
   r.ninguna = /: ninguna\.\s*$/.test(l[2] || '');
   return r;
@@ -365,13 +367,18 @@ function precondiciones(ctx, a, opts) {
     add(rel.plan && tab.plan === rel.plan, `el Plan del tablero (${tab.plan}) es el plan del relevo (${rel.plan})`);
     const versionado = rel.plan ? git(['ls-files', '--error-unmatch', rel.plan], ctx.cwd) !== null : false;
     add(versionado, `el plan del relevo existe y esta versionado (${rel.plan})`);
-    const delBloque = tab.filas.filter((f) => f.bloque === rel.cerrado);
-    add(delBloque.length > 0 && delBloque.every((f) => /^\[HECHA/.test(f.estado)), `todas las filas del bloque cerrado ${rel.cerrado} estan HECHA`);
+    if (rel.cerrado === null) {
+      const hechas = tab.filas.filter((f) => /^\[HECHA/.test(f.estado));
+      add(hechas.length === 0, hechas.length ? `ningun bloque cerrado: ninguna fila del tablero esta HECHA (hay HECHA ${hechas.map((f) => f.id).join(', ')}: hay un bloque cerrado y hay que nombrarlo)` : 'ningun bloque cerrado: ninguna fila del tablero esta HECHA');
+    } else {
+      const delBloque = tab.filas.filter((f) => f.bloque === rel.cerrado);
+      add(delBloque.length > 0 && delBloque.every((f) => /^\[HECHA/.test(f.estado)), `todas las filas del bloque cerrado ${rel.cerrado} estan HECHA`);
+    }
     const abiertas = tab.filas.filter((f) => f.estado === '[EN CURSO]' || f.estado.startsWith('[BLOQUEADA'));
     add(abiertas.length === 0, abiertas.length ? `hay filas en curso o bloqueadas: ${abiertas.map((f) => f.id).join(', ')}` : 'ninguna fila en curso ni bloqueada');
     const pend = tab.filas.filter((f) => f.bloque === rel.siguiente && f.estado === '[PENDIENTE]');
     add(pend.length > 0, `el bloque siguiente ${rel.siguiente} tiene filas PENDIENTE (si no, el plan se acabo: si queda trabajo, escribe el relevo sin plan)`);
-    add(!tab.paradas.includes(rel.cerrado), tab.paradas.includes(rel.cerrado) ? `el bloque cerrado ${rel.cerrado} es una parada declarada` : 'el bloque cerrado no es una parada declarada');
+    if (rel.cerrado !== null) add(!tab.paradas.includes(rel.cerrado), tab.paradas.includes(rel.cerrado) ? `el bloque cerrado ${rel.cerrado} es una parada declarada` : 'el bloque cerrado no es una parada declarada');
   }
 
   const prev = leerEstado(ctx);

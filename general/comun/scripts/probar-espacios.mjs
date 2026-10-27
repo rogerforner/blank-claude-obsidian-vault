@@ -220,10 +220,10 @@ const noOtras = (L) => L.filter((l) => l.startsWith('[NO]') && !dependeMaquina(l
 const con = (L, pref, texto) => L.filter((l) => l.startsWith(pref) && l.includes(texto));
 const PLAN_REL = '_meta/plan-tanda-prueba.md';
 const tituloRel = (rel) => (rel === '.' ? 'coordinador general' : `coordinador de ${rel.split('/')[1]}`);
-function relevoConPlan(rel, hash, { cerrado = 'A', siguiente = 'B' } = {}) {
+function relevoConPlan(rel, hash, { cerrado = 'A', siguiente = 'B', sinCerrado = false } = {}) {
   return [
     `Retomas el trabajo "prueba" como ${tituloRel(rel)}. El estado vive en ficheros, no en la conversación anterior: lee \`${PLAN_REL}\`, el tablero (\`_meta/tablero-tandas.md\`) y el estado (\`estado.mjs\`).`,
-    `Último bloque cerrado: ${cerrado}, en el commit ${hash}. Siguiente: bloque ${siguiente} — objetivo de prueba.`,
+    sinCerrado ? `Ningún bloque cerrado todavía; plan cargado en el commit ${hash}. Siguiente: bloque ${siguiente} — objetivo de prueba.` : `Último bloque cerrado: ${cerrado}, en el commit ${hash}. Siguiente: bloque ${siguiente} — objetivo de prueba.`,
     'Decisiones de la sesión anterior que no estén ya escritas en el plan o en la cola: ninguna.',
     'Antes de lanzar nada, comprueba el último commit de tu ámbito.',
   ].join('\n') + '\n';
@@ -773,6 +773,20 @@ function casos(c, esp) {
       const L6 = pre(v, path.join(v, 'esp-uno', 'a1'));
       if (no(L6, 'relevo a medias') !== 1) fallos.push(`relevo a medias (el clon ${existsSync(path.join(v, '.gitignore')) ? 'trae' : 'no trae'} .gitignore): ${JSON.stringify(L6)}`);
       return R(fallos.length === 0, `precondicionesReinicio: ${fallos.join(' | ')}`);
+    }],
+
+    ['R23', () => {
+      const v = c.clon();
+      planCommiteado(v);
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const rel = relevoConPlan('.', hashAmbito(v, '.'), { sinCerrado: true, siguiente: 'A' });
+      const t1 = tableroPrueba(v, 'r23a', PLAN_REL, [['T01', 'A', '[PENDIENTE]'], ['T02', 'B', '[PENDIENTE]']]);
+      const L1 = comprobarRelevo(v, '.', rel, { tablero: t1 });
+      const t2 = tableroPrueba(v, 'r23b', PLAN_REL, [['T01', 'A', '[HECHA]'], ['T02', 'B', '[PENDIENTE]']]);
+      const L2 = comprobarRelevo(v, '.', rel, { tablero: t2 });
+      const ok = noOtras(L1).length === 0 && con(L1, '[OK]', 'con plan y bloques').length === 1 && con(L1, '[OK]', 'ningun bloque cerrado').length === 1
+        && con(L2, '[NO]', 'ningun bloque cerrado').length === 1;
+      return R(ok, `plan sin bloque cerrado: (a) [NO] ajenas=${JSON.stringify(noOtras(L1))}, modo plan=${con(L1, '[OK]', 'con plan y bloques').length} (1), [OK] ningun bloque cerrado=${con(L1, '[OK]', 'ningun bloque cerrado').length} (1); (b) fila HECHA: [NO] ningun bloque cerrado=${con(L2, '[NO]', 'ningun bloque cerrado').length} (1)`);
     }],
 
     ['G1', () => {
