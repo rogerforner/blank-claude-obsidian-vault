@@ -2,7 +2,7 @@
 name: Modelo apropiado por tarea
 description: Cada tarea con el modelo apropiado, no el más capaz. El cuello de botella es la ventana de uso semanal, no el contexto (1M en Opus 5.5, Sonnet 5.5 y Fable 5.1) → Opus 5.5 coordina, planifica y hace lo difícil (esfuerzo `high` o más), Sonnet 5.5 hace las tandas y los subagentes (`medium`), Haiku 5.5 solo la mecánica literal (`high`), y Fable 5.1 solo cuando el director lo pide. Dentro de Opus se sube el esfuerzo antes que el modelo; de Sonnet a Opus se sube de modelo, no de esfuerzo, y Sonnet nunca va en `xhigh` ni `max`. Modelo y esfuerzo se FIJAN en la configuración (el `high` de coordinación se fija en el perfil y se comprueba en la cabecera de la sesión: el defecto de Opus 5.5 en la API es `medium`) y en la definición del subagente (`model`, `effort`), no a mano en cada arranque. Cambiar de modelo a media sesión = cache miss. /usage es la única fuente fiable. Los DATOS (catálogo, precios, curvas por nivel, tabla de situaciones) viven aparte, en general/comun/modelos-y-esfuerzo.md, que se refresca por tandas: aquí solo el criterio.
 type: doctrine
-version: 5.5
+version: 5.6
 caduca: 2026-12-31
 index_summary: >-
   Cada tarea con el modelo apropiado, no el más capaz: es un criterio por tarea, no una lista cerrada. Opus coordina y hace lo difícil, Sonnet ejecuta las tandas, Haiku solo la mecánica literal y Fable solo si lo pide el director. Modelo y esfuerzo se fijan en la configuración al arrancar y no se cambian a mitad de sesión. Los datos viven en `modelos-y-esfuerzo.md`.
@@ -151,7 +151,7 @@ Relacionada: [[orquestacion_sesiones_por_herramienta]], [[paralelismo_subagent_o
 
 **La lectura de caché es tres órdenes de magnitud mayor que todo lo demás junto.** Y el propio cliente lo señala en su aviso: *"las sesiones más largas son más costosas incluso cuando están en caché"*. En la misma medición, **el 97 % del trabajo de 24 horas se ejecutó con más de 150k de contexto**.
 
-**Consecuencia práctica, y va contra la intuición de que un buen acierto de caché lo arregla todo:** un 98 % de aciertos **no es gratis** — cada turno relee un contexto enorme, y eso se paga por turno. **Lo que abarata una jornada no es elegir mejor el modelo, es no arrastrar contexto que ya no hace falta.** El relevo por handoff antes del 70 % de ocupación, que este kit ya exigía por otro motivo —no perder estado—, resulta ser también la palanca de coste.
+**Consecuencia práctica, y va contra la intuición de que un buen acierto de caché lo arregla todo:** un 98 % de aciertos **no es gratis** — cada turno relee un contexto enorme, y eso se paga por turno. **Lo que abarata una jornada no es elegir mejor el modelo, es no arrastrar contexto que ya no hace falta.** El relevo por umbrales de contexto propio (los de [[higiene_contexto_y_tokens]], «Umbrales de relevo y ritmo de cuota»), que este kit exige por otro motivo —no perder estado—, resulta ser también la palanca de coste.
 
 **Y lo que esto NO dice:** no dice que Opus salga caro. La sesión medida consumió el 11 % del semanal haciendo trabajo real de coordinación, con Fable al 0 %. **El cupo no era el cuello de botella que se temía.**
 

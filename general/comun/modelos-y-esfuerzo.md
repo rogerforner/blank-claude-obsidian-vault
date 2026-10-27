@@ -2,7 +2,7 @@
 name: Modelos y nivel de esfuerzo — catálogo, curvas y tabla de situaciones
 description: Documento de REFERENCIA (no doctrina) con los hechos de plataforma que cambian solos: qué modelos hay, qué niveles de esfuerzo admite cada uno, cuánto rinde cada nivel, qué cuesta cambiar de modelo o de esfuerzo a media sesión, y la tabla situación → modelo → esfuerzo. Lo consulta el coordinador antes de repartir trabajo y el director antes de abrir una sesión. El CRITERIO vive en [[modelo_por_tarea]]; aquí viven los DATOS y su origen.
 type: knowledge
-version: 2.4
+version: 2.5
 caduca: 2026-12-31
 ---
 
@@ -220,7 +220,9 @@ Haiku ya no está en el método, pero el argumento vale para cualquier modelo m�
 
 **Y el matiz que corrige la intuición contraria:** con caché caliente, **dos horas seguidas en una sesión suelen costar menos que partir el mismo trabajo en cuatro sesiones**, porque cada arranque en frío paga una reescritura completa. **El disparador de reset no es "llevo X horas abierto": es "tarea completada" o "a punto de compactar".**
 
-**Tiempo de vida de la caché:** la conversación principal usa **1 hora**; los subagentes y todo lo demás, **5 minutos**. *(Documentación de septiembre, sin recontrastar.)*
+**Tiempo de vida de la caché:** la conversación principal usa **1 hora**; los subagentes y todo lo demás, **5 minutos**. `[MEDIDO 2026-10-23, medir-consumo.mjs]` (la sesión escribe a 1 h y los subagentes a 5 min; véase [[higiene_contexto_y_tokens]]).
+
+**Compactación en reposo.** Una sesión con 200K tokens o más que queda en reposo unos 54 minutos se compacta sola. Está activa por defecto; `idleCompaction: false` la apaga, y `true` no la enciende. `CLAUDE_CODE_IDLE_COMPACT_MIN_TOKENS` mueve el umbral, con un mínimo de 100K, y solo actúa en terminal `[OFICIAL: changelog embebido en Claude Code 2.1.311]`. Se lee de los ajustes de proyecto `[INFERIDO del binario 2.1.311]`. Medido en 9 casos: el contexto pasó de 200.874–394.005 a 9.334–17.157 tokens, y el hook SessionStart corre después de compactar. La regla que se deriva está en [[higiene_contexto_y_tokens]] y aquí no se repite.
 
 ---
 
@@ -317,3 +319,5 @@ El conflicto sigue abierto: anthropics/claude-code #24147 (2026-09-02) afirmaba 
 *v2.3 (2026-10-22) — T11: la cuota se lee de la línea de estado; `/usage` lo comprueba el director.*
 
 *v2.4 (2026-10-23) — E32 T07: lectura de caché de Sonnet 5.5 a $0,10, el esfuerzo conserva la caché en Claude Code con suscripción y modelos 5.5 (§3.1), y tabla de pesos de cuota Max con su etiqueta de fuente (§6.2).*
+
+*v2.5 (2026-10-27) — E40: TTL medido; compactación en reposo (hechos y medición).*
