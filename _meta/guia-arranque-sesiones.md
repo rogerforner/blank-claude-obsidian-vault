@@ -177,7 +177,7 @@ La condición del final es la que hace útil la respuesta: **sin ella, un consul
 
 ## Relevar una sesión
 
-**El caso normal no necesita handoff ni que tú hagas nada:** si el vault usa Herdr, el coordinador se releva solo al cerrar una tanda o un bloque, haya plan o no, y la sesión nueva sigue en la misma pestaña. Si para o el relevo falla, te lo dice, y el prompt de relevo está en `relevo-actual.local.md` (`_meta/` o `coordinacion/`) para pegarlo en una sesión nueva con la misma carpeta. Lo que tiene que sobrevivir ya está en el plan, la cola, el tablero y los commits.
+**El caso normal no necesita handoff ni que tú hagas nada:** si el vault usa Herdr, el coordinador se releva solo al cerrar una tanda o un bloque, haya plan o no, y la sesión nueva sigue en la misma pestaña. Sigue así hasta que no le queda nada ejecutable o le dices que no se releve al terminar algo; entonces te deja un informe corto y el prompt de relevo. Si para o el relevo falla, te lo dice, y el prompt de relevo está en `relevo-actual.local.md` (`_meta/` o `coordinacion/`) para pegarlo en una sesión nueva con la misma carpeta. Lo que tiene que sobrevivir ya está en el plan, la cola, el tablero y los commits.
 
 **El handoff queda para cuando la sesión muere a mitad de bloque**, sin haber llegado a un punto de parada. Entonces son dos pasos: **le pides el handoff a la sesión que se acaba, y abres una nueva con la MISMA carpeta que lo lee.**
 
@@ -211,7 +211,7 @@ Esto no es trivial: planifícalo con el planificador, enséñame las premisas fa
 
 La tabla viva la ves en el tablero sin interrumpir: `_meta/tablero-tandas.md` o `<espacio>/<asunto>/coordinacion/tablero-tandas.md`.
 
-Lo que el coordinador tiene que respetar al lanzar —el plan antes de las tandas, la comprobación de cada una y el relevo o la parada al cerrar el bloque— está en la doctrina y en el contrato de tanda. No es cosa tuya acordarte.
+Lo que el coordinador tiene que respetar al lanzar —el plan antes de las tandas, la comprobación de cada una y el relevo al cerrar el bloque y la parada final— está en la doctrina y en el contrato de tanda. No es cosa tuya acordarte.
 
 ---
 

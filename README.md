@@ -266,7 +266,7 @@ El punto de corrección es **el coordinador leyendo el plan**. Si no vas a leerl
 
 ### Fase 4 — Ejecutar las tandas
 
-Con el encargo ya corregido por lo que destapó el plan, el coordinador lanza **una tanda detrás de otra**, cada una a un subagente `ejecutora` (Sonnet) o, si es literal y no pide criterio, `ejecutora-mecanica`. Cada tanda es pequeña, trae su comando de comprobación y un informe corto. Al volver, el coordinador comprueba con `git status --short` que solo cambió lo que la tanda nombraba, corre el comando y **commitea él, por pathspec**. Al cerrar un bloque guarda el estado, escribe el prompt de relevo y para: el ciclo completo está en `general/comun/doctrinas/ciclo_de_tandas.md`.
+Con el encargo ya corregido por lo que destapó el plan, el coordinador lanza **una tanda detrás de otra**, cada una a un subagente `ejecutora` (Sonnet) o, si es literal y no pide criterio, `ejecutora-mecanica`. Cada tanda es pequeña, trae su comando de comprobación y un informe corto. Al volver, el coordinador comprueba con `git status --short` que solo cambió lo que la tanda nombraba, corre el comando y **commitea él, por pathspec**. Al cerrar un bloque guarda el estado, escribe el prompt de relevo y se releva para seguir; solo para cuando no le queda nada ejecutable: el ciclo completo está en `general/comun/doctrinas/ciclo_de_tandas.md`.
 
 Lo que un subagente no puede hacer —trabajar con otra raíz o con otro perfil— va por una sesión aparte. Lo esencial de esa sintaxis, en una línea: **la sesión se lanza dentro del directorio donde tiene que escribir** (`cd "<ruta>" && claude -p "<prompt>"`), lo que solo tiene que leer entra por `--add-dir`, y se ponen cortacircuitos duros de turnos y de gasto.
 

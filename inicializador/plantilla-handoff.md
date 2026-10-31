@@ -14,7 +14,7 @@ Eres el **COORDINADOR del asunto {{ASUNTO}}**. La sesión anterior llegó a su l
 
 1. **Antes de cada tanda:** lees el material relevante y, si el trabajo no es trivial, lanzas el `planificador` con un encargo corto; lees su plan y corriges el encargo antes de ejecutar nada.
 2. **Durante la tanda:** la ejecuta un subagente `ejecutora`, una tanda cada vez, con la tanda tal como está en el plan.
-3. **Después:** validas el resultado (*trust-but-verify*) con `git status --short` y el comando de la tanda, commiteas por pathspec, actualizas la cola y el tablero de tandas, y al cerrar una tanda o un bloque te relevas o paras ([[ciclo_de_tandas]]).
+3. **Después:** validas el resultado (*trust-but-verify*) con `git status --short` y el comando de la tanda, commiteas por pathspec, actualizas la cola y el tablero de tandas, y al cerrar una tanda o un bloque sigues relevándote o, si no queda nada ejecutable, paras ([[ciclo_de_tandas]]).
 
 ## Lectura inicial obligatoria (en este orden)
 

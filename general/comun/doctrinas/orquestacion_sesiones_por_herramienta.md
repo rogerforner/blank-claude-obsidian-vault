@@ -1,8 +1,8 @@
 ---
 name: Orquestación de sesiones por herramienta — el coordinador divide, no lo ejecuta todo
-description: El coordinador coordina: planifica, reparte en tandas pequeñas y verifica. El trabajo no trivial pasa por un plan que el coordinador lee y corrige antes de ejecutar, y cada tanda la hace un subagente ejecutora con informe acotado y parada por bloque (ciclo de tandas). claude -p queda para otra raíz u otro perfil, y entonces el cwd con el que se lanza la hija es parte del contrato (decide reglas, hooks y raíz de búsqueda). Asigna cada pieza a la mejor herramienta (Claude Code CLI, Desktop, cowork, chat) y no ejecuta el trabajo voluminoso en su propia sesión, para no agotar su contexto.
+description: El coordinador coordina: planifica, reparte en tandas pequeñas y verifica. El trabajo no trivial pasa por un plan que el coordinador lee y corrige antes de ejecutar, y cada tanda la hace un subagente ejecutora con informe acotado y relevo por bloque (ciclo de tandas). claude -p queda para otra raíz u otro perfil, y entonces el cwd con el que se lanza la hija es parte del contrato (decide reglas, hooks y raíz de búsqueda). Asigna cada pieza a la mejor herramienta (Claude Code CLI, Desktop, cowork, chat) y no ejecuta el trabajo voluminoso en su propia sesión, para no agotar su contexto.
 type: doctrine
-version: 1.37
+version: 1.38
 index_summary: >-
   El coordinador coordina, no ejecuta: planifica, reparte en tandas pequeñas a subagentes ejecutora y verifica, para no agotar su contexto. `claude -p` solo para otra raíz u otro perfil, y entonces el cwd y el perfil se declaran al lanzar. Los coordinadores se hablan por el canal; las ejecutoras no. Si parece faltar otro coordinador, es síntoma: revisa si eran dos asuntos.
 ---
@@ -44,7 +44,7 @@ Una hija enraizada en el sitio equivocado sufre varias cosas a la vez, y ninguna
 
 ## Plan y tandas: el planificador primero, las ejecutoras después
 
-**Todo trabajo no trivial pasa por un plan antes de ejecutarse.** Primero el subagente `planificador`, que solo escribe un fichero `plan-tanda-<nombre>.md`; después, **una tanda por subagente `ejecutora`**, en serie, contra el encargo **ya corregido** con lo que el plan haya destapado. El ciclo completo, con su parada por bloque, está en [[ciclo_de_tandas]].
+**Todo trabajo no trivial pasa por un plan antes de ejecutarse.** Primero el subagente `planificador`, que solo escribe un fichero `plan-tanda-<nombre>.md`; después, **una tanda por subagente `ejecutora`**, en serie, contra el encargo **ya corregido** con lo que el plan haya destapado. El ciclo completo, con su relevo por bloque, está en [[ciclo_de_tandas]].
 
 **El mecanismo, que es lo que hay que entender o el requisito se degrada:** el valor **no** está en que exista un plan. Está en que **el coordinador LEA ese plan y corrija su propio encargo antes de que se produzca nada**. Lo que se instala es **un punto de corrección barato entre el encargo y el trabajo**. Un plan que se escribe y nadie lee no aporta nada y solo suma coste — quien lo entienda como burocracia lo cumplirá en la forma y perderá el efecto entero.
 
@@ -62,9 +62,9 @@ Una hija enraizada en el sitio equivocado sufre varias cosas a la vez, y ninguna
 
 **Y quién ejecuta cada trozo se decide por el trozo, no por la tanda:** los literales, sin criterio, van a `ejecutora-mecanica` y el resto a `ejecutora`, y el planificador reparte esa asignación en la tabla de tandas. → [[modelo_por_tarea]]
 
-### Subagentes que producen: el informe acotado y el relevo o la parada por bloque protegen el contexto del coordinador
+### Subagentes que producen: el informe acotado y el relevo por bloque protegen el contexto del coordinador
 
-**Las tandas las ejecutan subagentes `ejecutora`, y eso no contradice que el coordinador no produzca.** Lo que el coordinador tiene prohibido es **llenar su contexto**, y el motivo es de contexto: lo que devuelve un subagente **entra íntegro en el contexto de quien lo lanzó**. Por eso la ejecutora devuelve un informe de 25 líneas como mucho, el coordinador comprueba el efecto con `git status --short` y el comando de la tanda, y al cerrar cada bloque **guarda el estado y para**. Es el ciclo de [[ciclo_de_tandas]].
+**Las tandas las ejecutan subagentes `ejecutora`, y eso no contradice que el coordinador no produzca.** Lo que el coordinador tiene prohibido es **llenar su contexto**, y el motivo es de contexto: lo que devuelve un subagente **entra íntegro en el contexto de quien lo lanzó**. Por eso la ejecutora devuelve un informe de 25 líneas como mucho, el coordinador comprueba el efecto con `git status --short` y el comando de la tanda, y al cerrar cada bloque **guarda el estado y se releva para seguir**; cuándo para, lo dice [[ciclo_de_tandas]].
 
 Lo que se midió el 2026-10-04 sobre los subagentes, y sobre lo que se apoya el reparto:
 
@@ -96,7 +96,7 @@ Esto vale para las ejecutoras lanzadas con `claude -p`; un subagente no tiene to
 **No hubo A/B controlado y no se presenta como tal.** Hay tres casos con contrafactual: un análisis destapó un **bloqueante que la especificación no veía** y que habría hecho fallar el resultado desde el primer minuto; otro encontró un **límite de permisos** que iba a quemar tres intentos, y la tanda se **aparcó con razón escrita** en vez de construirse y tirarse; y la **única** tanda lanzada sin análisis es aquella en la que **cuatro decisiones se le cayeron encima a la ejecutora** por huecos de la especificación.
 
 **Y el delimitador:** varias tandas posteriores de **fase única declarada** salieron bien, con las ejecutoras cazando premisas falsas sobre la marcha. No refuta el método —se habrían cazado antes y más barato— pero lo acota: **es para la tanda grande o con forma nueva, no para todas.**
-- **Protege tu contexto, en este orden** (vale para quien lanza `claude -p`; para los subagentes de las tandas, ver arriba el informe acotado y la parada por bloque): (a) **artefacto `.md` como contrato** (la hija escribe el informe, tú lees un extracto) · (b) `--output-format json` (+`--json-schema`) para una salida corta · (c) subagente de solo lectura (Sonnet) que resume · (d) ficheros en disco (Bash trunca a 30.000 chars).
+- **Protege tu contexto, en este orden** (vale para quien lanza `claude -p`; para los subagentes de las tandas, ver arriba el informe acotado y el relevo por bloque): (a) **artefacto `.md` como contrato** (la hija escribe el informe, tú lees un extracto) · (b) `--output-format json` (+`--json-schema`) para una salida corta · (c) subagente de solo lectura (Sonnet) que resume · (d) ficheros en disco (Bash trunca a 30.000 chars).
 - **Lo que devuelve un subagente entra ÍNTEGRO en tu contexto.** El aislamiento te protege del **ruido intermedio** —sus lecturas, sus llamadas, sus descartes se quedan dentro—, **no de un resultado verboso**: un subagente que lee ochenta mil tokens y te escribe un informe de tres mil te cuesta esos tres mil. De ahí que el ahorro no esté en delegar, sino en **acotar el entregable**: el encargo dice **cuántas líneas** y **qué forma** tiene lo que vuelve, igual que el contrato de una tanda. Un subagente sin límite de salida no es un ahorro, es un rodeo.
 - **Cortacircuitos obligatorios:** `--max-turns` y `--max-budget-usd`; **timeout/watchdog** en el llamante (hay *silent-freeze* documentado al lanzar `claude -p` desde orquestadores de larga vida) y arranque `bash -c 'exec claude -p …'`. Entradas grandes **por ruta de fichero**, no por stdin (topado a 10 MB).
 - **Condición de coste:** consume la ventana de la suscripción **solo mientras siga pausada** la escisión de facturación del Agent SDK/`claude -p`; y **`ANTHROPIC_API_KEY` no debe estar definida** (si lo está, factura API en silencio). **Plan B si se revierte:** subagentes intra-sesión (read-only o `add`+`commit` local). → [[modelo_por_tarea]]
@@ -246,7 +246,7 @@ Las tres se midieron con sesiones `claude -p`; la primera vale también para los
 
 **El paralelismo es destructivo bajo una sola suscripción de consumidor.** Todas las sesiones **comparten la misma cuota** —ventana rodante corta más tope semanal—, así que **N sesiones consumen N veces**, y cada iteración de un agente retransmite su historial entero. Un puñado de procesos simultáneos agota la ventana y **para todo a la vez**, no solo al último. **Por eso la orquestación desatendida se hace con cola y bloqueo: un proceso pesado a la vez.** No es prudencia, es la única forma de que el conjunto no se detenga. No confundir con las tandas independientes de un plan, que el coordinador lanza a la vez cada una en su worktree, con tope ([[ciclo_de_tandas]]): la cuota se reparte igual, y por eso el tope.
 
-**Y el cortacircuito que salta primero no es el que se diseña.** Se ponen topes de turnos, de tiempo y de gasto, pero en la práctica **el primero que interrumpe es el límite de la plataforma**, que actúa como freno bruto. Los que hay que poner igualmente, porque el freno bruto llega tarde: **tope de turnos**, **tope de tiempo**, y sobre todo **detector de no-progreso**.
+**Y el cortacircuito que salta primero no es el que se diseña.** Se ponen topes de turnos, de tiempo y de gasto, pero en la práctica **el primero que interrumpe es el límite de la plataforma**, que actúa como freno bruto. Los que hay que poner igualmente, porque el freno bruto llega tarde: **tope de turnos**, **tope de tiempo**, y sobre todo **detector de no-progreso** (en el relevo de coordinadores, el freno de relevo sin avance de `relevo.mjs`).
 
 > **El fallo silencioso que hay que cazar: agotar la cuota devuelve código de salida 0 con salida vacía.** Un bucle desatendido lo interpreta como éxito y sigue. Es la misma familia que la trampa 2 de la sección anterior —**un `success` es veredicto del runner, no del trabajo**— y se ataja igual: **contar respuestas vacías y comprobar el efecto en el disco**, nunca el código de salida.
 
@@ -303,12 +303,12 @@ El ciclo completo está en [[ciclo_de_tandas]]; aquí queda lo que toca a la ele
 2. **Asigna** cada pieza a la herramienta óptima: subagente `ejecutora` o `ejecutora-mecanica` para las tandas, `claude -p` si hace falta otra raíz u otro perfil.
 3. **Redacta el encargo `.md`** de cada pieza ([[formato_prompts_markdown_limpio]], [[feedback_prompt_delivery]]).
 4. Si la pieza es **no trivial**, lanza primero el `planificador`: el coordinador **lee el plan**, **corrige su encargo** con las premisas falsas que aparezcan, y **solo entonces** lanza las tandas, una tras otra o, las independientes, a la vez en worktrees.
-5. Tras cada tanda, el coordinador **verifica** (`git status --short` y el comando de la tanda), commitea por pathspec y prepara la siguiente. Al cerrar una tanda o un bloque guarda el estado y se releva o para ([[ciclo_de_tandas]]).
+5. Tras cada tanda, el coordinador **verifica** (`git status --short` y el comando de la tanda), commitea por pathspec y prepara la siguiente. Al cerrar una tanda o un bloque guarda el estado y sigue relevándose o, si no queda nada ejecutable, para ([[ciclo_de_tandas]]).
 6. **El director no es el transporte por defecto**; si una herramienta exige que él relaye algo, se le pide ese gesto y nada más.
 
 ## Ritmo de entrega al director
 
-El coordinador entrega los pasos **de uno en uno** — o **dos a la vez solo si van en herramientas distintas** y son paralelos (p. ej. una tanda CLI + un brief de chat). **No vuelca toda la lista de pasos de golpe**: satura y desorienta al director. Tras cada paso, confirma el resultado y propone el siguiente.
+El coordinador entrega los pasos **de uno en uno** — o **dos a la vez solo si van en herramientas distintas** y son paralelos (p. ej. una tanda CLI + un brief de chat). **No vuelca toda la lista de pasos de golpe**: satura y desorienta al director. Tras cada paso, confirma el resultado y propone el siguiente. Son los pasos que hace el director; el trabajo propio del coordinador no espera y sigue según [[ciclo_de_tandas]].
 
 ## Quién la aplica
 

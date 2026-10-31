@@ -17,6 +17,7 @@ La regla 21 del verificador exige que la sección de cada ficha nombre la versi�
 
 ## ciclo_de_tandas
 
+> **v2.16 (2026-10-31):** orden del director: los coordinadores no paran hasta terminar. El paso 4 pasa a «Seguir, relevarse o parar»: (a) por defecto se sigue, con el bloque siguiente y luego lo siguiente ejecutable del estado; (b) hay relevo por umbrales o al cerrar un bloque; (c) lo que bloquea un elemento se anota y se sigue con el resto; (d) la sesión para cuando no queda nada ejecutable, por orden del director o cuando el script se niega; (e) la parada final es informe corto, relevo escrito y sin relevo; (f) la orden del director viaja en la línea 5 del relevo; (g) fuera los «tres relevos seguidos» y `--reiniciar-cuenta` (obsoleto, `[CADUCA 2026-12-31]`). Freno contra el bucle: relevo sin avance. Un plan «en espera» admite el relevo sin plan; `Paradas:` pasa a significar que el plan espera al director.
 > **v2.15 (2026-10-27):** el relevo con plan admite una línea 2 para cuando todavía no se ha cerrado ningún bloque (`Ningún bloque cerrado todavía; plan cargado en el commit <hash>. Siguiente: bloque <letra> — `), que `relevo.mjs` lee y comprueba con la regla «ninguna fila del tablero está HECHA» (E41; caso real del 2026-10-27, relevo a mano con el plan recién cargado).
 > **v2.14 (2026-10-23):** el historial de versiones sale de la ficha a este fichero (E33).
 > Pieza de catálogo `general/comun/doctrinas/`. **v1.0 (2026-10-04):** nace con la decisión D4 del director del 2026-10-04: todo coordinador trabaja con el mismo ciclo de planificar, ejecutar en tandas pequeñas y parar al cerrar cada bloque. Se **lee** desde el catálogo; **no** se copia al contenedor salvo motivo declarado y **no se hereda** automáticamente.
@@ -146,6 +147,7 @@ La regla 21 del verificador exige que la sección de cada ficha nombre la versi�
 
 ## orquestacion_sesiones_por_herramienta
 
+> **v1.38 (2026-10-31):** orden del director: los coordinadores no paran hasta terminar. «Parada por bloque» pasa a «relevo por bloque»: al cerrar un bloque se guarda el estado y se releva para seguir, y cuándo para lo dice `ciclo_de_tandas` (2.16); el detector de no-progreso cita el freno de relevo sin avance de `relevo.mjs`; el paso 5 sigue relevándose o, si no queda nada ejecutable, para; los pasos al director los hace él y el trabajo propio del coordinador sigue.
 > **v1.37 (2026-10-28):** la viñeta de Claude Code Desktop recoge la revisión de E42 (rediseño de la pestaña Code de octubre, «Claude 2.0»): se sigue en Herdr + CLI, con los motivos y las tres condiciones que reabren la app.
 > **v1.36 (2026-10-23):** se funde en el cuerpo que toda sesión `claude -p` se nombra con `--name` y que su resultado se recoge del disco (E33, rescatado del historial en la auditoría T11).
 > **v1.35 (2026-10-23):** el historial de versiones sale de la ficha a este fichero (E33).
