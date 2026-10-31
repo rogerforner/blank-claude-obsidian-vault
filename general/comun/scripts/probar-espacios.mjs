@@ -220,27 +220,29 @@ const noOtras = (L) => L.filter((l) => l.startsWith('[NO]') && !dependeMaquina(l
 const con = (L, pref, texto) => L.filter((l) => l.startsWith(pref) && l.includes(texto));
 const PLAN_REL = '_meta/plan-tanda-prueba.md';
 const tituloRel = (rel) => (rel === '.' ? 'coordinador general' : `coordinador de ${rel.split('/')[1]}`);
-function relevoConPlan(rel, hash, { cerrado = 'A', siguiente = 'B', sinCerrado = false } = {}) {
+function relevoConPlan(rel, hash, { cerrado = 'A', siguiente = 'B', sinCerrado = false, orden = null } = {}) {
   return [
     `Retomas el trabajo "prueba" como ${tituloRel(rel)}. El estado vive en ficheros, no en la conversación anterior: lee \`${PLAN_REL}\`, el tablero (\`_meta/tablero-tandas.md\`) y el estado (\`estado.mjs\`).`,
     sinCerrado ? `Ningún bloque cerrado todavía; plan cargado en el commit ${hash}. Siguiente: bloque ${siguiente} — objetivo de prueba.` : `Último bloque cerrado: ${cerrado}, en el commit ${hash}. Siguiente: bloque ${siguiente} — objetivo de prueba.`,
     'Decisiones de la sesión anterior que no estén ya escritas en el plan o en la cola: ninguna.',
     'Antes de lanzar nada, comprueba el último commit de tu ámbito.',
+    ...(orden ? [`Orden del director: ${orden}.`] : []),
   ].join('\n') + '\n';
 }
-function relevoSinPlan(rel, hash, { siguiente = 'revisar la cola', decisiones = 'ninguna' } = {}) {
+function relevoSinPlan(rel, hash, { siguiente = 'revisar la cola', decisiones = 'ninguna', orden = null } = {}) {
   return [
     `Retomas el trabajo "prueba" como ${tituloRel(rel)}, sin plan de tandas. El estado vive en ficheros, no en la conversación anterior: lee el estado (\`estado.mjs\`) y lo que nombre la línea siguiente.`,
     `Último cierre: se cerró una tarea suelta, en el commit ${hash}. Siguiente: ${siguiente}.`,
     `Decisiones de la sesión anterior que no estén ya escritas en el estado o en la cola: ${decisiones}.`,
     'Antes de lanzar nada, comprueba el último commit de tu ámbito.',
+    ...(orden ? [`Orden del director: ${orden}.`] : []),
   ].join('\n') + '\n';
 }
 // Tablero de prueba fuera del repositorio de prueba (para no ensuciar el arbol); `filas` = [[id, bloque, estado]].
-function tableroPrueba(v, nombre, plan, filas) {
+function tableroPrueba(v, nombre, plan, filas, paradas = 'ninguna') {
   const f = path.join(path.dirname(v), `tablero-${nombre}.md`);
   const cuerpo = filas.map(([id, b, e]) => `| ${id} | ${b} | objetivo | \`x.md\` | ejecutora | — | ${e} |`).join('\n');
-  writeFileSync(f, `# Tablero de tandas\n\nPlan: ${plan === 'ninguno' ? 'ninguno' : '`' + plan + '`'}\nParadas: ninguna\n\n${CABECERA}\n${SEPARADOR}\n${cuerpo}\n`);
+  writeFileSync(f, `# Tablero de tandas\n\nPlan: ${plan === 'ninguno' ? 'ninguno' : '`' + plan + '`'}\nParadas: ${paradas}\n\n${CABECERA}\n${SEPARADOR}\n${cuerpo}\n`);
   return f;
 }
 // Fichero de linea de estado de prueba fuera del repositorio de prueba, con el formato de statusline.sh.
@@ -787,6 +789,75 @@ function casos(c, esp) {
       const ok = noOtras(L1).length === 0 && con(L1, '[OK]', 'con plan y bloques').length === 1 && con(L1, '[OK]', 'ningun bloque cerrado').length === 1
         && con(L2, '[NO]', 'ningun bloque cerrado').length === 1;
       return R(ok, `plan sin bloque cerrado: (a) [NO] ajenas=${JSON.stringify(noOtras(L1))}, modo plan=${con(L1, '[OK]', 'con plan y bloques').length} (1), [OK] ningun bloque cerrado=${con(L1, '[OK]', 'ningun bloque cerrado').length} (1); (b) fila HECHA: [NO] ningun bloque cerrado=${con(L2, '[NO]', 'ningun bloque cerrado').length} (1)`);
+    }],
+
+    ['R24', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const h = hashAmbito(v, '.');
+      escribir(v, '_meta/relevo-estado.local.json', JSON.stringify({ modo: 'lanzar', fase: 'tomado', hash: h }) + '\n');
+      const L1 = comprobarRelevo(v, '.', relevoSinPlan('.', h));
+      escribir(v, '_meta/relevo-estado.local.json', JSON.stringify({ modo: 'lanzar', fase: 'fallido', hash: h }) + '\n');
+      const L2 = comprobarRelevo(v, '.', relevoSinPlan('.', h));
+      const ok = con(L1, '[NO]', 'sin avance').length === 1 && noOtras(L1).length === 1 && con(L2, '[NO]', 'sin avance').length === 0;
+      return R(ok, `relevo sin avance: (a) tomado con el mismo hash: [NO] sin avance=${con(L1, '[NO]', 'sin avance').length} (1), [NO] en total=${noOtras(L1).length} (1); (b) fallido: [NO] sin avance=${con(L2, '[NO]', 'sin avance').length} (0)`);
+    }],
+    ['R25', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      escribir(v, '_meta/relevo-estado.local.json', JSON.stringify({ modo: 'lanzar', fase: 'tomado', hash: '0000000', seguidos: 3 }) + '\n');
+      const L = comprobarRelevo(v, '.', relevoSinPlan('.', hashAmbito(v, '.')));
+      const seg = L.filter((l) => l.includes('relevos seguidos'));
+      return R(noOtras(L).length === 0 && seg.length === 0, `estado viejo con seguidos 3: [NO] ajenas=${JSON.stringify(noOtras(L))}, lineas con "relevos seguidos"=${seg.length} (0)`);
+    }],
+    ['R26', () => {
+      const v = c.clon();
+      const script = path.join(v, 'general', 'comun', 'scripts', 'relevo.mjs');
+      const f = path.join(v, '_meta', 'relevo-estado.local.json');
+      const r = node([script, '--reiniciar-cuenta'], v, { HERDR_ENV: '', HERDR_PANE_ID: '' });
+      const h = node([script, '--ayuda'], v, { HERDR_ENV: '', HERDR_PANE_ID: '' });
+      const ok = r.codigo === 0 && r.salida.includes('obsoleto') && !existsSync(f) && h.salida.includes('obsoleto') && !h.salida.includes('pone a 0');
+      return R(ok, `--reiniciar-cuenta: salida ${r.codigo} (0), dice obsoleto=${r.salida.includes('obsoleto')}, crea el estado=${existsSync(f)} (false); --ayuda obsoleto=${h.salida.includes('obsoleto')}, "pone a 0"=${h.salida.includes('pone a 0')} (true, false)`);
+    }],
+
+    ['R27', async () => {
+      const v = c.clon();
+      const mod = await import(pathToFileURL(path.join(v, 'general', 'comun', 'scripts', 'relevo.mjs')).href);
+      const lee = (nombre, texto) => { const f = path.join(path.dirname(v), nombre); writeFileSync(f, texto); return mod.leerRelevo(f).orden; };
+      const txt = 'no te releves al terminar el bloque C';
+      const o1 = lee('r27-a.md', relevoConPlan('.', 'abc1234', { orden: txt }));
+      const o2 = lee('r27-b.md', relevoSinPlan('.', 'abc1234', { orden: 'ninguna' }));
+      const o3 = lee('r27-c.md', relevoSinPlan('.', 'abc1234'));
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const L = comprobarRelevo(v, '.', relevoSinPlan('.', hashAmbito(v, '.'), { orden: txt }));
+      const av = con(L, '[AVISO]', 'orden del director');
+      const ok = o1 === txt && o2 === null && o3 === null && av.length === 1 && av[0].includes(txt) && noOtras(L).length === 0;
+      return R(ok, `orden: con orden=${JSON.stringify(o1)}, ninguna=${JSON.stringify(o2)} (null), sin linea=${JSON.stringify(o3)} (null); [AVISO] orden=${JSON.stringify(av)} (una, con el texto), [NO] ajenas=${JSON.stringify(noOtras(L))}`);
+    }],
+    ['R28', () => {
+      const v = c.clon();
+      planCommiteado(v);
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const rel = relevoConPlan('.', hashAmbito(v, '.'));
+      const t1 = tableroPrueba(v, 'r28a', PLAN_REL, [['T01', 'A', '[HECHA]'], ['T02', 'B', '[PENDIENTE]'], ['T03', 'C', '[BLOQUEADA: espera al director]']]);
+      const L1 = comprobarRelevo(v, '.', rel, { tablero: t1 });
+      const t2 = tableroPrueba(v, 'r28b', PLAN_REL, [['T01', 'A', '[HECHA]'], ['T02', 'B', '[PENDIENTE]'], ['T03', 'C', '[EN CURSO]']]);
+      const L2 = comprobarRelevo(v, '.', rel, { tablero: t2 });
+      const av = con(L1, '[AVISO]', 'T03');
+      const ok = noOtras(L1).length === 0 && av.length === 1 && con(L2, '[NO]', 'en curso').length === 1;
+      return R(ok, `filas bloqueadas con plan: (a) [NO] ajenas=${JSON.stringify(noOtras(L1))} (ninguna), [AVISO] con T03=${av.length} (1); (b) en curso: [NO] en curso=${con(L2, '[NO]', 'en curso').length} (1)`);
+    }],
+    ['R29', () => {
+      const v = c.clon();
+      const a = dodSella(v, '.'); if (a.codigo !== 0) return noCierra('.', a);
+      const rel = relevoSinPlan('.', hashAmbito(v, '.'));
+      const t1 = tableroPrueba(v, 'r29a', PLAN_REL, [['T01', 'A', '[HECHA]'], ['T02', 'B', '[PENDIENTE]']], 'tras el bloque A');
+      const L1 = comprobarRelevo(v, '.', rel, { tablero: t1 });
+      const t2 = tableroPrueba(v, 'r29b', PLAN_REL, [['T01', 'A', '[HECHA]'], ['T02', 'B', '[BLOQUEADA: x]']]);
+      const L2 = comprobarRelevo(v, '.', rel, { tablero: t2 });
+      const ok = con(L1, '[NO]', 'plan vivo').length === 0 && con(L1, '[OK]', 'en espera').length === 1
+        && con(L2, '[NO]', 'plan vivo').length === 0 && con(L2, '[OK]', 'en espera').length === 1;
+      return R(ok, `plan en espera sin plan: (a) parada: [NO] plan vivo=${con(L1, '[NO]', 'plan vivo').length} (0), [OK] en espera=${con(L1, '[OK]', 'en espera').length} (1); (b) bloqueada: [NO] plan vivo=${con(L2, '[NO]', 'plan vivo').length} (0), [OK] en espera=${con(L2, '[OK]', 'en espera').length} (1)`);
     }],
 
     ['G1', () => {

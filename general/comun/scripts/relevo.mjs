@@ -24,7 +24,7 @@ Modos:
   --tomar              lo corre B en su segundo turno: espera a que A desaparezca, se renombra y sigue
   --comprobar          seco: las precondiciones de A, todas listadas; solo lee Herdr, git y la linea de estado
   --prueba             lo corre un shell en una pestana desechable (A sin agente, nombre prueba-relevo)
-  --reiniciar-cuenta   pone a 0 los relevos seguidos (cuando el director ha intervenido)
+  --reiniciar-cuenta   obsoleto: no hace nada y sale 0 (ya no hay cuenta de relevos seguidos)
   --reiniciar-coordinador <nombre>   solo desde la raiz del vault: el general reinicia la sesion de un coordinador sin trabajo
                        (/exit, espera a la shell, herdr agent start y prompt de arranque); --seco solo lista las precondiciones
   --ayuda
@@ -40,6 +40,8 @@ Salidas: 0 bien; 1 error interno; 2 uso; 3 entorno (fuera de Herdr, sin servidor
   8 fallo la continuacion (B cerrado, A vivo); 9 A no se cerro o, en --tomar, A sigue vivo;
   10 sigue en esta sesion (contexto por debajo del suelo; no se ha tocado nada).
 --reiniciar-coordinador: 2 uso; 3 entorno; 4 precondicion, nada tocado; 6 la sesion nueva no arranco (el panel queda en la shell); 7 la vieja no salio (no se arranco nada); 8 la nueva no recibio el prompt.
+Linea 5 opcional del relevo: 'Orden del director: <texto>.'; se lista como [AVISO] y no bloquea.
+Freno: no se releva si el ultimo relevo tomado salio del mismo commit del ambito (relevo sin avance; en --prueba no aplica).
 Umbrales: higiene_contexto_y_tokens, seccion 'Umbrales de relevo y ritmo de cuota' (copia en UMBRALES).
 El fichero de relevo sigue una de las dos plantillas de ciclo_de_tandas (con plan de tandas o sin plan) y el DoD del
 ambito tiene que estar sellado y vigente (node _meta/dod.mjs) antes de relevarse.
@@ -233,7 +235,7 @@ function hashAmbito(ctx) { return git(['log', '-1', '--format=%h', '--', ...ctx.
 // ---------- el prompt de relevo ----------
 
 export function leerRelevo(ruta) {
-  const r = { existe: false, modo: null, plan: null, cerrado: null, hash: null, siguiente: null, siguienteTexto: null, ninguna: false };
+  const r = { existe: false, modo: null, plan: null, cerrado: null, hash: null, siguiente: null, siguienteTexto: null, ninguna: false, orden: null };
   if (!existsSync(ruta)) return r;
   let texto;
   try { texto = readFileSync(ruta, 'utf8'); } catch { return r; }
@@ -248,6 +250,10 @@ export function leerRelevo(ruta) {
   else if (r.plan && m2b) { r.modo = 'plan'; r.cerrado = null; r.hash = m2b[1]; r.siguiente = m2b[2]; }
   else if (!r.plan && m3) { r.modo = 'sinplan'; r.cerrado = m3[1]; r.hash = m3[2]; r.siguienteTexto = m3[3].trim(); }
   r.ninguna = /: ninguna\.\s*$/.test(l[2] || '');
+  for (const x of l.slice(3)) {
+    const mo = x.match(/^Orden del director: (.+?)\.?\s*$/);
+    if (mo) { if (!/^ninguna$/i.test(mo[1].trim())) r.orden = mo[1].trim(); break; }
+  }
   return r;
 }
 
@@ -309,6 +315,24 @@ function agentesVivos() {
   catch { return null; }
 }
 
+// Filas en curso: [NO]. Filas bloqueadas: [AVISO], no paran la sesion.
+function filasAbiertas(add, L, tab) {
+  const enCurso = tab.filas.filter((f) => f.estado === '[EN CURSO]');
+  const bloqueadas = tab.filas.filter((f) => f.estado.startsWith('[BLOQUEADA'));
+  add(enCurso.length === 0, enCurso.length ? `hay filas en curso: ${enCurso.map((f) => f.id).join(', ')}` : 'ninguna fila en curso');
+  if (bloqueadas.length) L.push({ ok: true, nivel: 'AVISO', msg: `filas bloqueadas (no paran la sesion): ${bloqueadas.map((f) => f.id).join(', ')}` });
+}
+
+// Plan en espera: sin filas en curso y, o con alguna fila bloqueada, o con el bloque anterior al primer bloque con filas
+// sin HECHA (por orden de la tabla) declarado en Paradas.
+function planEnEspera(tab) {
+  if (tab.filas.some((f) => f.estado === '[EN CURSO]')) return false;
+  if (tab.filas.some((f) => f.estado.startsWith('[BLOQUEADA'))) return true;
+  const orden = [...new Set(tab.filas.map((f) => f.bloque))];
+  const i = orden.findIndex((b) => tab.filas.some((f) => f.bloque === b && !/^\[HECHA/.test(f.estado)));
+  return i > 0 && tab.paradas.includes(orden[i - 1]);
+}
+
 // ---------- precondiciones (pasos 0 a 3): lista de {ok, msg} ----------
 
 function precondiciones(ctx, a, opts) {
@@ -336,6 +360,7 @@ function precondiciones(ctx, a, opts) {
   add(rel.existe && rel.modo, rel.existe ? (rel.modo ? `fichero de relevo legible (${rel.modo === 'plan' ? 'con plan y bloques' : 'sin plan'})` : 'fichero de relevo: no casan las lineas 1 o 2 con ninguna de las dos plantillas') : `fichero de relevo inexistente: ${rutaRelevo}`);
   add(hashVigente(ctx, rel.hash), `el hash del relevo (${rel.hash || 'ninguno'}) es el ultimo del ambito y ancestro de HEAD`);
   add(rel.ninguna, 'la linea 3 del relevo dice "ninguna" (sin decisiones por escribir)');
+  if (rel.orden) L.push({ ok: true, nivel: 'AVISO', msg: `orden del director para la sucesora: ${rel.orden}` });
 
   const sello = ctx.raiz && ctx.amb ? estadoSello(ctx.raiz, ctx.amb) : null;
   if (!sello) add(true, 'DoD del ambito: este arbol no usa sello');
@@ -357,11 +382,11 @@ function precondiciones(ctx, a, opts) {
     const sig = rel.siguienteTexto || '';
     add(sig !== '' && !/^(nada|ninguno|ninguna)\b/i.test(sig), sig !== '' && !/^(nada|ninguno|ninguna)\b/i.test(sig) ? 'hay trabajo siguiente (la linea 2 lo nombra)' : 'sin trabajo siguiente: no se releva, se para (para cargar reglas nuevas sin trabajo, el general reinicia la sesion con --reiniciar-coordinador)');
     if (tab) {
-      const abiertas = tab.filas.filter((f) => f.estado === '[EN CURSO]' || f.estado.startsWith('[BLOQUEADA'));
-      add(abiertas.length === 0, abiertas.length ? `hay filas en curso o bloqueadas: ${abiertas.map((f) => f.id).join(', ')}` : 'ninguna fila en curso ni bloqueada');
+      filasAbiertas(add, L, tab);
       const vivas = tab.filas.filter((f) => !/^\[HECHA/.test(f.estado));
       const vivo = tab.plan && tab.plan !== 'ninguno' && vivas.length > 0;
-      add(!vivo, vivo ? `el tablero tiene un plan vivo (${tab.plan}) con filas sin HECHA: usa el relevo con plan` : 'el tablero no tiene un plan vivo');
+      if (vivo && planEnEspera(tab)) L.push({ ok: true, msg: `el tablero tiene un plan en espera (${tab.plan}): sigues con el resto del estado` });
+      else add(!vivo, vivo ? `el tablero tiene un plan vivo (${tab.plan}) con filas sin HECHA: usa el relevo con plan` : 'el tablero no tiene un plan vivo');
     }
   } else if (tab) {
     add(rel.plan && tab.plan === rel.plan, `el Plan del tablero (${tab.plan}) es el plan del relevo (${rel.plan})`);
@@ -374,22 +399,24 @@ function precondiciones(ctx, a, opts) {
       const delBloque = tab.filas.filter((f) => f.bloque === rel.cerrado);
       add(delBloque.length > 0 && delBloque.every((f) => /^\[HECHA/.test(f.estado)), `todas las filas del bloque cerrado ${rel.cerrado} estan HECHA`);
     }
-    const abiertas = tab.filas.filter((f) => f.estado === '[EN CURSO]' || f.estado.startsWith('[BLOQUEADA'));
-    add(abiertas.length === 0, abiertas.length ? `hay filas en curso o bloqueadas: ${abiertas.map((f) => f.id).join(', ')}` : 'ninguna fila en curso ni bloqueada');
+    filasAbiertas(add, L, tab);
     const pend = tab.filas.filter((f) => f.bloque === rel.siguiente && f.estado === '[PENDIENTE]');
     add(pend.length > 0, `el bloque siguiente ${rel.siguiente} tiene filas PENDIENTE (si no, el plan se acabo: si queda trabajo, escribe el relevo sin plan)`);
     if (rel.cerrado !== null) add(!tab.paradas.includes(rel.cerrado), tab.paradas.includes(rel.cerrado) ? `el bloque cerrado ${rel.cerrado} es una parada declarada` : 'el bloque cerrado no es una parada declarada');
   }
 
   const prev = leerEstado(ctx);
-  const seguidos = prev && Number.isInteger(prev.seguidos) ? prev.seguidos : 0;
-  add(prueba || seguidos < 3, prueba ? 'cuenta de relevos seguidos: no aplica en la prueba' : `relevos seguidos ${seguidos} (tiene que ser menor que 3)`);
+  const cuenta = prev && prev.modo === 'lanzar' && (prev.fase === 'tomado' || prev.fase === 'continuado') && typeof prev.hash === 'string' && prev.hash && rel.hash;
+  const sinAvance = Boolean(cuenta) && (rel.hash.startsWith(prev.hash) || prev.hash.startsWith(rel.hash));
+  if (prueba) add(true, 'relevo sin avance: no aplica en la prueba');
+  else if (sinAvance) add(false, `relevo sin avance: el ultimo relevo tomado (${prev.fecha || 'sin fecha'}) salio del commit ${prev.hash} y el ambito no tiene ningun commit nuevo; no se releva`);
+  else add(true, cuenta ? `relevo con avance: el ultimo relevo tomado salio de ${prev.hash}, hoy el ambito esta en ${rel.hash}` : 'relevo con avance: no hay relevo anterior tomado');
 
   const vivos = agentesVivos();
   const base = opts.base;
   const nombreB = opts.nombreB;
   add(vivos !== null && !vivos.includes(nombreB), vivos === null ? 'herdr agent list falla' : `el nombre ${nombreB} esta libre`);
-  L.rel = rel; L.base = base; L.seguidos = seguidos; L.tab = tab;
+  L.rel = rel; L.base = base; L.tab = tab;
   return L;
 }
 
@@ -426,11 +453,7 @@ function comprobar(args) {
 }
 
 function reiniciarCuenta() {
-  const ctx = contexto(process.cwd(), false);
-  if (!ctx.tipo) throw new Salida(4, 'el cwd no es la raiz del vault ni <espacio>/<slug>');
-  const prev = leerEstado(ctx) || {};
-  escribirEstado(ctx, { ...prev, seguidos: 0 });
-  console.log('relevos seguidos: 0');
+  console.log('--reiniciar-cuenta es obsoleto: ya no hay cuenta de relevos seguidos (el freno es el relevo sin avance); no hace nada');
 }
 
 function textos(ctx, prueba, sinConfirmar, extra) {
@@ -470,7 +493,7 @@ async function lanzar(args, prueba) {
   const L = precondiciones(ctx, a, opts);
   if (imprimir(L)) throw new Salida(4, 'RELEVO NO POSIBLE: no se ha tocado nada');
   if (L.sigue) { console.log(SIGUE); throw new Salida(10, ''); }
-  const { rel, seguidos } = L;
+  const { rel } = L;
   const nombreA = a.nombre || opts.base;
   const hash = rel.hash;
 
@@ -483,7 +506,7 @@ async function lanzar(args, prueba) {
     relevo: opts.relevo || path.join(ctx.dirCoord, 'relevo-actual.local.md'), hash,
     modoRelevo: rel.modo,
     bloqueCerrado: rel.modo === 'plan' ? rel.cerrado : null, bloqueSiguiente: rel.modo === 'plan' ? rel.siguiente : null,
-    paneA: a.paneId, nombreA, paneB: null, nombreB: opts.nombreB, seguidos, fase: 'lanzado',
+    paneA: a.paneId, nombreA, paneB: null, nombreB: opts.nombreB, fase: 'lanzado',
     confirmacion: null, resultado: null,
     recargar: opts.recargar,
     lineaEstado: { ruta: L.lineaEstado.ruta, ctx: L.lineaEstado.ctx ?? null, tokens: L.lineaEstado.tokens ?? null, h5: L.lineaEstado.h5 ?? null, d7: L.lineaEstado.d7 ?? null, escrita: L.lineaEstado.escrita ?? null, veredicto: L.lineaEstado.veredicto },
@@ -536,7 +559,7 @@ async function lanzar(args, prueba) {
 
   // Paso 9
   fase = 'confirmado';
-  estado.seguidos = prueba ? seguidos : seguidos + 1; estado.fase = 'confirmado';
+  estado.fase = 'confirmado';
   escribirEstado(ctx, estado);
 
   // Paso 10
@@ -654,7 +677,7 @@ async function reiniciarCoordinador(args) {
   const nombre = args.shift();
   if (!nombre || nombre.startsWith('--')) throw new Salida(2, 'falta el nombre del coordinador: --reiniciar-coordinador <nombre>');
   const seco = bandera(args, '--seco');
-  const prompt = opcion(args, '--prompt', 'Sesión reiniciada por el coordinador general para que cargues las reglas nuevas. Arranca como coordinador de este asunto y dime en tres líneas su estado.');
+  const prompt = opcion(args, '--prompt', 'Sesión reiniciada por el coordinador general para que cargues las reglas nuevas. Arranca como coordinador de este asunto y sigue con tu trabajo ejecutable según ciclo_de_tandas; si no te queda nada ejecutable, haz la parada final que describe.');
   const tSalida = entero(opcion(args, '--timeout-salida', '60000'), '--timeout-salida');
   const tArranque = entero(opcion(args, '--timeout-arranque', '60000'), '--timeout-arranque');
   if (args.length) throw new Salida(2, `argumento sobrante: ${args.join(' ')}`);
