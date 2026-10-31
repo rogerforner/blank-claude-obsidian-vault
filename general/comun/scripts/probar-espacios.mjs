@@ -859,6 +859,19 @@ function casos(c, esp) {
         && con(L2, '[NO]', 'plan vivo').length === 0 && con(L2, '[OK]', 'en espera').length === 1;
       return R(ok, `plan en espera sin plan: (a) parada: [NO] plan vivo=${con(L1, '[NO]', 'plan vivo').length} (0), [OK] en espera=${con(L1, '[OK]', 'en espera').length} (1); (b) bloqueada: [NO] plan vivo=${con(L2, '[NO]', 'plan vivo').length} (0), [OK] en espera=${con(L2, '[OK]', 'en espera').length} (1)`);
     }],
+    ['R30', async () => {
+      const v = c.clon();
+      const mod = await import(pathToFileURL(path.join(v, 'general', 'comun', 'scripts', 'relevo.mjs')).href);
+      if (typeof mod.argvClaudeAceptado !== 'function') return 'relevo.mjs no exporta argvClaudeAceptado';
+      const D = '--dangerously-skip-permissions';
+      const si = [['claude', D], ['claude', D, '--continue'], ['claude', '--continue', D], ['claude', D, '-c'], ['claude', D, '--resume'], ['claude', D, '-r'],
+        ['claude', D, '--resume', 'abc-123'], ['claude', '-r', 'abc-123', D], ['claude', D, '--resume=abc-123']];
+      const no = [['claude'], ['claude', '--continue'], ['claude', D, '--model', 'opus'], ['claude', D, '--continue', '--resume'], ['claude', D, '-c', '-c'],
+        ['claude', D, D], ['claude', D, '--continue', 'x'], ['claude', D, '--resume', 'a', 'b'], ['otro', D], ['claude', D, '-p', 'hola']];
+      const mal = [...si.filter((a) => mod.argvClaudeAceptado(a) !== true).map((a) => `deberia aceptar ${JSON.stringify(a)}`),
+        ...no.filter((a) => mod.argvClaudeAceptado(a) !== false).map((a) => `deberia rechazar ${JSON.stringify(a)}`)];
+      return R(mal.length === 0, `argv de claude aceptados/rechazados: ${JSON.stringify(mal)} (ninguno mal)`);
+    }],
 
     ['G1', () => {
       const v = c.clon();

@@ -54,6 +54,23 @@ class Salida extends Error { constructor(codigo, msg) { super(msg); this.codigo 
 // Copia de los umbrales de higiene_contexto_y_tokens ("Umbrales de relevo y ritmo de cuota"); la ata el caso R20 de probar-espacios.mjs.
 export const UMBRALES = { contextoCierre: 30, contextoFrontera: 50, sueloTokens: 100000, cincoHoras: 90, semanal: 90, frescuraMin: 15 };
 
+// Argv aceptado para la sesion que se va: claude, --dangerously-skip-permissions y, opcionalmente,
+// una sola reanudacion (--continue, -c, --resume, -r, estas dos con o sin id, o --resume=<id>), en cualquier orden.
+export const ARGV_ACEPTADO = 'claude --dangerously-skip-permissions [--continue | -c | --resume [id] | -r [id] | --resume=<id>]';
+export function argvClaudeAceptado(argv) {
+  if (!Array.isArray(argv) || argv[0] !== 'claude') return false;
+  const resto = argv.slice(1);
+  if (resto.filter((a) => a === '--dangerously-skip-permissions').length !== 1) return false;
+  const otros = resto.filter((a) => a !== '--dangerously-skip-permissions');
+  if (otros.length === 0) return true;
+  const [a, b, ...mas] = otros;
+  if (mas.length) return false;
+  if (a === '--continue' || a === '-c') return b === undefined;
+  if (a === '--resume' || a === '-r') return b === undefined || (typeof b === 'string' && b !== '' && !b.startsWith('-'));
+  if (typeof a === 'string' && a.startsWith('--resume=') && a.length > 9) return b === undefined;
+  return false;
+}
+
 export function leerLineaEstado(ruta) {
   if (!ruta) return { error: 'sin HERDR_PANE_ID ni --linea-estado' };
   if (!existsSync(ruta)) return { error: `no existe ${ruta}` };
@@ -301,8 +318,8 @@ function panelA(prueba) {
     const cl = (pi.foreground_processes || []).find((x) => x.argv0 === 'claude');
     if (!cl) r.problemas.push('no hay proceso claude en primer plano del panel');
     else {
-      if (JSON.stringify(cl.argv) !== JSON.stringify(['claude', '--dangerously-skip-permissions']))
-        r.problemas.push(`argv de claude no es exactamente --dangerously-skip-permissions: ${JSON.stringify(cl.argv)}`);
+      if (!argvClaudeAceptado(cl.argv))
+        r.problemas.push(`argv de claude no aceptado (${ARGV_ACEPTADO}): ${JSON.stringify(cl.argv)}`);
       if (String(cl.pid) !== String(process.env.CLAUDE_PID || ''))
         r.problemas.push(`el pid de claude (${cl.pid}) no coincide con CLAUDE_PID (${process.env.CLAUDE_PID || 'vacio'})`);
     }
@@ -699,8 +716,8 @@ async function reiniciarCoordinador(args) {
     try {
       const pi = herdrSync(['pane', 'process-info', '--pane', panel]).result.process_info;
       const cl = (pi.foreground_processes || []).find((x) => x.argv0 === 'claude');
-      const bien = cl && JSON.stringify(cl.argv) === JSON.stringify(['claude', '--dangerously-skip-permissions']);
-      add(bien, bien ? 'proceso claude con --dangerously-skip-permissions en el panel' : cl ? `argv de claude no es exactamente --dangerously-skip-permissions: ${JSON.stringify(cl.argv)}` : 'no hay proceso claude en primer plano del panel');
+      const bien = cl && argvClaudeAceptado(cl.argv);
+      add(bien, bien ? 'proceso claude con --dangerously-skip-permissions en el panel' : cl ? `argv de claude no aceptado (${ARGV_ACEPTADO}): ${JSON.stringify(cl.argv)}` : 'no hay proceso claude en primer plano del panel');
     } catch (e) { add(false, `herdr pane process-info falla: ${e.message}`); }
     for (const x of precondicionesReinicio(ctx.raiz, real(cwdAg))) L.push(x);
   }
